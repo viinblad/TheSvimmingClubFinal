@@ -10,7 +10,7 @@ public abstract class Member {
 
     //private Payment payment
 
-    public Member (String memberId, String name, String email, MembershipType membershiptype, int age, int phoneNumber) {
+    public Member(String memberId, String name, String email, MembershipType membershiptype, int age, int phoneNumber) {
         this.memberId = memberId;
         this.name = name;
         this.email = email;
@@ -23,26 +23,53 @@ public abstract class Member {
 
 
     //GetMethods-----------------------------------------------------------------------------------------------------
-public String getMemberId () {
+    public String getMemberId() {
         return this.memberId;
-}
+    }
 
-public String getName () {
+    public String getName() {
         return this.name;
-}
+    }
 
-public int getAge() {
+    public int getAge() {
         return this.age;
-}
+    }
 
-public String getEmail () {
+    public String getEmail() {
         return this.email;
-}
+    }
 
-public MembershipType getMembershipType () {
+    public MembershipType getMembershipType() {
         return this.membershipType;
-}
+    }
+
+    public int getPhoneNumber() {
+        return this.phoneNumber;
+    }
+
 
     //SetMethods-----------------------------------------------------------------------------------------------------
+    public void setName(String name) {
+        this.name = name;
+    }
 
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setMembershipType(MembershipType membershipType) {
+        this.membershipType = membershipType;
+    }
+
+    public void setPhoneNumber(int phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public void setMemberId(String memberId) {
+        this.memberId = memberId;
+    }
 }
