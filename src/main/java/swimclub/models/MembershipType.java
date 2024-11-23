@@ -6,8 +6,8 @@ package swimclub.models;
  * with additional distinctions between Junior and Senior members.
  */
 public class MembershipType {
-    private final MembershipCategory category; // Competitive or Exercise
-    private final MembershipLevel level;       // Junior or Senior
+    private MembershipCategory category; // Competitive or Exercise
+    private MembershipLevel level;       // Junior or Senior
 
     /**
      * Constructor for creating a MembershipType.
@@ -35,6 +35,16 @@ public class MembershipType {
     }
 
     /**
+     * Sets the level of the membership (Junior or Senior).
+     * This allows the level to be dynamically changed.
+     *
+     * @param level The new membership level to set.
+     */
+    public void setLevel(MembershipLevel level) {
+        this.level = level;
+    }
+
+    /**
      * @return A descriptive string of the membership type.
      */
     @Override
@@ -44,6 +54,7 @@ public class MembershipType {
 
     /**
      * Factory method to create a MembershipType from a string.
+     * This will allow you to construct a MembershipType from a descriptive string like "Junior Competitive".
      *
      * @param membershipTypeStr A string representing the membership type (e.g., "Junior Competitive").
      * @return A MembershipType object corresponding to the string.

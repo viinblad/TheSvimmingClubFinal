@@ -16,9 +16,9 @@ public class Validator {
         return age >= 0 && age <= 120;
     }
 
-    // Validate membership type: Must be one of the predefined values
+    // Validate membership type: Must be one of the predefined values for both category and level
     public static boolean isValidMembershipType(MembershipType membershipType) {
-        // Check if membershipType is valid (both category and level should be non-null)
+        // Ensure both category and level are valid
         return membershipType != null &&
                 (membershipType.getCategory() == MembershipCategory.COMPETITIVE ||
                         membershipType.getCategory() == MembershipCategory.EXERCISE) &&
@@ -49,7 +49,7 @@ public class Validator {
         // Convert the membershipType string to a MembershipType object
         MembershipType type = MembershipType.fromString(membershipType);
         if (!isValidMembershipType(type)) {
-            throw new IllegalArgumentException("Invalid membership type: Must be 'junior' or 'senior'.");
+            throw new IllegalArgumentException("Invalid membership type: Must be 'junior' or 'senior' and category must be 'competitive' or 'exercise'.");
         }
         if (!isValidEmail(email)) {
             throw new IllegalArgumentException("Invalid email: Email must be a valid email address.");

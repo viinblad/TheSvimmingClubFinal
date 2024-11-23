@@ -43,6 +43,14 @@ public abstract class Member {
     }
 
     /**
+     * @param memberId  The unique ID of the member.
+     */
+    public void setMemberId(int memberId) {
+        this.memberId = memberId;
+    }
+
+
+    /**
      * @return The full name of the member.
      */
     public String getName() {

@@ -12,12 +12,31 @@ public class MemberRepository {
 
     /**
      * Constructor for MemberRepository, initializes file handler and loads members.
-     *
-     * @param fileHandler The FileHandler to be used for loading and saving member data.
      */
     public MemberRepository(FileHandler fileHandler) {
         this.fileHandler = fileHandler;
         this.members = fileHandler.loadMembers(); // Load members from file at startup
+    }
+
+    /**
+     * Get the next available member ID based on the highest existing ID.
+     * This method will return the next available ID (current highest ID + 1).
+     *
+     * @return The next available member ID.
+     */
+    public int getNextMemberId() {
+        // If there are no members, return 1 as the first member ID
+        if (members.isEmpty()) {
+            return 1;
+        }
+
+        // Find the highest member ID
+        int maxId = members.stream()
+                .mapToInt(Member::getMemberId)
+                .max()
+                .orElse(0);
+
+        return maxId + 1; // Return the next ID
     }
 
     /**
@@ -26,13 +45,29 @@ public class MemberRepository {
      * @param member The member to save.
      */
     public void save(Member member) {
-        // Check if member already exists by memberId
-        if (findById(member.getMemberId()) != null) {
-            throw new RuntimeException("Member with ID " + member.getMemberId() + " already exists.");
-        }
+        // Ensure the correct membership level is set
+        ensureCorrectMembershipLevel(member);
 
-        members.add(member); // Add the member to the list
-        fileHandler.saveMembers(members); // Save changes to file
+        // Add the member to the list
+        members.add(member);
+
+        // Save the member to the file
+        fileHandler.saveMembers(members);
+    }
+
+    /**
+     * Ensure the membership level is set correctly based on the member's age.
+     * This ensures that a member is assigned to Senior or Junior based on age.
+     *
+     * @param member The member whose level needs to be set correctly.
+     */
+    private void ensureCorrectMembershipLevel(Member member) {
+        // Automatically set membership level based on age
+        if (member.getAge() > 18) {
+            member.getMembershipType().setLevel(MembershipLevel.SENIOR);
+        } else {
+            member.getMembershipType().setLevel(MembershipLevel.JUNIOR);
+        }
     }
 
     /**
@@ -42,7 +77,6 @@ public class MemberRepository {
      * @return The found member.
      */
     public Member findById(int id) {
-        // Using stream to search for the member by ID
         Optional<Member> member = members.stream()
                 .filter(m -> m.getMemberId() == id)
                 .findFirst();
@@ -61,6 +95,9 @@ public class MemberRepository {
             throw new RuntimeException("Member not found for ID " + updatedMember.getMemberId());
         }
 
+        // Ensure the correct membership level is set
+        ensureCorrectMembershipLevel(updatedMember);
+
         // Update the member details
         existingMember.setName(updatedMember.getName());
         existingMember.setAge(updatedMember.getAge());
@@ -68,7 +105,8 @@ public class MemberRepository {
         existingMember.setEmail(updatedMember.getEmail());
         existingMember.setPhoneNumber(updatedMember.getPhoneNumber());
 
-        fileHandler.saveMembers(members); // Save updated list to file
+        // Save updated list to the file
+        fileHandler.saveMembers(members);
     }
 
     /**
