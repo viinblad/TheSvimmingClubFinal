@@ -1,19 +1,31 @@
 package swimclub.utilities;
 
-import swimclub.models.Member;
+import swimclub.models.*;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * FileHandler handles saving and loading Member data to and from a file.
+ */
 public class FileHandler {
     private final String filePath;
 
+    /**
+     * Constructor for FileHandler.
+     *
+     * @param filePath Path to the file for saving/loading member data.
+     */
     public FileHandler(String filePath) {
         this.filePath = filePath;
     }
 
-    // Save all members to file
+    /**
+     * Saves all members to the specified file.
+     *
+     * @param members List of Member objects to save.
+     */
     public void saveMembers(List<Member> members) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
             for (Member member : members) {
@@ -25,7 +37,11 @@ public class FileHandler {
         }
     }
 
-    // Load members from file
+    /**
+     * Loads members from the specified file.
+     *
+     * @return List of Member objects loaded from the file.
+     */
     public List<Member> loadMembers() {
         List<Member> members = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
@@ -39,23 +55,40 @@ public class FileHandler {
         return members;
     }
 
-    // Format a Member object into a string for saving
+    /**
+     * Converts a Member object into a string format for saving to the file.
+     *
+     * @param member The Member object to format.
+     * @return A string representation of the Member object.
+     */
     private String formatMember(Member member) {
-        return member.getMemberId() + ";" + member.getName() + ";" + member.getAge() + ";" + member.getMembershipType();
+        return member.getMemberId() + ";" + member.getName() + ";" + member.getEmail() + ";" +
+                member.getAge() + ";" + member.getPhoneNumber() + ";" +
+                member.getMembershipDescription();
     }
 
-    // Parse a string from file back into a Member object
+    /**
+     * Parses a string from the file into a Member object.
+     *
+     * @param line A string representing a Member.
+     * @return A Member object (either JuniorMember or SeniorMember).
+     */
     private Member parseMember(String line) {
         String[] parts = line.split(";");
         int id = Integer.parseInt(parts[0]);
         String name = parts[1];
-        int age = Integer.parseInt(parts[2]);
-        String membershipType = parts[3];
-        return new Member(id, name, age, membershipType) {
-            @Override
-            public String getMembershipDescription() {
-                return "";
-            }
-        };
+        String email = parts[2];
+        int age = Integer.parseInt(parts[3]);
+        int phoneNumber = Integer.parseInt(parts[4]);
+        String membershipType = parts[5];
+
+        // Determine subclass based on membership type
+        if (membershipType.toLowerCase().contains("junior")) {
+            return new JuniorMember(id, name, email, age, phoneNumber, membershipType.split(" ")[1]);
+        } else if (membershipType.toLowerCase().contains("senior")) {
+            return new SeniorMember(id, name, email, age, phoneNumber, membershipType.split(" ")[1]);
+        } else {
+            throw new IllegalArgumentException("Unknown membership type: " + membershipType);
+        }
     }
 }
