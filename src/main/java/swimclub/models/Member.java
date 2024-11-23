@@ -16,7 +16,7 @@ public abstract class Member {
         this.email = email;
         this.age = age;
         this.phoneNumber = phoneNumber;
-        this.membershipType = membershipType;
+        this.membershipType = MembershipType.INACTIVE;
     }
 
 // return member.getId() + ";" + member.getName() + ";" + member.getAge() + ";" + member.getMembershipType(); //
