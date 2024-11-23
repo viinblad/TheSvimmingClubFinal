@@ -80,15 +80,24 @@ public class FileHandler {
         String email = parts[2];
         int age = Integer.parseInt(parts[3]);
         int phoneNumber = Integer.parseInt(parts[4]);
-        String membershipType = parts[5];
+        String membershipDescription = parts[5];
 
-        // Determine subclass based on membership type
-        if (membershipType.toLowerCase().contains("junior")) {
-            return new JuniorMember(id, name, email, age, phoneNumber, membershipType.split(" ")[1]);
-        } else if (membershipType.toLowerCase().contains("senior")) {
-            return new SeniorMember(id, name, email, age, phoneNumber, membershipType.split(" ")[1]);
+        // Extract membership type details from membership description
+        String[] membershipParts = membershipDescription.split(" ");
+        String level = membershipParts[0];  // "Junior" or "Senior"
+        String category = membershipParts[1]; // "Competitive" or "Exercise"
+
+        // Instantiate MembershipType
+        MembershipType membershipType = new MembershipType(
+                MembershipCategory.valueOf(category.toUpperCase()),
+                MembershipLevel.valueOf(level.toUpperCase())
+        );
+
+        // Instantiate the correct subclass based on level
+        if (membershipType.getLevel() == MembershipLevel.JUNIOR) {
+            return new JuniorMember(String.valueOf(id), name, email, membershipType, age, phoneNumber);
         } else {
-            throw new IllegalArgumentException("Unknown membership type: " + membershipType);
+            return new SeniorMember(String.valueOf(id), name, email, membershipType, age, phoneNumber);
         }
     }
 }

@@ -41,4 +41,25 @@ public class MembershipType {
     public String toString() {
         return level + " " + category + " Swimmer";
     }
+
+    /**
+     * Factory method to create a MembershipType from a string.
+     *
+     * @param membershipTypeStr A string representing the membership type (e.g., "Junior Competitive").
+     * @return A MembershipType object corresponding to the string.
+     */
+    public static MembershipType fromString(String membershipTypeStr) {
+        // Remove "Swimmer" suffix if it exists
+        String cleanString = membershipTypeStr.replace(" Swimmer", "").trim();
+
+        String[] parts = cleanString.split(" ");
+        if (parts.length != 2) {
+            throw new IllegalArgumentException("Invalid membership type format: " + membershipTypeStr);
+        }
+
+        MembershipLevel level = MembershipLevel.valueOf(parts[0].toUpperCase());
+        MembershipCategory category = MembershipCategory.valueOf(parts[1].toUpperCase());
+
+        return new MembershipType(category, level);
+    }
 }
