@@ -1,4 +1,4 @@
-package swimclub.Utilities;
+package swimclub.utilities;
 
 public class Validator {
 
