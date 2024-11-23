@@ -41,7 +41,7 @@ public class FileHandler {
 
     // Format a Member object into a string for saving
     private String formatMember(Member member) {
-        return member.getId() + ";" + member.getName() + ";" + member.getAge() + ";" + member.getMembershipType();
+        return member.getMemberId() + ";" + member.getName() + ";" + member.getAge() + ";" + member.getMembershipType();
     }
 
     // Parse a string from file back into a Member object
@@ -51,6 +51,11 @@ public class FileHandler {
         String name = parts[1];
         int age = Integer.parseInt(parts[2]);
         String membershipType = parts[3];
-        return new Member(id, name, age, membershipType);
+        return new Member(id, name, age, membershipType) {
+            @Override
+            public String getMembershipDescription() {
+                return "";
+            }
+        };
     }
 }
