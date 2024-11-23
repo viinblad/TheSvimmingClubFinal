@@ -18,9 +18,22 @@ public class Validator {
                 (membershipType.equalsIgnoreCase("junior") ||
                         membershipType.equalsIgnoreCase("senior"));
     }
+    // Validate email
+    public static boolean isValidEmail(String email) {
+        return email != null && email.contains("@");
+    }
+    //Validate phone number. Must be 8 digits
+    public static boolean isValidPhoneNumber(int phoneNumber) {
+        String phoneNumberString = String.valueOf(phoneNumber);
+        return phoneNumberString.length() == 8;
+
+    }
+
+
+
 
     // Generic validation with error throwing
-    public static void validateMemberData(String name, int age, String membershipType) throws IllegalArgumentException {
+    public static void validateMemberData(String name, int age, String membershipType, String email, int phoneNumber) throws IllegalArgumentException {
         if (!isValidName(name)) {
             throw new IllegalArgumentException("Invalid name: Name cannot be null or empty.");
         }
@@ -29,6 +42,12 @@ public class Validator {
         }
         if (!isValidMembershipType(membershipType)) {
             throw new IllegalArgumentException("Invalid membership type: Must be 'junior' or 'senior'.");
+        }
+        if (!isValidEmail(email)) {
+            throw new IllegalArgumentException("Invalid email: Email must be a valid email address.");
+        }
+        if (!isValidPhoneNumber(phoneNumber)) {
+            throw new IllegalArgumentException("Invalid phone number: Phone number must be 8 digits.");
         }
     }
 }
