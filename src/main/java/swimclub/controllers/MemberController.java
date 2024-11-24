@@ -1,9 +1,12 @@
 package swimclub.controllers;
 
-import swimclub.models.*;
+import swimclub.models.JuniorMember;
+import swimclub.models.Member;
+import swimclub.models.MembershipType;
+import swimclub.models.SeniorMember;
+import swimclub.repositories.MemberRepository;
 import swimclub.services.MemberService;
 import swimclub.utilities.Validator;
-import swimclub.repositories.MemberRepository;
 
 public class MemberController {
     private final MemberService memberService;
@@ -36,11 +39,19 @@ public class MemberController {
             int memberId = memberRepository.getNextMemberId();
             String memberIdString = String.valueOf(memberId); // Convert memberId to String
 
-            // Create a new member (e.g., JuniorMember)
-            Member newMember = new JuniorMember(memberIdString, name, email, type, age, phoneNumber);
+            // Dynamically create a JuniorMember or SeniorMember based on age
+            Member newMember;
+            if (age > 18) {
+                newMember = new SeniorMember(memberIdString, name, email, type, age, phoneNumber);
+            } else {
+                newMember = new JuniorMember(memberIdString, name, email, type, age, phoneNumber);
+            }
 
             // Save the validated member using the MemberService
             memberService.registerMember(newMember);
+
+            // Reload members after registration to immediately reflect the changes
+            memberRepository.reloadMembers();
 
             System.out.println("Member registered successfully.");
         } catch (IllegalArgumentException e) {
@@ -57,10 +68,10 @@ public class MemberController {
      * @param newAge         The new age of the member.
      * @param newPhoneNumber The new phone number of the member.
      */
-    public void updateMember(int memberId, String newName, String newEmail, int newAge, int newPhoneNumber) {
+    public void updateMember(int memberId, String newName, String newEmail, int newAge, String newMembershipType, int newPhoneNumber) {
         try {
             // Validate updated member data
-            Validator.validateMemberData(newName, newAge, newEmail, newEmail, newPhoneNumber);
+            Validator.validateMemberData(newName, newAge, newMembershipType, newEmail, newPhoneNumber);
 
             // Find the existing member by ID
             Member memberToUpdate = memberRepository.findById(memberId);
@@ -70,10 +81,18 @@ public class MemberController {
                 memberToUpdate.setName(newName);
                 memberToUpdate.setEmail(newEmail);
                 memberToUpdate.setAge(newAge);
+
+                // Update membership type
+                MembershipType membershipType = MembershipType.fromString(newMembershipType);
+                memberToUpdate.setMembershipType(membershipType);
+
                 memberToUpdate.setPhoneNumber(newPhoneNumber);
 
                 // Update the member using the MemberService
                 memberService.updateMember(memberToUpdate);
+
+                // Reload members after update to immediately reflect the changes
+                memberRepository.reloadMembers();
 
                 System.out.println("Member updated successfully.");
             } else {

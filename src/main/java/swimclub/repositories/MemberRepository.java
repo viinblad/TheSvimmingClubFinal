@@ -1,13 +1,15 @@
 package swimclub.repositories;
 
-import swimclub.models.*;
+import swimclub.models.Member;
+import swimclub.models.MembershipLevel;
+import swimclub.models.MembershipType;
 import swimclub.utilities.FileHandler;
 
 import java.util.List;
 import java.util.Optional;
 
 public class MemberRepository {
-    private final List<Member> members;
+    private List<Member> members;
     private final FileHandler fileHandler;
 
     /**
@@ -53,6 +55,9 @@ public class MemberRepository {
 
         // Save the member to the file
         fileHandler.saveMembers(members);
+
+        // Reload members from the file to keep in-memory list updated
+        reloadMembers();
     }
 
     /**
@@ -61,13 +66,12 @@ public class MemberRepository {
      *
      * @param member The member whose level needs to be set correctly.
      */
-    private void ensureCorrectMembershipLevel(Member member) {
-        // Automatically set membership level based on age
-        if (member.getAge() > 18) {
-            member.getMembershipType().setLevel(MembershipLevel.SENIOR);
-        } else {
-            member.getMembershipType().setLevel(MembershipLevel.JUNIOR);
-        }
+    public void ensureCorrectMembershipLevel(Member member) {
+        MembershipType membershipType = member.getMembershipType();
+        MembershipLevel correctLevel = (member.getAge() > 18) ? MembershipLevel.SENIOR : MembershipLevel.JUNIOR;
+
+        // Update the level dynamically
+        membershipType.setLevel(correctLevel);
     }
 
     /**
@@ -107,6 +111,9 @@ public class MemberRepository {
 
         // Save updated list to the file
         fileHandler.saveMembers(members);
+
+        // Reload members from the file to keep in-memory list updated
+        reloadMembers();
     }
 
     /**
@@ -116,5 +123,12 @@ public class MemberRepository {
      */
     public List<Member> findAll() {
         return members;
+    }
+
+    /**
+     * Reload the list of members from the file to ensure that the in-memory list is up-to-date.
+     */
+    public void reloadMembers() {
+        this.members = fileHandler.loadMembers(); // Reload members from the file
     }
 }

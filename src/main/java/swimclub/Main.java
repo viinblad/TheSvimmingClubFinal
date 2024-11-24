@@ -6,6 +6,8 @@ import swimclub.services.MemberService;
 import swimclub.utilities.FileHandler;
 import swimclub.ui.UserInterface;
 
+import java.util.Scanner;
+
 public class Main {
     public static void main(String[] args) {
         // Initialize the FileHandler, MemberRepository, and MemberService
@@ -22,5 +24,7 @@ public class Main {
 
         // Start the User Interface
         userInterface.start();
+
+
     }
 }
