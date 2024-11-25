@@ -1,6 +1,7 @@
 package swimclub.services;
 
-import swimclub.models.*;
+import swimclub.models.Member;
+import swimclub.models.MembershipLevel;
 import swimclub.repositories.MemberRepository;
 import swimclub.utilities.Validator;
 
