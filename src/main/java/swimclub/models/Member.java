@@ -9,6 +9,8 @@ public abstract class Member {
     private String name;                 // Full name of the member
     private String email;                // Email address of the member
     private MembershipType membershipType; // Membership type (e.g., Competitive Junior)
+    private MembershipStatus membershipStatus;
+    private PaymentStatus paymentStatus;
     private int age;                     // Age of the member
     private int phoneNumber;             // Phone number of the member
 
@@ -22,11 +24,13 @@ public abstract class Member {
      * @param age            Age of the member.
      * @param phoneNumber    Phone number of the member.
      */
-    public Member(String memberId, String name, String email, MembershipType membershipType, int age, int phoneNumber) {
+    public Member(String memberId, String name, String email, MembershipType membershipType, MembershipStatus membershipStatus, PaymentStatus paymentStatus, int age, int phoneNumber) {
         this.memberId = Integer.parseInt(memberId); // Parse memberId from String to int
         this.name = name;
         this.email = email;
         this.membershipType = membershipType;      // Use MembershipType directly
+        this.membershipStatus = membershipStatus;
+        this.paymentStatus = paymentStatus;
         this.age = age;
         this.phoneNumber = phoneNumber;
     }
@@ -71,6 +75,10 @@ public abstract class Member {
         return this.membershipType;
     }
 
+    public MembershipStatus getMembershipStatus() {
+        return this.membershipStatus;
+    }
+
     /**
      * @return The age of the member.
      */
@@ -83,6 +91,10 @@ public abstract class Member {
      */
     public int getPhoneNumber() {
         return this.phoneNumber;
+    }
+
+    public PaymentStatus getPaymentStatus () {
+        return this.paymentStatus;
     }
 
     // -----------------------------------------------------------------------------------------------------
@@ -132,6 +144,10 @@ public abstract class Member {
      */
     public void setPhoneNumber(int phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    public void setPaymentStatus (PaymentStatus paymentStatus) {
+        this.paymentStatus = paymentStatus;
     }
 
     // -----------------------------------------------------------------------------------------------------
