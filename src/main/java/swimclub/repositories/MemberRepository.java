@@ -7,6 +7,7 @@ import swimclub.utilities.FileHandler;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class MemberRepository {
     private List<Member> members;
@@ -62,12 +63,13 @@ public class MemberRepository {
 
     /**
      * Delete a member from the list and th file.
-     * @param member
+     *
+     * @param member delete the member
      */
-    public boolean delete(Member member){
+    public boolean delete(Member member) {
 
-    fileHandler.deleteMember(member);
-    return true;
+        fileHandler.deleteMember(member);
+        return true;
     }
 
     /**
@@ -140,5 +142,33 @@ public class MemberRepository {
      */
     public void reloadMembers() {
         this.members = fileHandler.loadMembers(); // Reload members from the file
+    }
+    // Other methods...
+
+    /**
+     * Searches members by ID, name, or phone number.
+     *
+     * @param query The search query to match.
+     * @return A list of members matching the query.
+     */
+    public List<Member> search(String query) {
+        return members.stream()
+                .filter(member -> {
+                    // Match ID (converted to String for comparison)
+                    String memberId = String.valueOf(member.getMemberId());
+                    if (memberId.equalsIgnoreCase(query)) {
+                        return true;
+                    }
+
+                    // Match name (case-insensitive)
+                    if (member.getName().equalsIgnoreCase(query)) {
+                        return true;
+                    }
+
+                    // Match phone number (converted to String for comparison)
+                    String phoneNumber = String.valueOf(member.getPhoneNumber());
+                    return phoneNumber.equalsIgnoreCase(query);
+                })
+                .toList(); // Collect matching members into a list
     }
 }

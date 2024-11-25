@@ -1,7 +1,9 @@
 package swimclub.ui;
 
 import swimclub.controllers.MemberController;
+import swimclub.models.Member;
 
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -40,11 +42,12 @@ public class UserInterface {
     private void printMenu() {
         System.out.println("\n--- Swim Club Member Management ---");
         System.out.println("1. Register New Member");
-        System.out.println("2. Update Member");
-        System.out.println("3. View All Members");
-        System.out.println("4. Delete Member");
-        System.out.println("5. Exit");
-        System.out.print("Please choose an option (1-4): ");
+        System.out.println("2. Search Members");
+        System.out.println("3. Update Member");
+        System.out.println("4. View All Members");
+        System.out.println("5. Delete Member");
+        System.out.println("6. Exit");
+        System.out.print("Please choose an option (1-6): ");
     }
 
     /**
@@ -74,19 +77,22 @@ public class UserInterface {
                 registerMember();
                 break;
             case 2:
-                updateMember();
+                searchMembers();
                 break;
             case 3:
-                memberController.viewAllMembers();
+                updateMember();
                 break;
             case 4:
-                deleteMember();
+                memberController.viewAllMembers();
                 break;
             case 5:
+                deleteMember();
+                break;
+            case 6:
                 System.out.println("Exiting the program. Goodbye!");
                 break;
             default:
-                System.out.println("Invalid option. Please choose a number between 1 and 4.");
+                System.out.println("Invalid option. Please choose a number between 1 and 6.");
         }
     }
 
@@ -98,6 +104,14 @@ public class UserInterface {
         String name = scanner.nextLine();
         System.out.print("Enter member email: ");
         String email = scanner.nextLine();
+        System.out.println("Enter city of member");
+        String city = scanner.nextLine();
+        System.out.println("Enter street of member");
+        String street = scanner.nextLine();
+        System.out.println("Enter region of member");
+        String region = scanner.nextLine();
+        System.out.print("Enter Zip code: ");
+        int zipcode = Integer.parseInt(scanner.nextLine());
         System.out.print("Enter membership type (Junior/Senior, Competitive/Exercise): ");
         String membershipType = scanner.nextLine();
         System.out.print("Enter age: ");
@@ -106,8 +120,9 @@ public class UserInterface {
         int phoneNumber = Integer.parseInt(scanner.nextLine());
 
         // Calls the controller to register the new member
-        memberController.registerMember(name, email, membershipType, age, phoneNumber);
+        memberController.registerMember(name, email, city, street, region, zipcode, membershipType, age, phoneNumber);
     }
+
 
     /**
      * Updates an existing member's information based on the provided member ID and new details.
@@ -121,13 +136,21 @@ public class UserInterface {
         String email = scanner.nextLine();
         System.out.print("Enter new age: ");
         int age = Integer.parseInt(scanner.nextLine());
+        System.out.print("Enter new city: ");
+        String city = scanner.nextLine();
+        System.out.print("Enter new street: ");
+        String street = scanner.nextLine();
+        System.out.print("Enter new region: ");
+        String region = scanner.nextLine();
+        System.out.print("Enter new zip code: ");
+        int zipcode = Integer.parseInt(scanner.nextLine());
         System.out.print("Enter new membership type (Junior/Senior, Competitive/Exercise): ");
-        String membershipType = scanner.nextLine();  // New input for membership type
+        String membershipType = scanner.nextLine();
         System.out.print("Enter new phone number (8 digits): ");
         int phoneNumber = Integer.parseInt(scanner.nextLine());
 
-        // Calls the controller to update the member with the new details
-        memberController.updateMember(memberId, name, email, age, membershipType, phoneNumber);
+        // Call the controller's updateMember method with all new attributes
+        memberController.updateMember(memberId, name, email, age, city, street, region, zipcode, membershipType, phoneNumber);
     }
 
     private void deleteMember() {
@@ -142,6 +165,24 @@ public class UserInterface {
             }
         } catch (NumberFormatException e) {
             System.out.println("Invalid input please enter a valid numeric ID.");
+        }
+    }
+
+    private void searchMembers() {
+        System.out.print("Enter search query (ID, name, or phone number): ");
+        String query = scanner.nextLine();
+        List<Member> results = memberController.searchMembers(query);
+
+        if (results.isEmpty()) {
+            System.out.println("No members found matching the query.");
+        } else {
+            System.out.println("\n--- Search Results ---");
+            results.forEach(member ->
+                    System.out.println("ID: " + member.getMemberId() +
+                            ", Name: " + member.getName() +
+                            ", Membership: " + member.getMembershipDescription() +
+                            ", Phone: " + member.getPhoneNumber() +
+                            ", Email: " + member.getEmail()));
         }
     }
 }

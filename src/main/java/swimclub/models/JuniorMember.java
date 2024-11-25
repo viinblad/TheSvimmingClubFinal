@@ -13,12 +13,17 @@ public class JuniorMember extends Member {
      * @param memberId      The unique ID of the member.
      * @param name          The full name of the member.
      * @param email         The email address of the member.
+     * @param city          The city where the member lives.
+     * @param street        The street address of the member.
+     * @param region        The region where the member lives.
+     * @param zipcode       The zip code of the member's address.
      * @param membershipType The type of membership (e.g., Competitive Junior, Exercise Junior).
      * @param age           The age of the member (used to determine membership level).
      * @param phoneNumber   The phone number of the member.
      */
-    public JuniorMember(String memberId, String name, String email, MembershipType membershipType, int age, int phoneNumber) {
-        super(memberId, name, email, membershipType, age, phoneNumber); // Call the parent constructor
+    public JuniorMember(String memberId, String name, String email, String city, String street, String region, int zipcode,
+                        MembershipType membershipType, int age, int phoneNumber) {
+        super(memberId, name, email, city, street, region, zipcode, membershipType, age, phoneNumber); // Call the parent constructor
     }
 
     /**
