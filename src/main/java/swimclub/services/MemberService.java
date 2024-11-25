@@ -69,6 +69,18 @@ public class MemberService {
         repository.update(updatedMember); // Update the member in the repository
     }
 
+    public void deleteMember(int memberId) {
+    Member member = repository.findById(memberId);
+
+    if (member == null){
+        //System.out.println("Member with ID number " + memberId + " not found.");
+        return;
+    }
+    repository.delete(member);
+
+        //System.out.println("Member with ID number " + memberId + " has been succesfully deleted.");
+    }
+
     /**
      * Determines the membership level based on age.
      * If age > 18, set the level to Senior. If age <= 18, set the level to Junior.

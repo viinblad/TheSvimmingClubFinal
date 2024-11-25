@@ -84,6 +84,17 @@ public class MemberController {
         }
     }
 
+    public boolean deleteMember(int memberId) {
+        memberService.deleteMember(memberId);
+        Member member = memberRepository.findById(memberId);
+
+        if (member == null){ // If member do not exist return false
+            return false;
+        }
+        memberRepository.delete(member); // If member exist return true
+        return true;
+    }
+
     /**
      * View all members stored in the repository.
      */

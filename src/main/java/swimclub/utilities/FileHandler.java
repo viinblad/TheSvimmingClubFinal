@@ -66,6 +66,35 @@ public class FileHandler {
         return members;
     }
 
+    /**
+     * Deletes a member from the file based on provided memberID.
+     *
+     * @param members
+     */
+    public boolean deleteMember(Member memberToDelete) {
+        boolean memberDeleted = false;
+        List<Member> members = loadMembers(); // Load all members from file
+
+        List<Member> updatedMembers = new ArrayList<>();
+        int id = memberToDelete.getMemberId(); // Get det id for the member to delete
+
+        //Sorting through all the members
+        for (Member member : members) {
+            if (member.getMemberId() == id) { // Check if the current member matches the ID
+                memberDeleted = true; // Mark the member as deleted
+            } else {
+                updatedMembers.add(member); // add the remaining members to the updated list
+            }
+        }
+        if (memberDeleted){
+            saveMembers(updatedMembers); //Save the updated list without the deleted member
+            return true; // return true indicating the deletion was succesful
+        } else {
+            return false; // if no member was deleted, return false
+        }
+
+    }
+
 
     /**
      * Converts a Member object into a string format for saving to the file.

@@ -19,7 +19,7 @@ public class UserInterface {
             printMenu();
             option = getUserInput();
             handleOption(option);
-        } while (option != 4); // Exit when the user selects option 4
+        } while (option != 5); // Exit when the user selects option 4
     }
 
     private void printMenu() {
@@ -27,7 +27,8 @@ public class UserInterface {
         System.out.println("1. Register New Member");
         System.out.println("2. Update Member");
         System.out.println("3. View All Members");
-        System.out.println("4. Exit");
+        System.out.println("4. Delete Member");
+        System.out.println("5. Exit");
         System.out.print("Please choose an option (1-4): ");
     }
 
@@ -53,6 +54,9 @@ public class UserInterface {
                 memberController.viewAllMembers();
                 break;
             case 4:
+                deleteMember();
+                break;
+            case 5:
                 System.out.println("Exiting the program. Goodbye!");
                 break;
             default:
@@ -88,5 +92,20 @@ public class UserInterface {
         int phoneNumber = Integer.parseInt(scanner.nextLine());
 
         memberController.updateMember(memberId, name, email, age, phoneNumber);
+    }
+
+    private void deleteMember() {
+        System.out.println("Enter Members ID:");
+        int memberId = Integer.parseInt(scanner.nextLine());
+        boolean success = memberController.deleteMember(memberId);
+        try {
+            if (success) {
+                System.out.println("Member succesfully deleted.");
+            } else {
+                System.out.println("Member not found, please check the ID and try again.");
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid input please enter a valid numeric ID.");
+        }
     }
 }

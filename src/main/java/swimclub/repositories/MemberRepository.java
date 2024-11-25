@@ -56,6 +56,16 @@ public class MemberRepository {
     }
 
     /**
+     * Delete a member from the list and th file.
+     * @param member
+     */
+    public boolean delete(Member member){
+
+    fileHandler.deleteMember(member);
+    return true;
+    }
+
+    /**
      * Ensure the membership level is set correctly based on the member's age.
      * This ensures that a member is assigned to Senior or Junior based on age.
      *
