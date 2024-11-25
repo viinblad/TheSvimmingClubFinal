@@ -5,8 +5,9 @@ package swimclub.models;
  */
 public class JuniorMember extends Member {
 
+    // Constructor for JuniorMember
     public JuniorMember(String memberId, String name, String email, MembershipType membershipType, int age, int phoneNumber) {
-        super(memberId, name, email, membershipType, age, phoneNumber);
+        super(memberId, name, email, membershipType, age, phoneNumber); // Call parent constructor
     }
 
     @Override
