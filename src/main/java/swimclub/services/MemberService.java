@@ -5,6 +5,8 @@ import swimclub.models.MembershipLevel;
 import swimclub.repositories.MemberRepository;
 import swimclub.utilities.Validator;
 
+import java.util.List;
+
 public class MemberService {
     private final MemberRepository repository;
 
@@ -31,7 +33,8 @@ public class MemberService {
         // Validate member data before saving using the Validator class
         try {
             Validator.validateMemberData(member.getName(), member.getAge(),
-                    member.getMembershipType().toString(), member.getEmail(), member.getPhoneNumber());
+                    member.getMembershipType().toString(), member.getEmail(), member.getCity(), member.getStreet(),
+                    member.getRegion(),member.getZipcode(),member.getPhoneNumber());
         } catch (IllegalArgumentException e) {
             System.out.println("Error registering member: " + e.getMessage());
             return; // Don't proceed if validation fails
@@ -56,7 +59,8 @@ public class MemberService {
         // Validate updated member data before updating using the Validator class
         try {
             Validator.validateMemberData(updatedMember.getName(), updatedMember.getAge(),
-                    updatedMember.getMembershipType().toString(), updatedMember.getEmail(), updatedMember.getPhoneNumber());
+                    updatedMember.getMembershipType().toString(), updatedMember.getEmail(), updatedMember.getCity(), updatedMember.getStreet(),
+                    updatedMember.getRegion(),updatedMember.getZipcode(),updatedMember.getPhoneNumber());
         } catch (IllegalArgumentException e) {
             // Handle the validation exception and log the error
             System.out.println("Error updating member: " + e.getMessage());
@@ -98,5 +102,15 @@ public class MemberService {
             member.getMembershipType().setLevel(MembershipLevel.JUNIOR);
         }
     }
+    /**
+     * Searches for members by ID, name, or phone number.
+     *
+     * @param query The search query.
+     * @return A list of members matching the query.
+     */
+    public List<Member> searchMembers(String query) {
+        return repository.search(query); // Delegate to repository
+    }
 }
+
 

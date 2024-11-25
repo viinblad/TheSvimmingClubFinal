@@ -8,9 +8,11 @@ public abstract class Member {
     private int memberId;                // Unique identifier for the member
     private String name;                 // Full name of the member
     private String email;                // Email address of the member
+    private String city;                 // Living city of the member
+    private String street;               // Street Address of the member
+    private String region;               // Living region of the member
+    private int zipcode;                 // Zip code number of the member
     private MembershipType membershipType; // Membership type (e.g., Competitive Junior)
-    private MembershipStatus membershipStatus;
-    private PaymentStatus paymentStatus;
     private int age;                     // Age of the member
     private int phoneNumber;             // Phone number of the member
 
@@ -19,18 +21,25 @@ public abstract class Member {
      *
      * @param memberId       Unique ID of the member (parsed as int).
      * @param name           Full name of the member.
+     * @param city           Living city of the member
+     * @param region         Living region of the member
+     * @param street         Living street of the member
+     * @param zipcode        Living zip code of the member
      * @param email          Email address of the member.
      * @param membershipType The membership type of the member.
      * @param age            Age of the member.
      * @param phoneNumber    Phone number of the member.
      */
-    public Member(String memberId, String name, String email, MembershipType membershipType, MembershipStatus membershipStatus, PaymentStatus paymentStatus, int age, int phoneNumber) {
+    public Member(String memberId, String name, String email, String city, String street,
+                  String region, int zipcode,MembershipType membershipType, int age, int phoneNumber) {
         this.memberId = Integer.parseInt(memberId); // Parse memberId from String to int
         this.name = name;
         this.email = email;
-        this.membershipType = membershipType;      // Use MembershipType directly
-        this.membershipStatus = membershipStatus;
-        this.paymentStatus = paymentStatus;
+        this.city = city;
+        this.street = street;
+        this.region = region;
+        this.zipcode =  zipcode;
+        this.membershipType = membershipType;
         this.age = age;
         this.phoneNumber = phoneNumber;
     }
@@ -46,12 +55,6 @@ public abstract class Member {
         return this.memberId;
     }
 
-    /**
-     * @param memberId  The unique ID of the member.
-     */
-    public void setMemberId(int memberId) {
-        this.memberId = memberId;
-    }
 
 
     /**
@@ -69,14 +72,39 @@ public abstract class Member {
     }
 
     /**
+     *
+     * @return the city of the member
+     */
+    public String getCity() {
+        return this.city;
+    }
+    /**
+     *
+     * @return the street of the member
+     */
+    public String getStreet() {
+        return this.street;
+    }
+    /**
+     *
+     * @return the region of the member
+     */
+    public String getRegion() {
+        return this.region;
+    }
+
+    /**
+     * @return The zip code of the member.
+     */
+    public int getZipcode() {
+        return this.zipcode;
+    }
+
+    /**
      * @return The membership type of the member as a descriptive string.
      */
     public MembershipType getMembershipType() {
         return this.membershipType;
-    }
-
-    public MembershipStatus getMembershipStatus() {
-        return this.membershipStatus;
     }
 
     /**
@@ -93,13 +121,15 @@ public abstract class Member {
         return this.phoneNumber;
     }
 
-    public PaymentStatus getPaymentStatus () {
-        return this.paymentStatus;
-    }
-
     // -----------------------------------------------------------------------------------------------------
     // Set Methods
     // -----------------------------------------------------------------------------------------------------
+    /**
+     * @param memberId  The unique ID of the member.
+     */
+    public void setMemberId(int memberId) {
+        this.memberId = memberId;
+    }
 
     /**
      * Updates the full name of the member.
@@ -117,6 +147,41 @@ public abstract class Member {
      */
     public void setEmail(String email) {
         this.email = email;
+    }
+    /**
+     * Updates the street of the member.
+     *
+     * @param city The new address of the member
+     */
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+
+    /**
+     * Updates the street of the member.
+     *
+     * @param street The new address of the member
+     */
+    public void setStreet(String street) {
+        this.street = street;
+    }
+    /**
+     * Updates the street of the member.
+     *
+     * @param region The new address of the member
+     */
+    public void setRegion(String region) {
+        this.region = region;
+    }
+
+    /**
+     * Updates the age of the member.
+     *
+     * @param zipcode The new age of the member.
+     */
+    public void setZipcode(int zipcode) {
+        this.zipcode = zipcode;
     }
 
     /**
@@ -144,10 +209,6 @@ public abstract class Member {
      */
     public void setPhoneNumber(int phoneNumber) {
         this.phoneNumber = phoneNumber;
-    }
-
-    public void setPaymentStatus (PaymentStatus paymentStatus) {
-        this.paymentStatus = paymentStatus;
     }
 
     // -----------------------------------------------------------------------------------------------------

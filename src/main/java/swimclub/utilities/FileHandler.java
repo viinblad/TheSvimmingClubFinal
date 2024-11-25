@@ -101,8 +101,10 @@ public class FileHandler {
         String membershipDescription = member.getMembershipType().getLevel() + " " +
                 member.getMembershipType().getCategory() + " Swimmer";
 
+        // Include city, street, region, and zipcode in the member data
         return member.getMemberId() + ";" + member.getName() + ";" + member.getEmail() + ";" +
-                member.getAge() + ";" + member.getPhoneNumber() + ";" + membershipDescription;
+                member.getCity() + ";" + member.getStreet() + ";" + member.getRegion() + ";" +
+                member.getZipcode() + ";" + member.getAge() + ";" + member.getPhoneNumber() + ";" + membershipDescription;
     }
 
     /**
@@ -113,38 +115,47 @@ public class FileHandler {
      */
     private Member parseMember(String line) {
         String[] parts = line.split(";");
-        if (parts.length < 6) {
+
+        // Ensure that all required fields are present in the line
+        if (parts.length < 10) {
             System.err.println("Skipping invalid member data (not enough fields): " + line);
-            return null;
+            return null; // Skip invalid member data (missing fields)
         }
 
         // Parse fields
         int id = parseIntOrDefault(parts[0]);  // Member ID
         String name = parts[1];
         String email = parts[2];
-        int age = parseIntOrDefault(parts[3]);  // Age
-        int phoneNumber = parseIntOrDefault(parts[4]);  // Phone number
-        String membershipDescription = parts[5];
+        String city = parts[3];  // New field
+        String street = parts[4];  // New field
+        String region = parts[5];  // New field
+        int zipcode = parseIntOrDefault(parts[6]);  // New field
+        int age = parseIntOrDefault(parts[7]);  // Age
+        int phoneNumber = parseIntOrDefault(parts[8]);  // Phone number
+        String membershipDescription = parts[9];  // Membership type
 
-        // Parse the membership type
+        // Parse the membership type (e.g., "Junior Competitive")
         String[] membershipParts = membershipDescription.split(" ");
         if (membershipParts.length != 3) {
             System.err.println("Invalid membership description format: " + membershipDescription);
             return null;
         }
 
+        // Parse membership category and level
         MembershipCategory category = MembershipCategory.valueOf(membershipParts[1].toUpperCase()); // Competitive/Exercise
         MembershipLevel level = MembershipLevel.valueOf(membershipParts[0].toUpperCase()); // Junior/Senior
 
+        // Create the membership type object
         MembershipType membershipType = new MembershipType(category, level);
 
-        // Create the correct subclass based on level
+        // Create the correct subclass based on membership level
         if (level == MembershipLevel.JUNIOR) {
-            return new JuniorMember(String.valueOf(id), name, email, membershipType, age, phoneNumber);
+            return new JuniorMember(String.valueOf(id), name, email, city, street, region, zipcode, membershipType, age, phoneNumber);
         } else {
-            return new SeniorMember(String.valueOf(id), name, email, membershipType, age, phoneNumber);
+            return new SeniorMember(String.valueOf(id), name, email, city, street, region, zipcode, membershipType, age, phoneNumber);
         }
     }
+
 
     /**
      * Helper method to parse integers and handle empty or invalid input.

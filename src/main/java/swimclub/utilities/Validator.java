@@ -75,11 +75,15 @@ public class Validator {
      * @param age            The age of the member.
      * @param membershipType The membership type of the member.
      * @param email          The email address of the member.
+     * @param city           The city of the member
+     * @param street         The street of the member
+     * @param region         The region of the member
+     * @param zipcode        The zip code of the member
      * @param phoneNumber    The phone number of the member.
      * @throws IllegalArgumentException if any validation fails.
      */
     public static void validateMemberData(String name, int age, String membershipType,
-                                          String email, int phoneNumber) throws IllegalArgumentException {
+                                          String email, String city, String street, String region, int zipcode, int phoneNumber) throws IllegalArgumentException {
         if (!isValidName(name)) {
             throw new IllegalArgumentException("Invalid name: Name cannot be null or empty.");
         }
