@@ -117,4 +117,8 @@ public class MemberRepository {
     public List<Member> findAll() {
         return members;
     }
+
+    public List<Member> getMembers () {
+        return this.members;
+    }
 }
