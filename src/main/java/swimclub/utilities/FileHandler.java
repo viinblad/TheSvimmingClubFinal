@@ -29,13 +29,7 @@ public class FileHandler {
     public void saveMembers(List<Member> members) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
             for (Member member : members) {
-                // Ensure that we format the membership type correctly
-                String membershipDescription = member.getMembershipType().getLevel() + " " +
-                        member.getMembershipType().getCategory() + " Swimmer";
-
-                // Write the member details in the correct format
-                writer.write(member.getMemberId() + ";" + member.getName() + ";" + member.getEmail() + ";" +
-                        member.getAge() + ";" + member.getPhoneNumber() + ";" + membershipDescription);
+                writer.write(formatMember(member)); // Format and save each member
                 writer.newLine();
             }
         } catch (IOException e) {
@@ -53,11 +47,11 @@ public class FileHandler {
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                Member member = parseMember(line);
-                if (member != null) {
-
-                    // System.out.println("Loaded member: " + member.getName() + " with level: " + member.getMembershipType().getLevel());
-                    members.add(member);
+                if (!line.trim().isEmpty()) { // Skip empty lines
+                    Member member = parseMember(line);
+                    if (member != null) {
+                        members.add(member);
+                    }
                 }
             }
         } catch (IOException e) {
@@ -66,6 +60,32 @@ public class FileHandler {
         return members;
     }
 
+    /**
+     * Deletes a member from the file based on provided memberID.
+     *
+     * @param memberToDelete The member to delete.
+     * @return true if deletion was successful, false otherwise.
+     */
+    public boolean deleteMember(Member memberToDelete) {
+        boolean memberDeleted = false;
+        List<Member> members = loadMembers(); // Load all members from file
+
+        List<Member> updatedMembers = new ArrayList<>();
+        int id = memberToDelete.getMemberId(); // Get the ID for the member to delete
+
+        for (Member member : members) {
+            if (member.getMemberId() == id) {
+                memberDeleted = true; // Mark the member as deleted
+            } else {
+                updatedMembers.add(member); // Keep all other members
+            }
+        }
+
+        if (memberDeleted) {
+            saveMembers(updatedMembers); // Save the updated list without the deleted member
+        }
+        return memberDeleted;
+    }
 
     /**
      * Converts a Member object into a string format for saving to the file.
@@ -74,9 +94,13 @@ public class FileHandler {
      * @return A string representation of the Member object.
      */
     private String formatMember(Member member) {
+        String membershipDescription = member.getMembershipType().getLevel() + " " +
+                member.getMembershipType().getCategory() + " Swimmer";
+
         return member.getMemberId() + ";" + member.getName() + ";" + member.getEmail() + ";" +
-                member.getAge() + ";" + member.getPhoneNumber() + ";" +
-                member.getMembershipDescription();
+                member.getCity() + ";" + member.getStreet() + ";" + member.getRegion() + ";" +
+                member.getZipcode() + ";" + member.getAge() + ";" + member.getPhoneNumber() + ";" +
+                membershipDescription + ";" + member.getMembershipStatus() + ";" + member.getPaymentStatus();
     }
 
     /**
@@ -88,39 +112,43 @@ public class FileHandler {
     private Member parseMember(String line) {
         String[] parts = line.split(";");
 
-        if (parts.length < 6) {
+        if (parts.length < 12) { // Check for all fields, including new ones
             System.err.println("Skipping invalid member data (not enough fields): " + line);
-            return null; // Skip invalid member data (missing fields)
+            return null; // Skip invalid member data
         }
 
         // Parse fields
-        int id = parseIntOrDefault(parts[0], -1);  // Parse member ID
+        int id = parseIntOrDefault(parts[0]);
         String name = parts[1];
         String email = parts[2];
-        int age = parseIntOrDefault(parts[3], -1);  // Parse age
-        int phoneNumber = parseIntOrDefault(parts[4], -1);  // Parse phone number
-        String membershipDescription = parts[5]; // This is the "level category Swimmer" part
+        String city = parts[3];
+        String street = parts[4];
+        String region = parts[5];
+        int zipcode = parseIntOrDefault(parts[6]);
+        int age = parseIntOrDefault(parts[7]);
+        int phoneNumber = parseIntOrDefault(parts[8]);
+        String membershipDescription = parts[9];
+        MembershipStatus membershipStatus = MembershipStatus.valueOf(parts[10].toUpperCase());
+        PaymentStatus paymentStatus = PaymentStatus.valueOf(parts[11].toUpperCase());
 
-        // Handle membership type parsing
+        // Parse the membership type
         String[] membershipParts = membershipDescription.split(" ");
         if (membershipParts.length != 3) {
-            System.err.println("Invalid membership type format: " + membershipDescription);
+            System.err.println("Invalid membership description format: " + membershipDescription);
             return null;
         }
 
-        MembershipCategory category = MembershipCategory.valueOf(membershipParts[1].toUpperCase()); // Competitive or Exercise
-
-        // Dynamically determine membership level based on age (Junior or Senior)
-        MembershipLevel level = (age > 18) ? MembershipLevel.SENIOR : MembershipLevel.JUNIOR;
-
-        // Create the MembershipType using the dynamically determined level
+        MembershipCategory category = MembershipCategory.valueOf(membershipParts[1].toUpperCase());
+        MembershipLevel level = MembershipLevel.valueOf(membershipParts[0].toUpperCase());
         MembershipType membershipType = new MembershipType(category, level);
 
-        // Instantiate the correct subclass based on membership level
+        // Create the correct subclass based on membership level
         if (level == MembershipLevel.JUNIOR) {
-            return new JuniorMember(String.valueOf(id), name, email, membershipType, age, phoneNumber);
+            return new JuniorMember(String.valueOf(id), name, email, city, street, region, zipcode,
+                    membershipType, membershipStatus, paymentStatus, age, phoneNumber);
         } else {
-            return new SeniorMember(String.valueOf(id), name, email, membershipType, age, phoneNumber);
+            return new SeniorMember(String.valueOf(id), name, email, city, street, region, zipcode,
+                    membershipType, membershipStatus, paymentStatus, age, phoneNumber);
         }
     }
 
@@ -128,46 +156,18 @@ public class FileHandler {
      * Helper method to parse integers and handle empty or invalid input.
      * Returns a default value if the input is empty or invalid.
      *
-     * @param value        The string value to parse.
-     * @param defaultValue The default value to return if parsing fails.
+     * @param value The string value to parse.
      * @return The parsed integer, or the default value if parsing fails.
      */
-    private int parseIntOrDefault(String value, int defaultValue) {
+    private int parseIntOrDefault(String value) {
         if (value == null || value.trim().isEmpty()) {
-            return defaultValue;  // Return default value if the value is empty or null
+            return -1;
         }
         try {
             return Integer.parseInt(value);
         } catch (NumberFormatException e) {
             System.err.println("Error parsing integer value: " + value);
-            return defaultValue;  // Return default value if parsing fails
-        }
-    }
-
-    /**
-     * Helper method to parse the membership type and handle errors gracefully.
-     *
-     * @param membershipDescription The membership description (e.g., "Junior Competitive").
-     * @return A valid MembershipType object, or null if invalid.
-     */
-    private MembershipType parseMembershipType(String membershipDescription) {
-        try {
-            String[] membershipParts = membershipDescription.split(" ");
-            if (membershipParts.length != 2) {
-                System.err.println("Invalid membership description format: " + membershipDescription);
-                return null;  // Invalid format (must be "Level Category")
-            }
-
-            String level = membershipParts[0];  // "Junior" or "Senior"
-            String category = membershipParts[1]; // "Competitive" or "Exercise"
-
-            // Create MembershipType
-            MembershipLevel membershipLevel = MembershipLevel.valueOf(level.toUpperCase());
-            MembershipCategory membershipCategory = MembershipCategory.valueOf(category.toUpperCase());
-            return new MembershipType(membershipCategory, membershipLevel);
-        } catch (IllegalArgumentException | ArrayIndexOutOfBoundsException e) {
-            System.err.println("Error parsing membership type: " + membershipDescription);
-            return null;  // Return null if the membership type is invalid
+            return -1;
         }
     }
 }
