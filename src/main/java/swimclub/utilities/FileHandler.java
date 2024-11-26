@@ -29,8 +29,7 @@ public class FileHandler {
     public void saveMembers(List<Member> members) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
             for (Member member : members) {
-                // Use formatMember to ensure consistent formatting
-                writer.write(formatMember(member));
+                writer.write(formatMember(member)); // Format and save each member
                 writer.newLine();
             }
         } catch (IOException e) {
@@ -64,30 +63,28 @@ public class FileHandler {
     /**
      * Deletes a member from the file based on provided memberID.
      *
-     * @param members
+     * @param memberToDelete The member to delete.
+     * @return true if deletion was successful, false otherwise.
      */
     public boolean deleteMember(Member memberToDelete) {
         boolean memberDeleted = false;
         List<Member> members = loadMembers(); // Load all members from file
 
         List<Member> updatedMembers = new ArrayList<>();
-        int id = memberToDelete.getMemberId(); // Get det id for the member to delete
+        int id = memberToDelete.getMemberId(); // Get the ID for the member to delete
 
-        //Sorting through all the members
         for (Member member : members) {
-            if (member.getMemberId() == id) { // Check if the current member matches the ID
+            if (member.getMemberId() == id) {
                 memberDeleted = true; // Mark the member as deleted
             } else {
-                updatedMembers.add(member); // add the remaining members to the updated list
+                updatedMembers.add(member); // Keep all other members
             }
         }
-        if (memberDeleted){
-            saveMembers(updatedMembers); //Save the updated list without the deleted member
-            return true; // return true indicating the deletion was succesful
-        } else {
-            return false; // if no member was deleted, return false
-        }
 
+        if (memberDeleted) {
+            saveMembers(updatedMembers); // Save the updated list without the deleted member
+        }
+        return memberDeleted;
     }
 
     /**
@@ -97,14 +94,13 @@ public class FileHandler {
      * @return A string representation of the Member object.
      */
     private String formatMember(Member member) {
-        // Format the membership description
         String membershipDescription = member.getMembershipType().getLevel() + " " +
                 member.getMembershipType().getCategory() + " Swimmer";
 
-        // Include city, street, region, and zipcode in the member data
         return member.getMemberId() + ";" + member.getName() + ";" + member.getEmail() + ";" +
                 member.getCity() + ";" + member.getStreet() + ";" + member.getRegion() + ";" +
-                member.getZipcode() + ";" + member.getAge() + ";" + member.getPhoneNumber() + ";" + membershipDescription;
+                member.getZipcode() + ";" + member.getAge() + ";" + member.getPhoneNumber() + ";" +
+                membershipDescription + ";" + member.getMembershipStatus() + ";" + member.getPaymentStatus();
     }
 
     /**
@@ -116,46 +112,45 @@ public class FileHandler {
     private Member parseMember(String line) {
         String[] parts = line.split(";");
 
-        // Ensure that all required fields are present in the line
-        if (parts.length < 10) {
+        if (parts.length < 12) { // Check for all fields, including new ones
             System.err.println("Skipping invalid member data (not enough fields): " + line);
-            return null; // Skip invalid member data (missing fields)
+            return null; // Skip invalid member data
         }
 
         // Parse fields
-        int id = parseIntOrDefault(parts[0]);  // Member ID
+        int id = parseIntOrDefault(parts[0]);
         String name = parts[1];
         String email = parts[2];
-        String city = parts[3];  // New field
-        String street = parts[4];  // New field
-        String region = parts[5];  // New field
-        int zipcode = parseIntOrDefault(parts[6]);  // New field
-        int age = parseIntOrDefault(parts[7]);  // Age
-        int phoneNumber = parseIntOrDefault(parts[8]);  // Phone number
-        String membershipDescription = parts[9];  // Membership type
+        String city = parts[3];
+        String street = parts[4];
+        String region = parts[5];
+        int zipcode = parseIntOrDefault(parts[6]);
+        int age = parseIntOrDefault(parts[7]);
+        int phoneNumber = parseIntOrDefault(parts[8]);
+        String membershipDescription = parts[9];
+        MembershipStatus membershipStatus = MembershipStatus.valueOf(parts[10].toUpperCase());
+        PaymentStatus paymentStatus = PaymentStatus.valueOf(parts[11].toUpperCase());
 
-        // Parse the membership type (e.g., "Junior Competitive")
+        // Parse the membership type
         String[] membershipParts = membershipDescription.split(" ");
         if (membershipParts.length != 3) {
             System.err.println("Invalid membership description format: " + membershipDescription);
             return null;
         }
 
-        // Parse membership category and level
-        MembershipCategory category = MembershipCategory.valueOf(membershipParts[1].toUpperCase()); // Competitive/Exercise
-        MembershipLevel level = MembershipLevel.valueOf(membershipParts[0].toUpperCase()); // Junior/Senior
-
-        // Create the membership type object
+        MembershipCategory category = MembershipCategory.valueOf(membershipParts[1].toUpperCase());
+        MembershipLevel level = MembershipLevel.valueOf(membershipParts[0].toUpperCase());
         MembershipType membershipType = new MembershipType(category, level);
 
         // Create the correct subclass based on membership level
         if (level == MembershipLevel.JUNIOR) {
-            return new JuniorMember(String.valueOf(id), name, email, city, street, region, zipcode, membershipType, age, phoneNumber);
+            return new JuniorMember(String.valueOf(id), name, email, city, street, region, zipcode,
+                    membershipType, membershipStatus, paymentStatus, age, phoneNumber);
         } else {
-            return new SeniorMember(String.valueOf(id), name, email, city, street, region, zipcode, membershipType, age, phoneNumber);
+            return new SeniorMember(String.valueOf(id), name, email, city, street, region, zipcode,
+                    membershipType, membershipStatus, paymentStatus, age, phoneNumber);
         }
     }
-
 
     /**
      * Helper method to parse integers and handle empty or invalid input.

@@ -2,6 +2,8 @@ package swimclub.services;
 
 import swimclub.models.Member;
 import swimclub.models.MembershipLevel;
+import swimclub.models.Payment;
+import swimclub.models.PaymentStatus;
 import swimclub.repositories.MemberRepository;
 import swimclub.utilities.Validator;
 
@@ -32,9 +34,11 @@ public class MemberService {
 
         // Validate member data before saving using the Validator class
         try {
+            // Validate all member data including MembershipStatus and PaymentStatus
             Validator.validateMemberData(member.getName(), member.getAge(),
                     member.getMembershipType().toString(), member.getEmail(), member.getCity(), member.getStreet(),
-                    member.getRegion(),member.getZipcode(),member.getPhoneNumber());
+                    member.getRegion(), member.getZipcode(), member.getPhoneNumber(),
+                    member.getMembershipStatus(), member.getPaymentStatus());
         } catch (IllegalArgumentException e) {
             System.out.println("Error registering member: " + e.getMessage());
             return; // Don't proceed if validation fails
@@ -58,9 +62,11 @@ public class MemberService {
     public void updateMember(Member updatedMember) {
         // Validate updated member data before updating using the Validator class
         try {
+            // Validate all member data including MembershipStatus and PaymentStatus
             Validator.validateMemberData(updatedMember.getName(), updatedMember.getAge(),
-                    updatedMember.getMembershipType().toString(), updatedMember.getEmail(), updatedMember.getCity(), updatedMember.getStreet(),
-                    updatedMember.getRegion(),updatedMember.getZipcode(),updatedMember.getPhoneNumber());
+                    updatedMember.getMembershipType().toString(), updatedMember.getEmail(), updatedMember.getCity(),
+                    updatedMember.getStreet(), updatedMember.getRegion(), updatedMember.getZipcode(),
+                    updatedMember.getPhoneNumber(), updatedMember.getMembershipStatus(), updatedMember.getPaymentStatus());
         } catch (IllegalArgumentException e) {
             // Handle the validation exception and log the error
             System.out.println("Error updating member: " + e.getMessage());
@@ -75,15 +81,15 @@ public class MemberService {
     }
 
     public void deleteMember(int memberId) {
-    Member member = repository.findById(memberId);
+        Member member = repository.findById(memberId);
 
-    if (member == null){
-        //System.out.println("Member with ID number " + memberId + " not found.");
-        return;
-    }
-    repository.delete(member);
-
-        //System.out.println("Member with ID number " + memberId + " has been succesfully deleted.");
+        if (member == null) {
+            // Handle member not found
+            System.out.println("Member not found.");
+            return;
+        }
+        repository.delete(member);
+        System.out.println("Member deleted successfully.");
     }
 
     /**
@@ -93,7 +99,6 @@ public class MemberService {
      * @param member The member whose membership level will be determined based on age.
      */
     private void setMembershipLevelBasedOnAge(Member member) {
-        // Debug log to check if logic is being triggered
         System.out.println("Setting membership level based on age: " + member.getAge());
 
         if (member.getAge() > 18) {
@@ -102,6 +107,7 @@ public class MemberService {
             member.getMembershipType().setLevel(MembershipLevel.JUNIOR);
         }
     }
+
     /**
      * Searches for members by ID, name, or phone number.
      *
@@ -109,8 +115,45 @@ public class MemberService {
      * @return A list of members matching the query.
      */
     public List<Member> searchMembers(String query) {
-        return repository.search(query); // Delegate to repository
+        return repository.search(query); // Delegate to repository for searching members
+    }
+
+    /**
+     * Registers a payment for a specific member.
+     *
+     * @param memberId The member ID to register the payment for.
+     * @param paymentStatus The status of the payment (e.g., COMPLETE, PENDING).
+     * @param amount The amount of the payment.
+     */
+    public void registerPayment(int memberId, PaymentStatus paymentStatus, double amount) {
+        Member member = repository.findById(memberId);
+        if (member == null) {
+            System.out.println("Member not found with ID: " + memberId);
+            return;
+        }
+
+        // Assuming that you have a PaymentRepository to save the payment (not implemented here)
+        Payment newPayment = new Payment(0, paymentStatus, member, java.time.LocalDate.now(), amount); // Set the payment with current date
+        // PaymentRepository.save(newPayment); // Save the payment in the repository
+        System.out.println("Payment registered for member ID: " + memberId);
+    }
+
+    /**
+     * Views all payments made by a specific member.
+     *
+     * @param memberId The ID of the member whose payments are to be retrieved.
+     */
+    public void viewPaymentsForMember(int memberId) {
+        Member member = repository.findById(memberId);
+        if (member == null) {
+            System.out.println("Member not found with ID: " + memberId);
+            return;
+        }
+
+        // Assuming that you have a PaymentRepository to fetch payments (not implemented here)
+        // List<Payment> payments = PaymentRepository.findPaymentsByMemberId(memberId); // Fetch payments from the repository
+
+        System.out.println("Displaying payments for member ID: " + memberId);
+        // payments.forEach(payment -> System.out.println(payment));
     }
 }
-
-

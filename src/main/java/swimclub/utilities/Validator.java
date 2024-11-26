@@ -1,9 +1,10 @@
 package swimclub.utilities;
 
-import swimclub.models.MembershipCategory;
-import swimclub.models.MembershipLevel;
-import swimclub.models.MembershipType;
+import swimclub.models.*;
 
+/**
+ * Utility class for validating data in the swim club application.
+ */
 public class Validator {
 
     /**
@@ -36,12 +37,35 @@ public class Validator {
      * @return true if the membership type is valid, false otherwise.
      */
     public static boolean isValidMembershipType(MembershipType membershipType) {
-        // Ensure both category and level are valid
         return membershipType != null &&
                 (membershipType.getCategory() == MembershipCategory.COMPETITIVE ||
                         membershipType.getCategory() == MembershipCategory.EXERCISE) &&
                 (membershipType.getLevel() == MembershipLevel.JUNIOR ||
                         membershipType.getLevel() == MembershipLevel.SENIOR);
+    }
+
+    /**
+     * Validates the membership status of the member.
+     * The status must be either ACTIVE or PASSIVE.
+     *
+     * @param membershipStatus The membership status to validate.
+     * @return true if the membership status is valid, false otherwise.
+     */
+    public static boolean isValidMembershipStatus(MembershipStatus membershipStatus) {
+        return membershipStatus == MembershipStatus.ACTIVE || membershipStatus == MembershipStatus.PASSIVE;
+    }
+
+    /**
+     * Validates the payment status of the member.
+     * The status must be one of the predefined PaymentStatus values.
+     *
+     * @param paymentStatus The payment status to validate.
+     * @return true if the payment status is valid, false otherwise.
+     */
+    public static boolean isValidPaymentStatus(PaymentStatus paymentStatus) {
+        return paymentStatus == PaymentStatus.COMPLETE ||
+                paymentStatus == PaymentStatus.PENDING ||
+                paymentStatus == PaymentStatus.FAILED;
     }
 
     /**
@@ -71,26 +95,28 @@ public class Validator {
      * Validates the data of a member.
      * This method checks the validity of all the member's attributes and throws an exception if any are invalid.
      *
-     * @param name           The name of the member.
-     * @param age            The age of the member.
-     * @param membershipType The membership type of the member.
-     * @param email          The email address of the member.
-     * @param city           The city of the member
-     * @param street         The street of the member
-     * @param region         The region of the member
-     * @param zipcode        The zip code of the member
-     * @param phoneNumber    The phone number of the member.
+     * @param name             The name of the member.
+     * @param age              The age of the member.
+     * @param membershipType   The membership type of the member.
+     * @param email            The email address of the member.
+     * @param city             The city of the member.
+     * @param street           The street of the member.
+     * @param region           The region of the member.
+     * @param zipcode          The zip code of the member.
+     * @param phoneNumber      The phone number of the member.
+     * @param membershipStatus The membership status of the member.
+     * @param paymentStatus    The payment status of the member.
      * @throws IllegalArgumentException if any validation fails.
      */
     public static void validateMemberData(String name, int age, String membershipType,
-                                          String email, String city, String street, String region, int zipcode, int phoneNumber) throws IllegalArgumentException {
+                                          String email, String city, String street, String region, int zipcode, int phoneNumber,
+                                          MembershipStatus membershipStatus, PaymentStatus paymentStatus) throws IllegalArgumentException {
         if (!isValidName(name)) {
             throw new IllegalArgumentException("Invalid name: Name cannot be null or empty.");
         }
         if (!isValidAge(age)) {
             throw new IllegalArgumentException("Invalid age: Age must be between 0 and 120.");
         }
-        // Convert the membershipType string to a MembershipType object
         MembershipType type = MembershipType.fromString(membershipType);
         if (!isValidMembershipType(type)) {
             throw new IllegalArgumentException("Invalid membership type: Must be 'junior' or 'senior' and category must be 'competitive' or 'exercise'.");
@@ -100,6 +126,12 @@ public class Validator {
         }
         if (!isValidPhoneNumber(phoneNumber)) {
             throw new IllegalArgumentException("Invalid phone number: Phone number must be 8 digits.");
+        }
+        if (!isValidMembershipStatus(membershipStatus)) {
+            throw new IllegalArgumentException("Invalid membership status: Must be 'ACTIVE' or 'PASSIVE'.");
+        }
+        if (!isValidPaymentStatus(paymentStatus)) {
+            throw new IllegalArgumentException("Invalid payment status: Must be 'COMPLETE', 'PENDING', or 'FAILED'.");
         }
     }
 }

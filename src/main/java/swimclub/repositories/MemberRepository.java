@@ -7,7 +7,6 @@ import swimclub.utilities.FileHandler;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class MemberRepository {
     private List<Member> members;
