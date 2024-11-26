@@ -1,5 +1,6 @@
 package swimclub;
 
+import TreasurerDashboard.TreasurerDashboard;
 import swimclub.controllers.MemberController;
 import swimclub.controllers.PaymentController;
 import swimclub.repositories.MemberRepository;
@@ -8,6 +9,7 @@ import swimclub.services.MemberService;
 import swimclub.services.PaymentService;
 import swimclub.ui.UserInterface;
 import swimclub.utilities.FileHandler;
+
 
 public class Main {
     public static void main(String[] args) {
@@ -27,8 +29,13 @@ public class Main {
         // Instantiate the PaymentController
         PaymentController paymentController = new PaymentController(paymentService, memberRepository);
 
-        // Instantiate the UserInterface and pass in both the MemberController and PaymentController
-        UserInterface userInterface = new UserInterface(memberController, paymentController); // Pass paymentController to UI
+        // Instantiate the TreasurerDashboard
+        TreasurerDashboard treasurerDashboard = new TreasurerDashboard(paymentController);
+
+        // Instantiate the UserInterface and pass in the MemberController, PaymentController and TreasurerDashboard
+        UserInterface userInterface = new UserInterface(memberController, paymentController, treasurerDashboard); // Pass paymentController to UI
+
+
 
         // Start the User Interface
         userInterface.start(); // This will now handle both member and payment actions
