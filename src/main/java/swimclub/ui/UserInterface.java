@@ -279,7 +279,6 @@ public class UserInterface {
         System.out.println("Enter payment status, Complete or Pending: ");
         String paymentStatus = scanner.nextLine();
 
-        System.out.println("Members filtered by payment status: ");
         treasurerDashboard.filterByPaymentStatus(paymentStatus);
     }
 }

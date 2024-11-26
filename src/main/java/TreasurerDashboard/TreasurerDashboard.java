@@ -28,7 +28,7 @@ public class TreasurerDashboard {
         });
     }
     public void filterByPaymentStatus(String paymentStatus) {
-        System.out.println("Filtered by Payment Status: " + paymentStatus);
+        System.out.println("Members filtered by payment status: " + paymentStatus);
         if(paymentStatus.equalsIgnoreCase("Complete")) {
             paymentController.getMembersPaidList().forEach(member ->
                 System.out.println("Member ID: " + member.getMemberId() +
