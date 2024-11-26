@@ -1,5 +1,6 @@
 package swimclub.ui;
 
+import TreasurerDashboard.TreasurerDashboard;
 import swimclub.controllers.MemberController;
 import swimclub.controllers.PaymentController;
 import swimclub.models.Member;
@@ -16,6 +17,7 @@ import java.util.Scanner;
 public class UserInterface {
     private final MemberController memberController;  // Controller to handle member actions
     private final PaymentController paymentController;  // Controller to handle payment actions
+    private final TreasurerDashboard treasurerDashboard;
     private final Scanner scanner; // Scanner to read user input
 
     /**
@@ -24,9 +26,10 @@ public class UserInterface {
      * @param memberController The controller that handles the logic for member actions.
      * @param paymentController The controller that handles the logic for payment actions.
      */
-    public UserInterface(MemberController memberController, PaymentController paymentController) {
+    public UserInterface(MemberController memberController, PaymentController paymentController, TreasurerDashboard treasurerDashboard) {
         this.memberController = memberController;
         this.paymentController = paymentController;  // Initialize PaymentController
+        this.treasurerDashboard = treasurerDashboard;
         this.scanner = new Scanner(System.in);
     }
 
@@ -39,7 +42,7 @@ public class UserInterface {
             printMenu();  // Display the main menu
             option = getUserInput();  // Get user's input option
             handleOption(option);  // Handle the option selected by the user
-        } while (option != 7); // Exit when the user selects option 7
+        } while (option != 8); // Exit when the user selects option 8
     }
 
     /**
@@ -53,8 +56,9 @@ public class UserInterface {
         System.out.println("4. View All Members");
         System.out.println("5. Delete Member");
         System.out.println("6. Payment Management");  // New menu option for payment handling
-        System.out.println("7. Exit");
-        System.out.print("Please choose an option (1-7): ");
+        System.out.println("7. Payment Summary");
+        System.out.println("8. Exit");
+        System.out.print("Please choose an option (1-8): ");
     }
 
     /**
@@ -67,7 +71,7 @@ public class UserInterface {
         try {
             option = Integer.parseInt(scanner.nextLine());  // Parse the input as integer
         } catch (NumberFormatException e) {
-            System.out.println("Invalid input. Please enter a number between 1 and 7.");
+            System.out.println("Invalid input. Please enter a number between 1 and 8.");
         }
         return option;
     }
@@ -99,10 +103,13 @@ public class UserInterface {
                 handlePayments();  // Handle payments (new option)
                 break;
             case 7:
+                viewPaymentSummary();
+                break;
+            case 8:
                 System.out.println("Exiting the program. Goodbye!");  // Exit
                 break;
             default:
-                System.out.println("Invalid option. Please choose a number between 1 and 7.");
+                System.out.println("Invalid option. Please choose a number between 1 and 8.");
         }
     }
 
@@ -216,9 +223,10 @@ public class UserInterface {
         System.out.println("\n--- Payment Management ---");
         System.out.println("1. Register Payment");
         System.out.println("2. View Payments for Member");
-        System.out.println("3. Exit to Main Menu");
+        System.out.println("3. Filter Members by Payment Status");
+        System.out.println("4. Exit to Main Menu");
 
-        System.out.print("Please choose an option (1-3): ");
+        System.out.print("Please choose an option (1-4): ");
         int paymentOption = Integer.parseInt(scanner.nextLine());
 
         switch (paymentOption) {
@@ -229,6 +237,9 @@ public class UserInterface {
                 viewPaymentsForMember();  // View payment history for the member
                 break;
             case 3:
+                filterMembersByPaymentStatus();  // Filter members by payment status
+                break;
+            case 4:
                 return;  // Exit to main menu
             default:
                 System.out.println("Invalid option. Please choose a valid number.");
@@ -257,5 +268,18 @@ public class UserInterface {
 
         // Call the PaymentController to view payments for the member
         paymentController.viewPaymentsForMember(memberId);
+    }
+    //
+    private void viewPaymentSummary() {
+        System.out.println("Payment Summary: ");
+        treasurerDashboard.displayTotalExpectedAmount();
+        treasurerDashboard.displayMemberPayment();
+    }
+    private void filterMembersByPaymentStatus() {
+        System.out.println("Enter payment status, Complete or Pending: ");
+        String paymentStatus = scanner.nextLine();
+
+        System.out.println("Members filtered by payment status: ");
+        treasurerDashboard.filterByPaymentStatus(paymentStatus);
     }
 }

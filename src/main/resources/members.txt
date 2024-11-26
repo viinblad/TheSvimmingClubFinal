@@ -1,1 +1,3 @@
 1;esben viinblad jensen;esbenviinblad@gmail.com,;valby;gåsebæksvej 4;cph;2500;32;21125899;SENIOR COMPETITIVE Swimmer;ACTIVE;PENDING
+2;m;sdfkl@hotmail.com;qwe;qwe;qwe;2400;20;29165680;SENIOR EXERCISE Swimmer;ACTIVE;PENDING
+3;martin;drfgkl@hotmail.com;NV;pro;KBHNV;2400;24;89898989;SENIOR EXERCISE Swimmer;ACTIVE;PENDING
