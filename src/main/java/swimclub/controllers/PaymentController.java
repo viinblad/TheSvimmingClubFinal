@@ -92,7 +92,7 @@ public class PaymentController {
      */
     public void registerPayment(int memberId, double amount) {
         // Call the PaymentService to register the payment
-        paymentService.registerPayment(memberId, amount); // Register payment using PaymentService
+        paymentService.registerPayment(memberId, amount, memberRepository); // Register payment using PaymentService
     }
 
     /**

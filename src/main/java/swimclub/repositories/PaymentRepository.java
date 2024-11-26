@@ -32,6 +32,7 @@ public class PaymentRepository {
      * @return The payment if found, or null otherwise.
      */
     public Payment findById(int paymentId) {
+
         return payments.stream()
                 .filter(p -> p.getPaymentId() == paymentId)
                 .findFirst()

@@ -4,6 +4,7 @@ import swimclub.models.Member;
 import swimclub.models.MembershipStatus;
 import swimclub.models.Payment;
 import swimclub.models.PaymentStatus;
+import swimclub.repositories.MemberRepository;
 import swimclub.repositories.PaymentRepository;
 
 import java.time.LocalDate;
@@ -102,9 +103,9 @@ public class PaymentService {
     }
 
     // Method to register a payment for a member
-    public void registerPayment(int memberId, double amount) {
+    public void registerPayment(int memberId, double amount, MemberRepository memberRepository) {
         // Find the member by ID
-        Member member = paymentRepository.findById(memberId).getMember();
+        Member member = memberRepository.findById(memberId);
         if (member == null) {
             System.out.println("Member not found with ID: " + memberId);
             return;
