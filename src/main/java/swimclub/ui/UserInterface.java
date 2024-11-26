@@ -1,26 +1,32 @@
 package swimclub.ui;
 
 import swimclub.controllers.MemberController;
+import swimclub.controllers.PaymentController;
 import swimclub.models.Member;
+import swimclub.models.MembershipStatus;
+import swimclub.models.PaymentStatus;
 
 import java.util.List;
 import java.util.Scanner;
 
 /**
  * UserInterface handles the interaction between the user and the program.
- * It allows the user to register, update, and view members.
+ * It allows the user to register, update, and view members, as well as manage payments.
  */
 public class UserInterface {
-    private final MemberController memberController; // Controller to handle member actions
+    private final MemberController memberController;  // Controller to handle member actions
+    private final PaymentController paymentController;  // Controller to handle payment actions
     private final Scanner scanner; // Scanner to read user input
 
     /**
-     * Constructor to initialize the UserInterface with the member controller.
+     * Constructor to initialize the UserInterface with the member controller and payment controller.
      *
      * @param memberController The controller that handles the logic for member actions.
+     * @param paymentController The controller that handles the logic for payment actions.
      */
-    public UserInterface(MemberController memberController) {
+    public UserInterface(MemberController memberController, PaymentController paymentController) {
         this.memberController = memberController;
+        this.paymentController = paymentController;  // Initialize PaymentController
         this.scanner = new Scanner(System.in);
     }
 
@@ -30,10 +36,10 @@ public class UserInterface {
     public void start() {
         int option;
         do {
-            printMenu();
-            option = getUserInput();
-            handleOption(option);
-        } while (option != 5); // Exit when the user selects option 4
+            printMenu();  // Display the main menu
+            option = getUserInput();  // Get user's input option
+            handleOption(option);  // Handle the option selected by the user
+        } while (option != 7); // Exit when the user selects option 7
     }
 
     /**
@@ -46,8 +52,9 @@ public class UserInterface {
         System.out.println("3. Update Member");
         System.out.println("4. View All Members");
         System.out.println("5. Delete Member");
-        System.out.println("6. Exit");
-        System.out.print("Please choose an option (1-6): ");
+        System.out.println("6. Payment Management");  // New menu option for payment handling
+        System.out.println("7. Exit");
+        System.out.print("Please choose an option (1-7): ");
     }
 
     /**
@@ -58,41 +65,44 @@ public class UserInterface {
     private int getUserInput() {
         int option = -1;
         try {
-            option = Integer.parseInt(scanner.nextLine());
+            option = Integer.parseInt(scanner.nextLine());  // Parse the input as integer
         } catch (NumberFormatException e) {
-            System.out.println("Invalid input. Please enter a number between 1 and 4.");
+            System.out.println("Invalid input. Please enter a number between 1 and 7.");
         }
         return option;
     }
 
     /**
      * Handles the user's selected menu option.
-     * Based on the option, it either registers, updates, or views members.
+     * Based on the option, it either registers, updates, views members or handles payments.
      *
-     * @param option The selected option from the menu (1-4).
+     * @param option The selected option from the menu (1-7).
      */
     private void handleOption(int option) {
         switch (option) {
             case 1:
-                registerMember();
+                registerMember();  // Register a new member
                 break;
             case 2:
-                searchMembers();
+                searchMembers();  // Search members
                 break;
             case 3:
-                updateMember();
+                updateMember();  // Update member details
                 break;
             case 4:
-                memberController.viewAllMembers();
+                memberController.viewAllMembers();  // View all members
                 break;
             case 5:
-                deleteMember();
+                deleteMember();  // Delete a member
                 break;
             case 6:
-                System.out.println("Exiting the program. Goodbye!");
+                handlePayments();  // Handle payments (new option)
+                break;
+            case 7:
+                System.out.println("Exiting the program. Goodbye!");  // Exit
                 break;
             default:
-                System.out.println("Invalid option. Please choose a number between 1 and 6.");
+                System.out.println("Invalid option. Please choose a number between 1 and 7.");
         }
     }
 
@@ -102,6 +112,8 @@ public class UserInterface {
     private void registerMember() {
         System.out.print("Enter member name: ");
         String name = scanner.nextLine();
+        System.out.print("Enter age: ");
+        int age = Integer.parseInt(scanner.nextLine());
         System.out.print("Enter member email: ");
         String email = scanner.nextLine();
         System.out.println("Enter city of member");
@@ -114,15 +126,17 @@ public class UserInterface {
         int zipcode = Integer.parseInt(scanner.nextLine());
         System.out.print("Enter membership type (Junior/Senior, Competitive/Exercise): ");
         String membershipType = scanner.nextLine();
-        System.out.print("Enter age: ");
-        int age = Integer.parseInt(scanner.nextLine());
         System.out.print("Enter phone number (8 digits): ");
         int phoneNumber = Integer.parseInt(scanner.nextLine());
 
-        // Calls the controller to register the new member
-        memberController.registerMember(name, email, city, street, region, zipcode, membershipType, age, phoneNumber);
-    }
+        // You might need to define default values for membership status and payment status
+        // As they are part of the member class, let's use ACTIVE for membership status and PENDING for payment status
+        MembershipStatus membershipStatus = MembershipStatus.ACTIVE;  // Assuming the default membership status is ACTIVE
+        PaymentStatus paymentStatus = PaymentStatus.PENDING;  // Default payment status
 
+        // Call the controller to register the new member
+        memberController.registerMember(name, email, city, street, region, zipcode, membershipType, membershipStatus, paymentStatus ,age, phoneNumber);
+    }
 
     /**
      * Updates an existing member's information based on the provided member ID and new details.
@@ -130,6 +144,8 @@ public class UserInterface {
     private void updateMember() {
         System.out.print("Enter member ID to update: ");
         int memberId = Integer.parseInt(scanner.nextLine());
+
+        // Gather all the required updated attributes
         System.out.print("Enter new name: ");
         String name = scanner.nextLine();
         System.out.print("Enter new email: ");
@@ -149,25 +165,32 @@ public class UserInterface {
         System.out.print("Enter new phone number (8 digits): ");
         int phoneNumber = Integer.parseInt(scanner.nextLine());
 
+        // Assuming the membership status is ACTIVE and payment status is PENDING for updates
+        // You can update this logic if you want the user to choose these attributes
+        MembershipStatus membershipStatus = MembershipStatus.ACTIVE;  // Default to ACTIVE
+        PaymentStatus paymentStatus = PaymentStatus.PENDING;  // Default to PENDING
+
         // Call the controller's updateMember method with all new attributes
-        memberController.updateMember(memberId, name, email, age, city, street, region, zipcode, membershipType, phoneNumber);
+        memberController.updateMember(memberId, name, email, age, city, street, region, zipcode, membershipType,  membershipStatus, paymentStatus, phoneNumber);
     }
 
+    /**
+     * Deletes a member by their ID.
+     */
     private void deleteMember() {
-        System.out.println("Enter Members ID:");
+        System.out.println("Enter Member's ID:");
         int memberId = Integer.parseInt(scanner.nextLine());
         boolean success = memberController.deleteMember(memberId);
-        try {
-            if (success) {
-                System.out.println("Member succesfully deleted.");
-            } else {
-                System.out.println("Member not found, please check the ID and try again.");
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid input please enter a valid numeric ID.");
+        if (success) {
+            System.out.println("Member successfully deleted.");
+        } else {
+            System.out.println("Member not found, please check the ID and try again.");
         }
     }
 
+    /**
+     * Searches for members by ID, name, or phone number.
+     */
     private void searchMembers() {
         System.out.print("Enter search query (ID, name, or phone number): ");
         String query = scanner.nextLine();
@@ -184,5 +207,55 @@ public class UserInterface {
                             ", Phone: " + member.getPhoneNumber() +
                             ", Email: " + member.getEmail()));
         }
+    }
+
+    /**
+     * Handles payment-related operations: Registering payments and viewing payments.
+     */
+    private void handlePayments() {
+        System.out.println("\n--- Payment Management ---");
+        System.out.println("1. Register Payment");
+        System.out.println("2. View Payments for Member");
+        System.out.println("3. Exit to Main Menu");
+
+        System.out.print("Please choose an option (1-3): ");
+        int paymentOption = Integer.parseInt(scanner.nextLine());
+
+        switch (paymentOption) {
+            case 1:
+                registerPayment();  // Register a new payment
+                break;
+            case 2:
+                viewPaymentsForMember();  // View payment history for the member
+                break;
+            case 3:
+                return;  // Exit to main menu
+            default:
+                System.out.println("Invalid option. Please choose a valid number.");
+        }
+    }
+
+    /**
+     * Registers a new payment for a member by entering member ID and payment amount.
+     */
+    private void registerPayment() {
+        System.out.print("Enter member ID to register payment: ");
+        int memberId = Integer.parseInt(scanner.nextLine());
+        System.out.print("Enter payment amount: ");
+        double amount = Double.parseDouble(scanner.nextLine());
+
+        // Call the PaymentController to register the payment
+        paymentController.registerPayment(memberId, amount);
+    }
+
+    /**
+     * Displays all payments made by a specific member.
+     */
+    private void viewPaymentsForMember() {
+        System.out.print("Enter member ID to view payments: ");
+        int memberId = Integer.parseInt(scanner.nextLine());
+
+        // Call the PaymentController to view payments for the member
+        paymentController.viewPaymentsForMember(memberId);
     }
 }
