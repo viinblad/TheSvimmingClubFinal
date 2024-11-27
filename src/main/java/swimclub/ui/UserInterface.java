@@ -142,7 +142,12 @@ public class UserInterface {
         PaymentStatus paymentStatus = PaymentStatus.PENDING;  // Default payment status
 
         // Call the controller to register the new member
-        memberController.registerMember(name, email, city, street, region, zipcode, membershipType, membershipStatus, paymentStatus ,age, phoneNumber);
+        Member newMember = memberController.registerMember(name, email, city, street, region, zipcode, membershipType, membershipStatus, paymentStatus ,age, phoneNumber);
+
+        //creates an automatic payment after registering the new member, based on age and membershipstatus.
+        if (newMember != null) {
+            paymentController.registerPayment(newMember.getMemberId(), paymentController.calculateMembershipFeeForMember(newMember.getMemberId()));
+        }
     }
 
     /**

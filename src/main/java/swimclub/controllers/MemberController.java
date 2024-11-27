@@ -4,6 +4,7 @@ import swimclub.models.*;
 import swimclub.repositories.MemberRepository;
 import swimclub.services.MemberService;
 import swimclub.utilities.Validator;
+import swimclub.controllers.PaymentController;
 
 import java.util.List;
 
@@ -32,16 +33,17 @@ public class MemberController {
      * @param age             Age of the member.
      * @param phoneNumber     Phone number of the member.
      */
-    public void registerMember(String name, String email, String city, String street, String region, int zipcode,
+    public Member registerMember(String name, String email, String city, String street, String region, int zipcode,
                                String membershipType, MembershipStatus membershipStatus, PaymentStatus paymentStatus,
                                int age, int phoneNumber) {
+        Member returnMember = null;
         try {
             // Validate member data
             Validator.validateMemberData(name, age, membershipType, email, city, street, region, zipcode, phoneNumber,
                     membershipStatus, paymentStatus);
 
             // Parse the membershipType into a MembershipType object
-            MembershipType type = MembershipType.fromString(membershipType);
+            MembershipType type = MembershipType.fromString(membershipType.toUpperCase());
 
             // Generate the next available member ID
             int memberId = memberRepository.getNextMemberId();
@@ -60,6 +62,9 @@ public class MemberController {
             // Save the validated member using the MemberService
             memberService.registerMember(newMember);
 
+            returnMember = newMember;
+            //
+
             // Reload members after registration to immediately reflect the changes
             memberRepository.reloadMembers();
 
@@ -67,6 +72,7 @@ public class MemberController {
         } catch (IllegalArgumentException e) {
             System.out.println("Error: " + e.getMessage());
         }
+        return returnMember;
     }
 
     /**
