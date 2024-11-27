@@ -25,6 +25,7 @@ public class PaymentController {
         this.memberRepository = memberRepository;
     }
 
+
     /**
      * Calculates the membership fee for a specific member by ID.
      *
