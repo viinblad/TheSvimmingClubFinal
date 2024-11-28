@@ -1,5 +1,8 @@
 package swimclub.models;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Abstract base class representing a member.
  * Contains common attributes and methods for all members in the swim club.
@@ -26,7 +29,7 @@ public abstract class Member {
                   String region, int zipcode, MembershipType membershipType,
                   MembershipStatus membershipStatus,ActivityType activityType, PaymentStatus paymentStatus,
                   int age, int phoneNumber) {
-        this.memberId = Integer.parseInt(memberId); // Parse memberId from String to int
+        this.memberId = Integer.parseInt(memberId);
         this.name = name;
         this.email = email;
         this.city = city;

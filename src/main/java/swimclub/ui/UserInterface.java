@@ -1,6 +1,5 @@
 package swimclub.ui;
 
-import TreasurerDashboard.TreasurerDashboard;
 import swimclub.controllers.MemberController;
 import swimclub.controllers.PaymentController;
 import swimclub.models.Member;

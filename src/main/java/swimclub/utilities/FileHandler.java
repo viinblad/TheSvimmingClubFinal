@@ -1,8 +1,10 @@
 package swimclub.utilities;
 
 import swimclub.models.*;
+import swimclub.repositories.MemberRepository;
 
 import java.io.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,7 +12,7 @@ import java.util.List;
  * FileHandler handles saving and loading Member data to and from a file.
  */
 public class FileHandler {
-    private final String filePath;
+    private String filePath;
 
     /**
      * Constructor for FileHandler.
@@ -71,7 +73,6 @@ public class FileHandler {
      * @return true if deletion was successful, false otherwise.
      */
     public boolean deleteMember(Member memberToDelete) {
-        boolean memberDeleted = false;
         List<Member> members = loadMembers(); // Load all members from file
         boolean memberDeleted = members.removeIf(member -> member.getMemberId() == memberToDelete.getMemberId());
 
@@ -112,58 +113,61 @@ public class FileHandler {
     private Member parseMember(String line) {
         String[] parts = line.split(";");
 
-        if (parts.length < 13) { // Check for all fields, including new ones
-            System.err.println("Skipping invalid member data (not enough fields): " + line);
-            return null; // Skip invalid member data
+        if (parts.length < 13) { // Ensure the expected number of fields
+            System.err.println("Skipping invalid member data: " + line);
+            return null;
         }
 
-        // Parse fields
-        int id = parseIntOrDefault(parts[0]);
-        String name = parts[1];
-        String email = parts[2];
-        String city = parts[3];
-        String street = parts[4];
-        String region = parts[5];
-        int zipcode = parseIntOrDefault(parts[6]);
-        int age = parseIntOrDefault(parts[7]);
-        int phoneNumber = parseIntOrDefault(parts[8]);
-        String membershipDescription = parts[9];
-        MembershipStatus membershipStatus = MembershipStatus.valueOf(parts[10].toUpperCase());
-        String activitytypeDescription = parts[11];
-        PaymentStatus paymentStatus = PaymentStatus.valueOf(parts[12].toUpperCase());
+        try {
+            // Parse basic member details
+            int id = Integer.parseInt(parts[0]);
+            String name = parts[1];
+            String email = parts[2];
+            String city = parts[3];
+            String street = parts[4];
+            String region = parts[5];
+            int zipcode = Integer.parseInt(parts[6]);
+            int age = Integer.parseInt(parts[7]);
+            int phoneNumber = Integer.parseInt(parts[8]);
 
+            // Parse membership type (e.g., "SENIOR COMPETITIVE")
+            String membershipDescription = parts[9];
             String[] membershipParts = membershipDescription.split(" ");
             MembershipType membershipType = new MembershipType(
                     MembershipCategory.valueOf(membershipParts[1].toUpperCase()),
                     MembershipLevel.valueOf(membershipParts[0].toUpperCase())
             );
 
-            Validator.validateMemberData(name, age, membershipType.toString(), email, city, street, region, zipcode, phoneNumber, membershipStatus, paymentStatus);
+            // Parse membership status (e.g., ACTIVE)
+            MembershipStatus membershipStatus = MembershipStatus.valueOf(parts[10].toUpperCase());
 
+            // Parse activity type (e.g., CRAWL)
+            ActivityType activityType = ActivityType.valueOf(parts[11].toUpperCase());
+
+            // Parse payment status (e.g., PENDING)
+            PaymentStatus paymentStatus = PaymentStatus.valueOf(parts[12].toUpperCase());
+
+            // Validate the data
+            Validator.validateMemberData(name, age, membershipDescription, email, city, street, region, zipcode,
+                    phoneNumber, membershipStatus, activityType.toString(), paymentStatus);
+
+            // Create member based on age
             if (membershipType.getLevel() == MembershipLevel.JUNIOR) {
-                return new JuniorMember(String.valueOf(id), name, email, city, street, region, zipcode, membershipType, membershipStatus, paymentStatus, age, phoneNumber);
+                return new JuniorMember(String.valueOf(id), name, email, city, street, region, zipcode, membershipType,
+                        membershipStatus, activityType, paymentStatus, age, phoneNumber);
             } else {
-                return new SeniorMember(String.valueOf(id), name, email, city, street, region, zipcode, membershipType, membershipStatus, paymentStatus, age, phoneNumber);
+                return new SeniorMember(String.valueOf(id), name, email, city, street, region, zipcode, membershipType,
+                        membershipStatus, activityType, paymentStatus, age, phoneNumber);
             }
         } catch (Exception e) {
             System.err.println("Error parsing member: " + line + " - " + e.getMessage());
             return null;
         }
+    }
 
-        MembershipCategory category = MembershipCategory.valueOf(membershipParts[1].toUpperCase());
-        MembershipLevel level = MembershipLevel.valueOf(membershipParts[0].toUpperCase());
-        MembershipType membershipType = new MembershipType(category, level);
 
-        ActivityType activity = ActivityType.valueOf(activitytypeDescription.toUpperCase());
-        ActivityTypeData activityType = new ActivityTypeData(activity);
 
-        // Create the correct subclass based on membership level
-        if (level == MembershipLevel.JUNIOR) {
-            return new JuniorMember(String.valueOf(id), name, email, city, street, region, zipcode,
-                    membershipType, membershipStatus,activityType.toActivityType(), paymentStatus, age, phoneNumber);
-        } else {
-            return new SeniorMember(String.valueOf(id), name, email, city, street, region, zipcode,
-                    membershipType, membershipStatus,activityType.toActivityType(), paymentStatus, age, phoneNumber);
+
     /**
      * Saves all payments to a file.
      *
@@ -185,8 +189,8 @@ public class FileHandler {
     /**
      * Loads payments from a file.
      *
-     * @param filePath          Path to the payment file.
-     * @param memberRepository  Repository to link payments to members.
+     * @param filePath         Path to the payment file.
+     * @param memberRepository Repository to link payments to members.
      * @return List of Payment objects.
      */
     public List<Payment> loadPayments(String filePath, MemberRepository memberRepository) {

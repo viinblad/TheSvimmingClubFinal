@@ -80,15 +80,16 @@ public class MemberService {
         repository.update(updatedMember); // Update the member in the repository
     }
 
-    public boolean deleteMember(int memberId) {
+    public void deleteMember(int memberId) {
         Member member = repository.findById(memberId);
 
         if (member == null) {
             // Handle member not found
-            return false;
+            System.out.println("Member not found.");
+            return;
         }
         repository.delete(member);
-        return true;
+        System.out.println("Member deleted successfully.");
     }
 
     /**
