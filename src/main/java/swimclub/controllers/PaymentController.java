@@ -2,8 +2,8 @@ package swimclub.controllers;
 
 import swimclub.models.Member;
 import swimclub.models.PaymentStatus;
-import swimclub.repositories.MemberRepository;
 import swimclub.services.PaymentService;
+import swimclub.repositories.MemberRepository;
 import swimclub.utilities.FileHandler;
 import swimclub.utilities.Validator;
 
@@ -22,10 +22,10 @@ public class PaymentController {
     /**
      * Constructor to initialize the PaymentController.
      *
-     * @param paymentService   The service handling payment-related logic.
-     * @param memberRepository The repository for accessing member data.
+     * @param paymentService     The service handling payment-related logic.
+     * @param memberRepository   The repository for accessing member data.
      * @param paymentFileHandler The file handler for payments.
-     * @param paymentFilePath Path to the payment file.
+     * @param paymentFilePath    Path to the payment file.
      */
     public PaymentController(PaymentService paymentService, MemberRepository memberRepository,
                              FileHandler paymentFileHandler, String paymentFilePath) {
@@ -79,7 +79,7 @@ public class PaymentController {
         member.setPaymentStatus(PaymentStatus.COMPLETE);
         memberRepository.update(member);  // Save changes to the repository
 
-        //System.out.println("Payment of " + amount + " registered for Member ID: " + memberId);
+        System.out.println("Payment of " + amount + " registered for Member ID: " + memberId);
     }
 
     /**
@@ -134,5 +134,48 @@ public class PaymentController {
         String summary = paymentService.getPaymentSummary(members);  // Get the summary from the service
         System.out.println("\n--- Payment Summary ---");
         System.out.println(summary);  // Display the summary
+    }
+
+    /**
+     * Set a payment reminder for a member.
+     *
+     * @param memberId         The ID of the member.
+     * @param reminderMessage  The reminder message.
+     */
+    public void setPaymentReminder(int memberId, String reminderMessage) {
+        // Pass the reminder logic to the PaymentService for setting reminders
+        paymentService.setPaymentReminder(memberId, reminderMessage);
+        System.out.println("Reminder set for Member ID: " + memberId);
+    }
+
+    /**
+     * View all reminders for payments.
+     */
+    public void viewAllReminders() {
+        List<String> reminders = paymentService.getAllReminders();
+        if (reminders.isEmpty()) {
+            System.out.println("No reminders set.");
+        } else {
+            System.out.println("--- Payment Reminders ---");
+            reminders.forEach(System.out::println);
+        }
+    }
+
+    /**
+     * Remove a specific reminder for a member.
+     *
+     * @param memberId    The ID of the member.
+     * @param reminderMessage The reminder message to remove.
+     */
+    public void removePaymentReminder(int memberId, String reminderMessage) {
+        paymentService.removeReminder(memberId, reminderMessage);
+    }
+
+    /**
+     * Clear all reminders.
+     */
+    public void clearAllReminders() {
+        paymentService.clearAllReminders();
+        System.out.println("All reminders cleared.");
     }
 }

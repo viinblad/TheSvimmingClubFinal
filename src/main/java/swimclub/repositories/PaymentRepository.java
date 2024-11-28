@@ -10,17 +10,63 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.logging.Logger;
 
 public class PaymentRepository {
     private static final Logger LOGGER = Logger.getLogger(PaymentRepository.class.getName());
-    private final List<Payment> payments;
+    private final List<Payment> payments;  // List to store payments
+    private final List<String> reminders; // List to store reminders
 
     public PaymentRepository() {
         this.payments = new ArrayList<>();
+        this.reminders = new ArrayList<>(); // Initialize reminders list
     }
 
+    /**
+     * Saves a payment reminder.
+     *
+     * @param reminder The reminder string to save.
+     */
+    public void saveReminder(String reminder) {
+        if (reminder == null || reminder.isEmpty()) {
+            throw new IllegalArgumentException("Reminder cannot be null or empty.");
+        }
+        reminders.add(reminder);
+        LOGGER.info("Reminder saved: " + reminder);
+    }
+
+    /**
+     * Gets all reminders as a list of strings.
+     *
+     * @return List of reminders.
+     */
+    public List<String> getReminders() {
+        return new ArrayList<>(reminders); // Return a copy to prevent external modification
+    }
+
+    /**
+     * Removes a specific reminder.
+     *
+     * @param reminder The reminder to remove.
+     * @return true if the reminder was found and removed, false otherwise.
+     */
+    public boolean removeReminder(String reminder) {
+        return reminders.remove(reminder);
+    }
+
+    /**
+     * Clears all reminders.
+     */
+    public void clearReminders() {
+        reminders.clear();
+        LOGGER.info("All reminders cleared.");
+    }
+
+    /**
+     * Saves a payment to the repository.
+     *
+     * @param payment The payment object to save.
+     */
     public void save(Payment payment) {
         if (payment == null) {
             throw new IllegalArgumentException("Payment cannot be null.");
@@ -35,16 +81,20 @@ public class PaymentRepository {
         LOGGER.info("Payment added successfully with ID: " + payment.getPaymentId());
     }
 
-    // In PaymentRepository.java
+    /**
+     * Loads payments from a file and associates them with members.
+     *
+     * @param filePath        The path to the payment file.
+     * @param memberRepository The member repository to link payments with members.
+     */
     public void loadPayments(String filePath, MemberRepository memberRepository) {
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                Payment payment = parsePayment(line, memberRepository); // Associate payment with member
+                Payment payment = parsePayment(line, memberRepository);
                 if (payment != null) {
-                    payments.add(payment); // Add payment to the in-memory list
-                    // Update the member's payment status based on the loaded payment
-                    Member member = payment.getMember(); // Get the member from the payment
+                    payments.add(payment);
+                    Member member = payment.getMember();
                     if (member != null) {
                         member.setPaymentStatus(payment.getPaymentStatus());
                     }
@@ -64,7 +114,6 @@ public class PaymentRepository {
             LocalDate paymentDate = LocalDate.parse(parts[3]);
             PaymentStatus status = PaymentStatus.valueOf(parts[4].toUpperCase());
 
-            // Find the member associated with this payment
             Member member = memberRepository.findById(memberId);
             if (member == null) {
                 throw new IllegalArgumentException("Member not found for ID: " + memberId);
@@ -77,19 +126,32 @@ public class PaymentRepository {
         }
     }
 
-    // Fetch payments by memberId
+    /**
+     * Fetches all payments for a specific member ID.
+     *
+     * @param memberId The member ID to fetch payments for.
+     * @return List of payments for the specified member ID.
+     */
     public List<Payment> findPaymentsByMemberId(int memberId) {
         return payments.stream()
                 .filter(payment -> payment.getMember().getMemberId() == memberId)
                 .toList();
     }
 
-    // Return all payments in the repository
+    /**
+     * Gets all payments in the repository.
+     *
+     * @return List of all payments.
+     */
     public List<Payment> findAll() {
-        return new ArrayList<>(payments);
+        return new ArrayList<>(payments); // Return a copy to prevent external modification
     }
 
-    // Get next available payment ID
+    /**
+     * Gets the next available payment ID.
+     *
+     * @return The next available payment ID.
+     */
     public int getNextPaymentId() {
         return payments.stream()
                 .mapToInt(Payment::getPaymentId)

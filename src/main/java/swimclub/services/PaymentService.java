@@ -50,11 +50,11 @@ public class PaymentService {
     /**
      * Registers a payment for a member.
      *
-     * @param memberId        The ID of the member making the payment.
-     * @param amount          The payment amount.
+     * @param memberId         The ID of the member making the payment.
+     * @param amount           The payment amount.
      * @param memberRepository The repository to find the member.
      * @param paymentFileHandler The file handler to save payments.
-     * @param filePath        The file path for saving payments.
+     * @param filePath         The file path for saving payments.
      */
     public void registerPayment(int memberId, double amount, MemberRepository memberRepository, FileHandler paymentFileHandler, String filePath) {
         if (amount <= 0) {
@@ -196,5 +196,49 @@ public class PaymentService {
             }
         }
         return pendingMembers;
+    }
+
+    /**
+     * Sets a payment reminder for a member.
+     *
+     * @param memberId        The ID of the member to set the reminder for.
+     * @param reminderMessage The reminder message.
+     */
+    public void setPaymentReminder(int memberId, String reminderMessage) {
+        String reminder = "Reminder for Member ID: " + memberId + ": " + reminderMessage;
+        paymentRepository.saveReminder(reminder);
+        System.out.println("Payment reminder set for Member ID: " + memberId);
+    }
+
+    /**
+     * Retrieves all payment reminders.
+     *
+     * @return A list of payment reminders.
+     */
+    public List<String> getAllReminders() {
+        return paymentRepository.getReminders();
+    }
+
+    /**
+     * Removes a specific reminder for a member.
+     *
+     * @param memberId The ID of the member whose reminder is to be removed.
+     * @param message  The message of the reminder to remove.
+     */
+    public void removeReminder(int memberId, String message) {
+        String reminder = "Reminder for Member ID: " + memberId + ": " + message;
+        if (paymentRepository.removeReminder(reminder)) {
+            System.out.println("Reminder removed for Member ID: " + memberId);
+        } else {
+            System.out.println("No such reminder found for Member ID: " + memberId);
+        }
+    }
+
+    /**
+     * Clears all payment reminders.
+     */
+    public void clearAllReminders() {
+        paymentRepository.clearReminders();
+        System.out.println("All reminders cleared.");
     }
 }

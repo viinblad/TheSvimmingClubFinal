@@ -39,7 +39,7 @@ public class UserInterface {
             printMenu();  // Display the main menu
             option = getUserInput();  // Get user's input option
             handleOption(option);  // Handle the option selected by the user
-        } while (option != 8); // Exit when the user selects option 8
+        } while (option != 7); // Exit when the user selects option 7
     }
 
     /**
@@ -67,7 +67,7 @@ public class UserInterface {
         try {
             option = Integer.parseInt(scanner.nextLine());  // Parse the input as integer
         } catch (NumberFormatException e) {
-            System.out.println("Invalid input. Please enter a number between 1 and 8.");
+            System.out.println("Invalid input. Please enter a number between 1 and 7.");
         }
         return option;
     }
@@ -79,7 +79,6 @@ public class UserInterface {
      * @param option The selected option from the menu (1-7).
      */
     private void handleOption(int option) {
-
 
         switch (option) {
             case 1:
@@ -101,13 +100,13 @@ public class UserInterface {
                 handlePayments();  // Handle payments (new option)
                 break;
             case 7:
-                exitProgram(); // Corrected by adding a semicolon here
-                System.out.println("Exiting the program. Goodbye!");// Exit
+                exitProgram(); // Exit the program
                 break;
             default:
                 System.out.println("Invalid option. Please choose a number between 1 and 7.");
         }
     }
+
     /**
      * Exits the program.
      */
@@ -120,8 +119,6 @@ public class UserInterface {
      * Registers a new member by collecting their details and passing them to the controller.
      */
     private void registerMember() {
-
-
         System.out.print("Enter member name: ");
         String name = scanner.nextLine();
         System.out.print("Enter age: ");
@@ -143,17 +140,29 @@ public class UserInterface {
         System.out.print("Enter phone number (8 digits): ");
         int phoneNumber = Integer.parseInt(scanner.nextLine());
 
-        // You might need to define default values for membership status and payment status
-        // As they are part of the member class, let's use ACTIVE for membership status and PENDING for payment status
-        MembershipStatus membershipStatus = MembershipStatus.ACTIVE;  // Assuming the default membership status is ACTIVE
+        MembershipStatus membershipStatus = MembershipStatus.ACTIVE;  // Default membership status
         PaymentStatus paymentStatus = PaymentStatus.PENDING;  // Default payment status
 
         // Call the controller to register the new member
-        Member newMember = memberController.registerMember(name, email, city, street, region, zipcode, membershipType, membershipStatus,activityType, paymentStatus ,age, phoneNumber);
+        Member newMember = memberController.registerMember(name, email, city, street, region, zipcode, membershipType, membershipStatus, activityType, paymentStatus, age, phoneNumber);
 
-        //creates an automatic payment after registering the new member, based on age and membershipstatus.
         if (newMember != null) {
-            paymentController.registerPayment(newMember.getMemberId(), paymentController.calculateMembershipFeeForMember(newMember.getMemberId()));
+            // Calculate the membership fee
+            double fee = paymentController.calculateMembershipFeeForMember(newMember.getMemberId());
+
+            // Prompt user to pay now or later
+            System.out.println("\nMembership fee for " + newMember.getName() + " is $" + fee);
+            System.out.print("Do you want to pay now? (yes/no): ");
+            String choice = scanner.nextLine().toLowerCase();
+
+            if (choice.equals("yes")) {
+                // Register the payment immediately
+                paymentController.registerPayment(newMember.getMemberId(), fee);
+            } else {
+                // Provide reminder information and set a reminder
+                System.out.println("A reminder will be sent to: " + email);
+                paymentController.setPaymentReminder(newMember.getMemberId(), "Payment reminder for " + newMember.getName());
+            }
         }
     }
 
@@ -161,8 +170,6 @@ public class UserInterface {
      * Updates an existing member's information based on the provided member ID and new details.
      */
     private void updateMember() {
-
-
         System.out.print("Enter member ID to update: ");
         int memberId = Integer.parseInt(scanner.nextLine());
 
@@ -188,13 +195,11 @@ public class UserInterface {
         System.out.print("Enter new phone number (8 digits): ");
         int phoneNumber = Integer.parseInt(scanner.nextLine());
 
-        // Assuming the membership status is ACTIVE and payment status is PENDING for updates
-        // You can update this logic if you want the user to choose these attributes
         MembershipStatus membershipStatus = MembershipStatus.ACTIVE;  // Default to ACTIVE
         PaymentStatus paymentStatus = PaymentStatus.PENDING;  // Default to PENDING
 
         // Call the controller's updateMember method with all new attributes
-        memberController.updateMember(memberId, name, email, age, city, street, region, zipcode, membershipType, membershipStatus,activitytype, paymentStatus, phoneNumber);
+        memberController.updateMember(memberId, name, email, age, city, street, region, zipcode, membershipType, membershipStatus, activitytype, paymentStatus, phoneNumber);
     }
 
     /**
@@ -292,8 +297,6 @@ public class UserInterface {
 
     private void viewPaymentSummary() {
         System.out.println("Payment Summary: ");
-        // Here, you can add logic to summarize total payments, paid members, etc.
-        // For example, we can get a list of all payments from PaymentController and sum them.
         List<Member> paidMembers = paymentController.getMembersPaidList();
         double totalPayments = paidMembers.stream()
                 .mapToDouble(member -> paymentController.calculateMembershipFeeForMember(member.getMemberId()))

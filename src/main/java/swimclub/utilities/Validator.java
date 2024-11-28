@@ -47,9 +47,9 @@ public class Validator {
     public static boolean isValidMemberActivityType(ActivityTypeData activityType){
         return activityType != null &&
                 (activityType.toActivityType() == ActivityType.BACKCRAWL ||
-                activityType.toActivityType() == ActivityType.BREASTSTROKE ||
-                activityType.toActivityType() == ActivityType.BUTTERFLY ||
-                activityType.toActivityType() == ActivityType.CRAWL);
+                        activityType.toActivityType() == ActivityType.BREASTSTROKE ||
+                        activityType.toActivityType() == ActivityType.BUTTERFLY ||
+                        activityType.toActivityType() == ActivityType.CRAWL);
     }
 
     /**
@@ -146,6 +146,7 @@ public class Validator {
             throw new IllegalArgumentException("Invalid activitytype: Must be 'Crawl', 'Backcrawl', 'Breathstroke' or 'Butterfly'");
         }
     }
+
     /**
      * Validates the payment amount.
      * The amount must be greater than 0.
@@ -171,6 +172,19 @@ public class Validator {
         }
         if (!isValidPaymentStatus(paymentStatus)) {
             throw new IllegalArgumentException("Invalid payment status: Must be 'COMPLETE', 'PENDING', or 'FAILED'.");
+        }
+    }
+
+    /**
+     * Validates the payment reminder message.
+     * Ensures the message is not too short, too long, and is not empty.
+     *
+     * @param reminder The reminder message to validate.
+     * @throws IllegalArgumentException if validation fails.
+     */
+    public static void validatePaymentReminder(String reminder) {
+        if (reminder == null || reminder.trim().isEmpty() || reminder.length() < 5 || reminder.length() > 255) {
+            throw new IllegalArgumentException("Invalid reminder: Reminder must be between 5 and 255 characters long.");
         }
     }
 }

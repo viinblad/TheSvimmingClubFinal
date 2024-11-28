@@ -11,19 +11,20 @@ import swimclub.utilities.FileHandler;
 
 public class Main {
     public static void main(String[] args) {
-        // File paths for member data and payment data
+        // File paths for member data, payment data, and reminder data
         String memberFilePath = "src/main/resources/members.txt";
         String paymentFilePath = "src/main/resources/payments.txt";
+        String reminderFilePath = "src/main/resources/reminders.txt";
 
-        // Initialize the FileHandler for members and payments
-        FileHandler memberFileHandler = new FileHandler(memberFilePath);
-        FileHandler paymentFileHandler = new FileHandler(paymentFilePath);
+        // Initialize the FileHandler for members, payments, and reminders
+        FileHandler memberFileHandler = new FileHandler(memberFilePath, paymentFilePath, reminderFilePath);
 
         // Initialize the repositories, passing the respective FileHandlers
         MemberRepository memberRepository = new MemberRepository(memberFileHandler);
         PaymentRepository paymentRepository = new PaymentRepository();
 
-        // Load payments from the file and associate them with members
+        // Load members, payments, and reminders from the file
+        memberRepository.reloadMembers(); // Assuming loadMembers method exists to load member data
         paymentRepository.loadPayments(paymentFilePath, memberRepository);
 
         // Initialize services for member and payment
@@ -35,7 +36,7 @@ public class Main {
         PaymentController paymentController = new PaymentController(
                 paymentService,
                 memberRepository,
-                paymentFileHandler,
+                memberFileHandler,
                 paymentFilePath
         );
 
@@ -47,6 +48,7 @@ public class Main {
 
         // After user interaction, save any changes to file
         memberFileHandler.saveMembers(memberRepository.findAll());
-        paymentFileHandler.savePayments(paymentRepository.findAll(), paymentFilePath);
+        memberFileHandler.savePayments(paymentRepository.findAll(), paymentFilePath);
+        memberFileHandler.saveReminders(paymentService.getAllReminders()); // Save reminders after interaction
     }
 }
