@@ -44,6 +44,14 @@ public class Validator {
                         membershipType.getLevel() == MembershipLevel.SENIOR);
     }
 
+    public static boolean isValidMemberActivityType(ActivityTypeData activityType){
+        return activityType != null &&
+                (activityType.toActivityType() == ActivityType.BACKCRAWL ||
+                activityType.toActivityType() == ActivityType.BREASTSTROKE ||
+                activityType.toActivityType() == ActivityType.BUTTERFLY ||
+                activityType.toActivityType() == ActivityType.CRAWL);
+    }
+
     /**
      * Validates the membership status of the member.
      * The status must be either ACTIVE or PASSIVE.
@@ -110,7 +118,7 @@ public class Validator {
      */
     public static void validateMemberData(String name, int age, String membershipType,
                                           String email, String city, String street, String region, int zipcode, int phoneNumber,
-                                          MembershipStatus membershipStatus, PaymentStatus paymentStatus) throws IllegalArgumentException {
+                                          MembershipStatus membershipStatus, String activityType, PaymentStatus paymentStatus) throws IllegalArgumentException {
         if (!isValidName(name)) {
             throw new IllegalArgumentException("Invalid name: Name cannot be null or empty.");
         }
@@ -132,6 +140,10 @@ public class Validator {
         }
         if (!isValidPaymentStatus(paymentStatus)) {
             throw new IllegalArgumentException("Invalid payment status: Must be 'COMPLETE', 'PENDING', or 'FAILED'.");
+        }
+        ActivityTypeData activity = ActivityTypeData.fromString(activityType);
+        if (!isValidMemberActivityType(activity)) {
+            throw new IllegalArgumentException("Invalid activitytype: Must be 'Crawl', 'Backcrawl', 'Breathstroke' or 'Butterfly'");
         }
     }
 }

@@ -34,16 +34,19 @@ public class MemberController {
      * @param phoneNumber     Phone number of the member.
      */
     public Member registerMember(String name, String email, String city, String street, String region, int zipcode,
-                               String membershipType, MembershipStatus membershipStatus, PaymentStatus paymentStatus,
+                               String membershipType, MembershipStatus membershipStatus,String activityType, PaymentStatus paymentStatus,
                                int age, int phoneNumber) {
         Member returnMember = null;
         try {
             // Validate member data
             Validator.validateMemberData(name, age, membershipType, email, city, street, region, zipcode, phoneNumber,
-                    membershipStatus, paymentStatus);
+                    membershipStatus,activityType, paymentStatus);
 
             // Parse the membershipType into a MembershipType object
             MembershipType type = MembershipType.fromString(membershipType.toUpperCase());
+
+            // Parse the activityType into an ActivityType object
+            ActivityTypeData activity = ActivityTypeData.fromString(activityType);
 
             // Generate the next available member ID
             int memberId = memberRepository.getNextMemberId();
@@ -53,10 +56,10 @@ public class MemberController {
             Member newMember;
             if (age > 18) {
                 newMember = new SeniorMember(memberIdString, name, email, city, street, region, zipcode, type,
-                        membershipStatus, paymentStatus, age, phoneNumber);
+                        membershipStatus,activity.toActivityType(), paymentStatus, age, phoneNumber);
             } else {
                 newMember = new JuniorMember(memberIdString, name, email, city, street, region, zipcode, type,
-                        membershipStatus, paymentStatus, age, phoneNumber);
+                        membershipStatus,activity.toActivityType(), paymentStatus, age, phoneNumber);
             }
 
             // Save the validated member using the MemberService
@@ -93,12 +96,12 @@ public class MemberController {
      */
     public void updateMember(int memberId, String newName, String newEmail, int newAge, String newCity,
                              String newStreet, String newRegion, int newZipcode, String newMembershipType,
-                             MembershipStatus newMembershipStatus, PaymentStatus newPaymentStatus,
+                             MembershipStatus newMembershipStatus,String newActivityType, PaymentStatus newPaymentStatus,
                              int newPhoneNumber) {
         try {
             // Validate updated member data
             Validator.validateMemberData(newName, newAge, newMembershipType, newEmail, newCity, newStreet, newRegion,
-                    newZipcode, newPhoneNumber, newMembershipStatus, newPaymentStatus);
+                    newZipcode, newPhoneNumber, newMembershipStatus,newActivityType, newPaymentStatus);
 
             // Find the existing member by ID
             Member memberToUpdate = memberRepository.findById(memberId);
@@ -149,19 +152,28 @@ public class MemberController {
             return false;
         }
         memberRepository.delete(member); // If member exists, delete and return true
+
+        // Reload members after update to immediately reflect the changes
+        memberRepository.reloadMembers();
         return true;
+
     }
 
     /**
      * View all members stored in the repository.
      */
     public void viewAllMembers() {
-        System.out.println("\n--- All Registered Members ---");
-        memberRepository.findAll().forEach(member ->
-                System.out.println("ID: " + member.getMemberId() + ", Name: " + member.getName() +
-                        ", Membership: " + member.getMembershipDescription() +
-                        ", Status: " + member.getMembershipStatus() +
-                        ", Payment: " + member.getPaymentStatus()));
+        if (memberRepository.findAll().isEmpty()) {
+            System.out.println("\n---NO REGISTERED MEMBERS YET---");
+        } else {
+            System.out.println("\n--- All Registered Members ---");
+            memberRepository.findAll().forEach(member ->
+                    System.out.println("ID: " + member.getMemberId() + ", Name: " + member.getName() +
+                            ", Membership: " + member.getMembershipDescription() +
+                            ", Status: " + member.getMembershipStatus() +
+                            ", Activity: " + member.getActivityType() +
+                            ", Payment: " + member.getPaymentStatus()));
+        }
     }
 
     /**

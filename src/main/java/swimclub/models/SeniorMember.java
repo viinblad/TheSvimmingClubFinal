@@ -24,8 +24,8 @@ public class SeniorMember extends Member {
      * @param phoneNumber   The phone number of the member.
      */
     public SeniorMember(String memberId, String name, String email, String city, String street, String region, int zipcode,
-                        MembershipType membershipType, MembershipStatus membershipStatus, PaymentStatus paymentStatus, int age, int phoneNumber) {
-        super(memberId, name, email, city, street, region, zipcode, membershipType, membershipStatus, paymentStatus, age, phoneNumber); // Call the parent constructor
+                        MembershipType membershipType, MembershipStatus membershipStatus,ActivityType activityType, PaymentStatus paymentStatus, int age, int phoneNumber) {
+        super(memberId, name, email, city, street, region, zipcode, membershipType, membershipStatus,activityType, paymentStatus, age, phoneNumber); // Call the parent constructor
     }
 
     /**

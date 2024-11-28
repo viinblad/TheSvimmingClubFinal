@@ -14,6 +14,7 @@ public abstract class Member {
     private int zipcode;                 // Zip code number of the member
     private MembershipType membershipType; // Membership type (e.g., Competitive Junior)
     private MembershipStatus membershipStatus; // Membership status (active/passive)
+    private ActivityType activityType;   // Members form of activity
     private PaymentStatus paymentStatus; // Payment status
     private int age;                     // Age of the member
     private int phoneNumber;             // Phone number of the member
@@ -37,7 +38,7 @@ public abstract class Member {
 
     //constructor
     public Member(String memberId, String name, String email, String city, String street,
-                  String region, int zipcode,MembershipType membershipType, MembershipStatus membershipStatus, PaymentStatus paymentStatus, int age, int phoneNumber) {
+                  String region, int zipcode,MembershipType membershipType, MembershipStatus membershipStatus,ActivityType activityType, PaymentStatus paymentStatus, int age, int phoneNumber) {
         this.memberId = Integer.parseInt(memberId); // Parse memberId from String to int
         this.name = name;
         this.email = email;
@@ -47,6 +48,7 @@ public abstract class Member {
         this.zipcode =  zipcode;
         this.membershipType = membershipType;
         this.membershipStatus = membershipStatus;
+        this.activityType = activityType;
         this.paymentStatus = paymentStatus;
         this.age = age;
         this.phoneNumber = phoneNumber;
@@ -118,6 +120,10 @@ public abstract class Member {
 
     public MembershipStatus getMembershipStatus() {
         return this.membershipStatus;
+    }
+
+    public ActivityType getActivityType() {
+        return activityType;
     }
 
     public PaymentStatus getPaymentStatus () {
@@ -214,7 +220,13 @@ public abstract class Member {
     public void setMembershipStatus(MembershipStatus membershipStatus) {
         this.membershipStatus = membershipStatus;
 
-    } public void setPaymentStatus(PaymentStatus paymentStatus) {
+    }
+
+    public void setActivityType(ActivityType activityType) {
+        this.activityType = activityType;
+    }
+
+    public void setPaymentStatus(PaymentStatus paymentStatus) {
         this.paymentStatus = paymentStatus;
     }
 

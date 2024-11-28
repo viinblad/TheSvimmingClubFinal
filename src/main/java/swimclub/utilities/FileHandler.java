@@ -100,7 +100,7 @@ public class FileHandler {
         return member.getMemberId() + ";" + member.getName() + ";" + member.getEmail() + ";" +
                 member.getCity() + ";" + member.getStreet() + ";" + member.getRegion() + ";" +
                 member.getZipcode() + ";" + member.getAge() + ";" + member.getPhoneNumber() + ";" +
-                membershipDescription + ";" + member.getMembershipStatus() + ";" + member.getPaymentStatus();
+                membershipDescription + ";" + member.getMembershipStatus() + ";" + member.getActivityType() + ";" + member.getPaymentStatus();
     }
 
     /**
@@ -112,7 +112,7 @@ public class FileHandler {
     private Member parseMember(String line) {
         String[] parts = line.split(";");
 
-        if (parts.length < 12) { // Check for all fields, including new ones
+        if (parts.length < 13) { // Check for all fields, including new ones
             System.err.println("Skipping invalid member data (not enough fields): " + line);
             return null; // Skip invalid member data
         }
@@ -129,7 +129,8 @@ public class FileHandler {
         int phoneNumber = parseIntOrDefault(parts[8]);
         String membershipDescription = parts[9];
         MembershipStatus membershipStatus = MembershipStatus.valueOf(parts[10].toUpperCase());
-        PaymentStatus paymentStatus = PaymentStatus.valueOf(parts[11].toUpperCase());
+        String activitytypeDescription = parts[11];
+        PaymentStatus paymentStatus = PaymentStatus.valueOf(parts[12].toUpperCase());
 
         // Parse the membership type
         String[] membershipParts = membershipDescription.split(" ");
@@ -142,13 +143,16 @@ public class FileHandler {
         MembershipLevel level = MembershipLevel.valueOf(membershipParts[0].toUpperCase());
         MembershipType membershipType = new MembershipType(category, level);
 
+        ActivityType activity = ActivityType.valueOf(activitytypeDescription.toUpperCase());
+        ActivityTypeData activityType = new ActivityTypeData(activity);
+
         // Create the correct subclass based on membership level
         if (level == MembershipLevel.JUNIOR) {
             return new JuniorMember(String.valueOf(id), name, email, city, street, region, zipcode,
-                    membershipType, membershipStatus, paymentStatus, age, phoneNumber);
+                    membershipType, membershipStatus,activityType.toActivityType(), paymentStatus, age, phoneNumber);
         } else {
             return new SeniorMember(String.valueOf(id), name, email, city, street, region, zipcode,
-                    membershipType, membershipStatus, paymentStatus, age, phoneNumber);
+                    membershipType, membershipStatus,activityType.toActivityType(), paymentStatus, age, phoneNumber);
         }
     }
 

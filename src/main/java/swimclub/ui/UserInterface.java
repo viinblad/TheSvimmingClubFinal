@@ -6,6 +6,7 @@ import swimclub.controllers.PaymentController;
 import swimclub.models.Member;
 import swimclub.models.MembershipStatus;
 import swimclub.models.PaymentStatus;
+import swimclub.repositories.MemberRepository;
 
 import java.util.List;
 import java.util.Scanner;
@@ -133,6 +134,8 @@ public class UserInterface {
         int zipcode = Integer.parseInt(scanner.nextLine());
         System.out.print("Enter membership type (Junior/Senior, Competitive/Exercise): ");
         String membershipType = scanner.nextLine();
+        System.out.print("Enter activity type (Breaststroke, Crawl, Backcrawl or Butterfly):");
+        String activityType = scanner.nextLine();
         System.out.print("Enter phone number (8 digits): ");
         int phoneNumber = Integer.parseInt(scanner.nextLine());
 
@@ -142,7 +145,7 @@ public class UserInterface {
         PaymentStatus paymentStatus = PaymentStatus.PENDING;  // Default payment status
 
         // Call the controller to register the new member
-        Member newMember = memberController.registerMember(name, email, city, street, region, zipcode, membershipType, membershipStatus, paymentStatus ,age, phoneNumber);
+        Member newMember = memberController.registerMember(name, email, city, street, region, zipcode, membershipType, membershipStatus,activityType, paymentStatus ,age, phoneNumber);
 
         //creates an automatic payment after registering the new member, based on age and membershipstatus.
         if (newMember != null) {
@@ -174,6 +177,8 @@ public class UserInterface {
         int zipcode = Integer.parseInt(scanner.nextLine());
         System.out.print("Enter new membership type (Junior/Senior, Competitive/Exercise): ");
         String membershipType = scanner.nextLine();
+        System.out.println("Enter new activity type (Crawl, Backcrawl, Breathstroke or Butterfly):");
+        String activitytype = scanner.nextLine();
         System.out.print("Enter new phone number (8 digits): ");
         int phoneNumber = Integer.parseInt(scanner.nextLine());
 
@@ -183,7 +188,7 @@ public class UserInterface {
         PaymentStatus paymentStatus = PaymentStatus.PENDING;  // Default to PENDING
 
         // Call the controller's updateMember method with all new attributes
-        memberController.updateMember(memberId, name, email, age, city, street, region, zipcode, membershipType,  membershipStatus, paymentStatus, phoneNumber);
+        memberController.updateMember(memberId, name, email, age, city, street, region, zipcode, membershipType,  membershipStatus,activitytype, paymentStatus, phoneNumber);
     }
 
     /**

@@ -38,7 +38,7 @@ public class MemberService {
             Validator.validateMemberData(member.getName(), member.getAge(),
                     member.getMembershipType().toString(), member.getEmail(), member.getCity(), member.getStreet(),
                     member.getRegion(), member.getZipcode(), member.getPhoneNumber(),
-                    member.getMembershipStatus(), member.getPaymentStatus());
+                    member.getMembershipStatus(),member.getActivityType().toString(), member.getPaymentStatus());
         } catch (IllegalArgumentException e) {
             System.out.println("Error registering member: " + e.getMessage());
             return; // Don't proceed if validation fails
@@ -66,7 +66,7 @@ public class MemberService {
             Validator.validateMemberData(updatedMember.getName(), updatedMember.getAge(),
                     updatedMember.getMembershipType().toString(), updatedMember.getEmail(), updatedMember.getCity(),
                     updatedMember.getStreet(), updatedMember.getRegion(), updatedMember.getZipcode(),
-                    updatedMember.getPhoneNumber(), updatedMember.getMembershipStatus(), updatedMember.getPaymentStatus());
+                    updatedMember.getPhoneNumber(), updatedMember.getMembershipStatus(),updatedMember.getActivityType().toString(), updatedMember.getPaymentStatus());
         } catch (IllegalArgumentException e) {
             // Handle the validation exception and log the error
             System.out.println("Error updating member: " + e.getMessage());
@@ -80,16 +80,15 @@ public class MemberService {
         repository.update(updatedMember); // Update the member in the repository
     }
 
-    public void deleteMember(int memberId) {
+    public boolean deleteMember(int memberId) {
         Member member = repository.findById(memberId);
 
         if (member == null) {
             // Handle member not found
-            System.out.println("Member not found.");
-            return;
+            return false;
         }
         repository.delete(member);
-        System.out.println("Member deleted successfully.");
+        return true;
     }
 
     /**
