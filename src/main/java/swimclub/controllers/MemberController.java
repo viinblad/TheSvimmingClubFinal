@@ -22,11 +22,11 @@ public class MemberController {
      */
     public Member registerMember(String name, String email, String city, String street, String region, int zipcode,
                                  String membershipType, MembershipStatus membershipStatus, String activityType,
-                                 PaymentStatus paymentStatus, int age, int phoneNumber) {
+                                 PaymentStatus paymentStatus, String ageStr, int phoneNumber) {
         Member returnMember = null;
         try {
             // Validate member data
-            Validator.validateMemberData(name, age, membershipType, email, city, street, region, zipcode, phoneNumber,
+            Validator.validateMemberData(name, Integer.parseInt(ageStr), membershipType, email, city, street, region, zipcode, phoneNumber,
                     membershipStatus, activityType, paymentStatus);
 
             // Parse the membershipType into a MembershipType object
@@ -34,6 +34,9 @@ public class MemberController {
 
             // Parse the activityType into an ActivityTypeData object
             ActivityTypeData activity = ActivityTypeData.fromString(activityType);
+
+            // Parse the age safely
+            int age = parseAge(ageStr);
 
             // Generate the next available member ID
             int memberId = memberRepository.getNextMemberId();
@@ -66,13 +69,13 @@ public class MemberController {
     /**
      * Updates an existing member after validating the input.
      */
-    public void updateMember(int memberId, String newName, String newEmail, int newAge, String newCity,
+    public void updateMember(int memberId, String newName, String newEmail, String newAgeStr, String newCity,
                              String newStreet, String newRegion, int newZipcode, String newMembershipType,
                              MembershipStatus newMembershipStatus, String newActivityType, PaymentStatus newPaymentStatus,
                              int newPhoneNumber) {
         try {
             // Validate updated member data
-            Validator.validateMemberData(newName, newAge, newMembershipType, newEmail, newCity, newStreet, newRegion,
+            Validator.validateMemberData(newName, Integer.parseInt(newAgeStr), newMembershipType, newEmail, newCity, newStreet, newRegion,
                     newZipcode, newPhoneNumber, newMembershipStatus, newActivityType, newPaymentStatus);
 
             // Find the existing member by ID
@@ -81,6 +84,8 @@ public class MemberController {
                 System.out.println("Member not found with ID: " + memberId);
                 return;
             }
+            // Parse the age safely
+            int newAge = parseAge(newAgeStr);
 
             // Parse updated types
             MembershipType membershipType = MembershipType.fromString(newMembershipType);
@@ -155,5 +160,18 @@ public class MemberController {
      */
     public List<Member> searchMembers(String query) {
         return memberService.searchMembers(query);
+    }
+
+    private int parseAge(String ageStr) {
+        try {
+            // Parse the age safely, throw exception if not valid
+            int age = Integer.parseInt(ageStr);
+            if (age <= 0) {
+                throw new IllegalArgumentException("Age must be a positive number.");
+            }
+            return age;
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid age input. Please enter a valid number.");
+        }
     }
 }

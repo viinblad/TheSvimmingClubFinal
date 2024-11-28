@@ -9,22 +9,29 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * FileHandler handles saving and loading Member data to and from a file.
+ * FileHandler handles saving and loading Member, Payment, and Reminder data to and from a file.
  */
 public class FileHandler {
-    private String filePath;
+    private String memberFilePath;
+    private String paymentFilePath;
+    private String reminderFilePath;  // Added for reminder file
 
     /**
      * Constructor for FileHandler.
      *
-     * @param filePath Path to the file for saving/loading member data.
+     * @param memberFilePath   Path to the file for saving/loading member data.
+     * @param paymentFilePath  Path to the file for saving/loading payment data.
+     * @param reminderFilePath Path to the file for saving/loading reminder data.
      */
-    public FileHandler(String filePath) {
-        this.filePath = filePath;
+    public FileHandler(String memberFilePath, String paymentFilePath, String reminderFilePath) {
+        this.memberFilePath = memberFilePath;
+        this.paymentFilePath = paymentFilePath;
+        this.reminderFilePath = reminderFilePath;
     }
 
+
     // ---------------------------
-    // Member Relaterede Metoder
+    // Member Related Methods
     // ---------------------------
 
     /**
@@ -33,7 +40,7 @@ public class FileHandler {
      * @param members List of Member objects to save.
      */
     public void saveMembers(List<Member> members) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(memberFilePath))) {
             for (Member member : members) {
                 writer.write(formatMember(member)); // Format and save each member
                 writer.newLine();
@@ -50,7 +57,7 @@ public class FileHandler {
      */
     public List<Member> loadMembers() {
         List<Member> members = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(memberFilePath))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (!line.trim().isEmpty()) {
@@ -65,29 +72,137 @@ public class FileHandler {
         }
         return members;
     }
-
     /**
-     * Deletes a member from the file based on the provided memberID.
+     * Deletes a member from the file based on provided memberID.
      *
      * @param memberToDelete The member to delete.
      * @return true if deletion was successful, false otherwise.
      */
     public boolean deleteMember(Member memberToDelete) {
+        boolean memberDeleted = false;
         List<Member> members = loadMembers(); // Load all members from file
-        boolean memberDeleted = members.removeIf(member -> member.getMemberId() == memberToDelete.getMemberId());
+
+        List<Member> updatedMembers = new ArrayList<>();
+        int id = memberToDelete.getMemberId(); // Get the ID for the member to delete
+
+        for (Member member : members) {
+            if (member.getMemberId() == id) {
+                memberDeleted = true; // Mark the member as deleted
+            } else {
+                updatedMembers.add(member); // Keep all other members
+            }
+        }
 
         if (memberDeleted) {
-            saveMembers(members); // Save updated members
+            saveMembers(updatedMembers); // Save the updated list without the deleted member
         }
         return memberDeleted;
     }
 
+    // ---------------------------
+    // Payment Related Methods
+    // ---------------------------
+
     /**
-     * Converts a Member object into a string format for saving to the file.
+     * Saves all payments to a file.
      *
-     * @param member The Member object to format.
-     * @return A string representation of the Member object.
+     * @param payments List of Payment objects.
+     * @param filePath Path to the payment file.
      */
+    public void savePayments(List<Payment> payments, String filePath) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+            for (Payment payment : payments) {
+                writer.write(formatPayment(payment));
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            System.err.println("Error saving payments: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Loads payments from a file.
+     *
+     * @param filePath         Path to the payment file.
+     * @param memberRepository Repository to link payments to members.
+     * @return List of Payment objects.
+     */
+    public List<Payment> loadPayments(String filePath, MemberRepository memberRepository) {
+        List<Payment> payments = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                Payment payment = parsePayment(line, memberRepository);
+                if (payment != null) {
+                    payments.add(payment);
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Error loading payments: " + e.getMessage());
+        }
+        return payments;
+    }
+
+    // ---------------------------
+    // Reminder Related Methods
+    // ---------------------------
+
+    /**
+     * Saves all reminders to the specified file.
+     *
+     * @param reminders List of reminders to save.
+     */
+    public void saveReminders(List<String> reminders) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(reminderFilePath))) {
+            for (String reminder : reminders) {
+                writer.write(reminder);
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            System.err.println("Error saving reminders: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Loads reminders from the specified file.
+     *
+     * @return List of reminders loaded from the file.
+     */
+    public List<String> loadReminders() {
+        List<String> reminders = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(reminderFilePath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (!line.trim().isEmpty()) {
+                    reminders.add(line);
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Error loading reminders: " + e.getMessage());
+        }
+        return reminders;
+    }
+
+    /**
+     * Deletes a specific reminder from the file.
+     *
+     * @param reminder The reminder to delete.
+     * @return true if deletion was successful, false otherwise.
+     */
+    public boolean deleteReminder(String reminder) {
+        List<String> reminders = loadReminders();
+        boolean reminderDeleted = reminders.remove(reminder);
+
+        if (reminderDeleted) {
+            saveReminders(reminders);
+        }
+        return reminderDeleted;
+    }
+
+    // ---------------------------
+    // Helper Methods
+    // ---------------------------
+
     private String formatMember(Member member) {
         return member.getMemberId() + ";" +
                 member.getName() + ";" +
@@ -101,19 +216,13 @@ public class FileHandler {
                 member.getMembershipType().getLevel() + " " +
                 member.getMembershipType().getCategory() + ";" +
                 member.getMembershipStatus() + ";" +
+                member.getActivityType() + ";" +  // Added ActivityType
                 member.getPaymentStatus();
     }
 
-    /**
-     * Parses a string from the file into a Member object.
-     *
-     * @param line A string representing a Member.
-     * @return A Member object (either JuniorMember or SeniorMember).
-     */
     private Member parseMember(String line) {
         String[] parts = line.split(";");
-
-        if (parts.length < 13) { // Ensure the expected number of fields
+        if (parts.length < 13) {  // Ensure the expected number of fields
             System.err.println("Skipping invalid member data: " + line);
             return null;
         }
@@ -140,18 +249,14 @@ public class FileHandler {
 
             // Parse membership status (e.g., ACTIVE)
             MembershipStatus membershipStatus = MembershipStatus.valueOf(parts[10].toUpperCase());
-
-            // Parse activity type (e.g., CRAWL)
             ActivityType activityType = ActivityType.valueOf(parts[11].toUpperCase());
-
-            // Parse payment status (e.g., PENDING)
             PaymentStatus paymentStatus = PaymentStatus.valueOf(parts[12].toUpperCase());
 
             // Validate the data
             Validator.validateMemberData(name, age, membershipDescription, email, city, street, region, zipcode,
                     phoneNumber, membershipStatus, activityType.toString(), paymentStatus);
 
-            // Create member based on age
+            // Create the correct subclass of Member based on age (Junior or Senior)
             if (membershipType.getLevel() == MembershipLevel.JUNIOR) {
                 return new JuniorMember(String.valueOf(id), name, email, city, street, region, zipcode, membershipType,
                         membershipStatus, activityType, paymentStatus, age, phoneNumber);
@@ -159,55 +264,13 @@ public class FileHandler {
                 return new SeniorMember(String.valueOf(id), name, email, city, street, region, zipcode, membershipType,
                         membershipStatus, activityType, paymentStatus, age, phoneNumber);
             }
+
         } catch (Exception e) {
             System.err.println("Error parsing member: " + line + " - " + e.getMessage());
             return null;
         }
     }
 
-
-
-
-    /**
-     * Saves all payments to a file.
-     *
-     * @param payments List of Payment objects.
-     * @param filePath Path to the payment file.
-     */
-    public void savePayments(List<Payment> payments, String filePath) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
-            for (Payment payment : payments) {
-                writer.write(formatPayment(payment));
-                writer.newLine();
-            }
-        } catch (IOException e) {
-            System.err.println("Error saving payments: " + e.getMessage());
-        }
-    }
-
-
-    /**
-     * Loads payments from a file.
-     *
-     * @param filePath         Path to the payment file.
-     * @param memberRepository Repository to link payments to members.
-     * @return List of Payment objects.
-     */
-    public List<Payment> loadPayments(String filePath, MemberRepository memberRepository) {
-        List<Payment> payments = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                Payment payment = parsePayment(line, memberRepository);
-                if (payment != null) {
-                    payments.add(payment);
-                }
-            }
-        } catch (IOException e) {
-            System.err.println("Error loading payments: " + e.getMessage());
-        }
-        return payments;
-    }
 
     private String formatPayment(Payment payment) {
         return payment.getPaymentId() + ";" +
@@ -226,10 +289,6 @@ public class FileHandler {
             LocalDate paymentDate = LocalDate.parse(parts[3]);
             PaymentStatus status = PaymentStatus.valueOf(parts[4].toUpperCase());
             Member member = memberRepository.findById(memberId);
-
-            if (member == null) {
-                throw new IllegalArgumentException("Member not found for ID: " + memberId);
-            }
 
             return new Payment(paymentId, status, member, paymentDate, amount);
         } catch (Exception e) {

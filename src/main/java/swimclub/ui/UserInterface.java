@@ -121,8 +121,7 @@ public class UserInterface {
     private void registerMember() {
         System.out.print("Enter member name: ");
         String name = scanner.nextLine();
-        System.out.print("Enter age: ");
-        int age = Integer.parseInt(scanner.nextLine());
+        String age = correctAgeInput(scanner,"Enter member age:");
         System.out.print("Enter member email: ");
         String email = scanner.nextLine();
         System.out.println("Enter city of member");
@@ -178,8 +177,7 @@ public class UserInterface {
         String name = scanner.nextLine();
         System.out.print("Enter new email: ");
         String email = scanner.nextLine();
-        System.out.print("Enter new age: ");
-        int age = Integer.parseInt(scanner.nextLine());
+        String age = correctAgeInput(scanner,"Enter new age:");
         System.out.print("Enter new city: ");
         String city = scanner.nextLine();
         System.out.print("Enter new street: ");
@@ -192,8 +190,7 @@ public class UserInterface {
         String membershipType = scanner.nextLine();
         System.out.println("Enter new activity type (Crawl, Backcrawl, Breathstroke or Butterfly):");
         String activitytype = scanner.nextLine();
-        System.out.print("Enter new phone number (8 digits): ");
-        int phoneNumber = Integer.parseInt(scanner.nextLine());
+        int phoneNumber = correctPHInput(scanner,"Enter new phone number (8 digits): ");
 
         MembershipStatus membershipStatus = MembershipStatus.ACTIVE;  // Default to ACTIVE
         PaymentStatus paymentStatus = PaymentStatus.PENDING;  // Default to PENDING
@@ -313,5 +310,56 @@ public class UserInterface {
         List<Member> filteredMembers = paymentController.getMembersByPaymentStatus(paymentStatus);
         System.out.println("Members with payment status " + paymentStatus + ":");
         filteredMembers.forEach(member -> System.out.println("ID: " + member.getMemberId() + ", Name: " + member.getName()));
+    }
+
+    //User input age rule
+    private static String correctAgeInput(Scanner scanner, String prompt) {
+        String age;
+        while (true) {
+            try {
+                // Display the prompt message to the user
+                System.out.print(prompt);
+                age = scanner.nextLine().trim();
+
+                // Validate that the input only contains digits
+                if (!age.matches("\\d+")) {
+                    throw new NumberFormatException("Only numeric values are allowed.");
+                }
+
+                // Convert the input to an integer
+
+                // Ensure the age is a positive number
+                if (Integer.parseInt(age) > 0) {
+                    return age; // Return the valid age
+                } else {
+                    System.out.println("Invalid age. Age must be positive.");
+                }
+            } catch (NumberFormatException e) {
+                // Handle invalid input and provide feedback to the user
+                System.out.println("Wrong input. Please enter numbers");
+            }
+        }
+    }
+
+    // Rule for right phonenumber input
+    private static int correctPHInput(Scanner scanner, String prompt) {
+        int phoneNumber;
+        while (true) {
+            System.out.print(prompt);
+            try {
+                phoneNumber = scanner.nextInt();
+                scanner.nextLine(); //consume line
+                
+                if (phoneNumber >= 10000000 && phoneNumber <= 99999999) {
+                    break;
+                } else {
+                    System.out.println("Phonenumber must be exactly 8 digits.");
+                }
+
+            } catch(Exception e){
+                System.out.println("Invalid input. Please enter a 8 digits number.");
+            }
+        }
+        return phoneNumber;
     }
 }

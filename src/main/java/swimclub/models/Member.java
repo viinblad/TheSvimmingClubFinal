@@ -18,6 +18,7 @@ public abstract class Member {
     private MembershipType membershipType; // Membership type (e.g., Competitive Junior)
     private MembershipStatus membershipStatus; // Membership status (active/passive)
     private PaymentStatus paymentStatus; // Payment status
+    private ActivityType activityType;   // Members form of activity
     private int age;                     // Age of the member
     private int phoneNumber;             // Phone number of the member
     private List<Payment> payments = new ArrayList<>(); // List of all payments made by the member.
