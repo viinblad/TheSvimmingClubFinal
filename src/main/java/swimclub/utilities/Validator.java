@@ -146,4 +146,31 @@ public class Validator {
             throw new IllegalArgumentException("Invalid activitytype: Must be 'Crawl', 'Backcrawl', 'Breathstroke' or 'Butterfly'");
         }
     }
+    /**
+     * Validates the payment amount.
+     * The amount must be greater than 0.
+     *
+     * @param amount The payment amount to validate.
+     * @return true if the payment amount is valid, false otherwise.
+     */
+    public static boolean isValidPaymentAmount(double amount) {
+        return amount > 0;
+    }
+
+    /**
+     * Validates a payment.
+     * Ensures the payment amount and status are valid.
+     *
+     * @param amount        The payment amount.
+     * @param paymentStatus The payment status.
+     * @throws IllegalArgumentException if validation fails.
+     */
+    public static void validatePayment(double amount, PaymentStatus paymentStatus) {
+        if (!isValidPaymentAmount(amount)) {
+            throw new IllegalArgumentException("Invalid payment amount: Amount must be greater than 0.");
+        }
+        if (!isValidPaymentStatus(paymentStatus)) {
+            throw new IllegalArgumentException("Invalid payment status: Must be 'COMPLETE', 'PENDING', or 'FAILED'.");
+        }
+    }
 }

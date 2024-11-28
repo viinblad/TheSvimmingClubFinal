@@ -21,6 +21,10 @@ public class FileHandler {
         this.filePath = filePath;
     }
 
+    // ---------------------------
+    // Member Relaterede Metoder
+    // ---------------------------
+
     /**
      * Saves all members to the specified file.
      *
@@ -47,7 +51,7 @@ public class FileHandler {
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                if (!line.trim().isEmpty()) { // Skip empty lines
+                if (!line.trim().isEmpty()) {
                     Member member = parseMember(line);
                     if (member != null) {
                         members.add(member);
@@ -61,7 +65,7 @@ public class FileHandler {
     }
 
     /**
-     * Deletes a member from the file based on provided memberID.
+     * Deletes a member from the file based on the provided memberID.
      *
      * @param memberToDelete The member to delete.
      * @return true if deletion was successful, false otherwise.
@@ -69,20 +73,10 @@ public class FileHandler {
     public boolean deleteMember(Member memberToDelete) {
         boolean memberDeleted = false;
         List<Member> members = loadMembers(); // Load all members from file
-
-        List<Member> updatedMembers = new ArrayList<>();
-        int id = memberToDelete.getMemberId(); // Get the ID for the member to delete
-
-        for (Member member : members) {
-            if (member.getMemberId() == id) {
-                memberDeleted = true; // Mark the member as deleted
-            } else {
-                updatedMembers.add(member); // Keep all other members
-            }
-        }
+        boolean memberDeleted = members.removeIf(member -> member.getMemberId() == memberToDelete.getMemberId());
 
         if (memberDeleted) {
-            saveMembers(updatedMembers); // Save the updated list without the deleted member
+            saveMembers(members); // Save updated members
         }
         return memberDeleted;
     }
@@ -94,13 +88,19 @@ public class FileHandler {
      * @return A string representation of the Member object.
      */
     private String formatMember(Member member) {
-        String membershipDescription = member.getMembershipType().getLevel() + " " +
-                member.getMembershipType().getCategory() + " Swimmer";
-
-        return member.getMemberId() + ";" + member.getName() + ";" + member.getEmail() + ";" +
-                member.getCity() + ";" + member.getStreet() + ";" + member.getRegion() + ";" +
-                member.getZipcode() + ";" + member.getAge() + ";" + member.getPhoneNumber() + ";" +
-                membershipDescription + ";" + member.getMembershipStatus() + ";" + member.getActivityType() + ";" + member.getPaymentStatus();
+        return member.getMemberId() + ";" +
+                member.getName() + ";" +
+                member.getEmail() + ";" +
+                member.getCity() + ";" +
+                member.getStreet() + ";" +
+                member.getRegion() + ";" +
+                member.getZipcode() + ";" +
+                member.getAge() + ";" +
+                member.getPhoneNumber() + ";" +
+                member.getMembershipType().getLevel() + " " +
+                member.getMembershipType().getCategory() + ";" +
+                member.getMembershipStatus() + ";" +
+                member.getPaymentStatus();
     }
 
     /**
@@ -132,10 +132,21 @@ public class FileHandler {
         String activitytypeDescription = parts[11];
         PaymentStatus paymentStatus = PaymentStatus.valueOf(parts[12].toUpperCase());
 
-        // Parse the membership type
-        String[] membershipParts = membershipDescription.split(" ");
-        if (membershipParts.length != 3) {
-            System.err.println("Invalid membership description format: " + membershipDescription);
+            String[] membershipParts = membershipDescription.split(" ");
+            MembershipType membershipType = new MembershipType(
+                    MembershipCategory.valueOf(membershipParts[1].toUpperCase()),
+                    MembershipLevel.valueOf(membershipParts[0].toUpperCase())
+            );
+
+            Validator.validateMemberData(name, age, membershipType.toString(), email, city, street, region, zipcode, phoneNumber, membershipStatus, paymentStatus);
+
+            if (membershipType.getLevel() == MembershipLevel.JUNIOR) {
+                return new JuniorMember(String.valueOf(id), name, email, city, street, region, zipcode, membershipType, membershipStatus, paymentStatus, age, phoneNumber);
+            } else {
+                return new SeniorMember(String.valueOf(id), name, email, city, street, region, zipcode, membershipType, membershipStatus, paymentStatus, age, phoneNumber);
+            }
+        } catch (Exception e) {
+            System.err.println("Error parsing member: " + line + " - " + e.getMessage());
             return null;
         }
 
@@ -153,25 +164,73 @@ public class FileHandler {
         } else {
             return new SeniorMember(String.valueOf(id), name, email, city, street, region, zipcode,
                     membershipType, membershipStatus,activityType.toActivityType(), paymentStatus, age, phoneNumber);
+    /**
+     * Saves all payments to a file.
+     *
+     * @param payments List of Payment objects.
+     * @param filePath Path to the payment file.
+     */
+    public void savePayments(List<Payment> payments, String filePath) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+            for (Payment payment : payments) {
+                writer.write(formatPayment(payment));
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            System.err.println("Error saving payments: " + e.getMessage());
         }
     }
 
+
     /**
-     * Helper method to parse integers and handle empty or invalid input.
-     * Returns a default value if the input is empty or invalid.
+     * Loads payments from a file.
      *
-     * @param value The string value to parse.
-     * @return The parsed integer, or the default value if parsing fails.
+     * @param filePath          Path to the payment file.
+     * @param memberRepository  Repository to link payments to members.
+     * @return List of Payment objects.
      */
-    private int parseIntOrDefault(String value) {
-        if (value == null || value.trim().isEmpty()) {
-            return -1;
+    public List<Payment> loadPayments(String filePath, MemberRepository memberRepository) {
+        List<Payment> payments = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                Payment payment = parsePayment(line, memberRepository);
+                if (payment != null) {
+                    payments.add(payment);
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Error loading payments: " + e.getMessage());
         }
+        return payments;
+    }
+
+    private String formatPayment(Payment payment) {
+        return payment.getPaymentId() + ";" +
+                payment.getMember().getMemberId() + ";" +
+                payment.getAmountPerYear() + ";" +
+                payment.getPaymentDate() + ";" +
+                payment.getPaymentStatus();
+    }
+
+    private Payment parsePayment(String line, MemberRepository memberRepository) {
+        String[] parts = line.split(";");
         try {
-            return Integer.parseInt(value);
-        } catch (NumberFormatException e) {
-            System.err.println("Error parsing integer value: " + value);
-            return -1;
+            int paymentId = Integer.parseInt(parts[0]);
+            int memberId = Integer.parseInt(parts[1]);
+            double amount = Double.parseDouble(parts[2]);
+            LocalDate paymentDate = LocalDate.parse(parts[3]);
+            PaymentStatus status = PaymentStatus.valueOf(parts[4].toUpperCase());
+            Member member = memberRepository.findById(memberId);
+
+            if (member == null) {
+                throw new IllegalArgumentException("Member not found for ID: " + memberId);
+            }
+
+            return new Payment(paymentId, status, member, paymentDate, amount);
+        } catch (Exception e) {
+            System.err.println("Error parsing payment: " + line + " - " + e.getMessage());
+            return null;
         }
     }
 }

@@ -6,7 +6,6 @@ import swimclub.controllers.PaymentController;
 import swimclub.models.Member;
 import swimclub.models.MembershipStatus;
 import swimclub.models.PaymentStatus;
-import swimclub.repositories.MemberRepository;
 
 import java.util.List;
 import java.util.Scanner;
@@ -18,7 +17,6 @@ import java.util.Scanner;
 public class UserInterface {
     private final MemberController memberController;  // Controller to handle member actions
     private final PaymentController paymentController;  // Controller to handle payment actions
-    private final TreasurerDashboard treasurerDashboard;
     private final Scanner scanner; // Scanner to read user input
 
     /**
@@ -27,10 +25,9 @@ public class UserInterface {
      * @param memberController The controller that handles the logic for member actions.
      * @param paymentController The controller that handles the logic for payment actions.
      */
-    public UserInterface(MemberController memberController, PaymentController paymentController, TreasurerDashboard treasurerDashboard) {
+    public UserInterface(MemberController memberController, PaymentController paymentController) {
         this.memberController = memberController;
         this.paymentController = paymentController;  // Initialize PaymentController
-        this.treasurerDashboard = treasurerDashboard;
         this.scanner = new Scanner(System.in);
     }
 
@@ -57,9 +54,8 @@ public class UserInterface {
         System.out.println("4. View All Members");
         System.out.println("5. Delete Member");
         System.out.println("6. Payment Management");  // New menu option for payment handling
-        System.out.println("7. Payment Summary");
-        System.out.println("8. Exit");
-        System.out.print("Please choose an option (1-8): ");
+        System.out.println("7. Exit");
+        System.out.print("Please choose an option (1-7): ");
     }
 
     /**
@@ -84,6 +80,8 @@ public class UserInterface {
      * @param option The selected option from the menu (1-7).
      */
     private void handleOption(int option) {
+
+
         switch (option) {
             case 1:
                 registerMember();  // Register a new member
@@ -104,20 +102,27 @@ public class UserInterface {
                 handlePayments();  // Handle payments (new option)
                 break;
             case 7:
-                viewPaymentSummary();
-                break;
-            case 8:
-                System.out.println("Exiting the program. Goodbye!");  // Exit
+                exitProgram(); // Corrected by adding a semicolon here
+                System.out.println("Exiting the program. Goodbye!");// Exit
                 break;
             default:
-                System.out.println("Invalid option. Please choose a number between 1 and 8.");
+                System.out.println("Invalid option. Please choose a number between 1 and 7.");
         }
+    }
+    /**
+     * Exits the program.
+     */
+    private void exitProgram() {
+        System.out.println("Exiting the program. Goodbye!");  // Print a goodbye message
+        System.exit(0);  // Exit the program
     }
 
     /**
      * Registers a new member by collecting their details and passing them to the controller.
      */
     private void registerMember() {
+
+
         System.out.print("Enter member name: ");
         String name = scanner.nextLine();
         System.out.print("Enter age: ");
@@ -157,6 +162,8 @@ public class UserInterface {
      * Updates an existing member's information based on the provided member ID and new details.
      */
     private void updateMember() {
+
+
         System.out.print("Enter member ID to update: ");
         int memberId = Integer.parseInt(scanner.nextLine());
 
@@ -188,7 +195,7 @@ public class UserInterface {
         PaymentStatus paymentStatus = PaymentStatus.PENDING;  // Default to PENDING
 
         // Call the controller's updateMember method with all new attributes
-        memberController.updateMember(memberId, name, email, age, city, street, region, zipcode, membershipType,  membershipStatus,activitytype, paymentStatus, phoneNumber);
+        memberController.updateMember(memberId, name, email, age, city, street, region, zipcode, membershipType, membershipStatus,activitytype, paymentStatus, phoneNumber);
     }
 
     /**
@@ -234,9 +241,10 @@ public class UserInterface {
         System.out.println("1. Register Payment");
         System.out.println("2. View Payments for Member");
         System.out.println("3. Filter Members by Payment Status");
-        System.out.println("4. Exit to Main Menu");
+        System.out.println("4. View Payment Summary");  // Added Payment Summary option
+        System.out.println("5. Exit to Main Menu");
 
-        System.out.print("Please choose an option (1-4): ");
+        System.out.print("Please choose an option (1-5): ");
         int paymentOption = Integer.parseInt(scanner.nextLine());
 
         switch (paymentOption) {
@@ -250,6 +258,9 @@ public class UserInterface {
                 filterMembersByPaymentStatus();  // Filter members by payment status
                 break;
             case 4:
+                paymentController.viewPaymentSummary(); // Show payment summary
+                break;
+            case 5:
                 return;  // Exit to main menu
             default:
                 System.out.println("Invalid option. Please choose a valid number.");
@@ -279,16 +290,26 @@ public class UserInterface {
         // Call the PaymentController to view payments for the member
         paymentController.viewPaymentsForMember(memberId);
     }
-    //
+
     private void viewPaymentSummary() {
         System.out.println("Payment Summary: ");
-        treasurerDashboard.displayTotalExpectedAmount();
-        treasurerDashboard.displayMemberPayment();
+        // Here, you can add logic to summarize total payments, paid members, etc.
+        // For example, we can get a list of all payments from PaymentController and sum them.
+        List<Member> paidMembers = paymentController.getMembersPaidList();
+        double totalPayments = paidMembers.stream()
+                .mapToDouble(member -> paymentController.calculateMembershipFeeForMember(member.getMemberId()))
+                .sum();
+        System.out.println("Total Payments Made: " + totalPayments);
+        System.out.println("Number of Members Paid: " + paidMembers.size());
     }
-    private void filterMembersByPaymentStatus() {
-        System.out.println("Enter payment status, Complete or Pending: ");
-        String paymentStatus = scanner.nextLine();
 
-        treasurerDashboard.filterByPaymentStatus(paymentStatus);
+    private void filterMembersByPaymentStatus() {
+        System.out.println("Enter payment status (COMPLETE or PENDING): ");
+        String statusInput = scanner.nextLine().toUpperCase();
+        PaymentStatus paymentStatus = PaymentStatus.valueOf(statusInput);
+
+        List<Member> filteredMembers = paymentController.getMembersByPaymentStatus(paymentStatus);
+        System.out.println("Members with payment status " + paymentStatus + ":");
+        filteredMembers.forEach(member -> System.out.println("ID: " + member.getMemberId() + ", Name: " + member.getName()));
     }
 }

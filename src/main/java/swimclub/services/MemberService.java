@@ -124,18 +124,7 @@ public class MemberService {
      * @param paymentStatus The status of the payment (e.g., COMPLETE, PENDING).
      * @param amount The amount of the payment.
      */
-    public void registerPayment(int memberId, PaymentStatus paymentStatus, double amount) {
-        Member member = repository.findById(memberId);
-        if (member == null) {
-            System.out.println("Member not found with ID: " + memberId);
-            return;
-        }
 
-        // Assuming that you have a PaymentRepository to save the payment (not implemented here)
-        Payment newPayment = new Payment(0, paymentStatus, member, java.time.LocalDate.now(), amount); // Set the payment with current date
-        // PaymentRepository.save(newPayment); // Save the payment in the repository
-        System.out.println("Payment registered for member ID: " + memberId);
-    }
 
     /**
      * Views all payments made by a specific member.
