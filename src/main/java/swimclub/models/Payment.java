@@ -4,10 +4,10 @@ import java.time.LocalDate;
 
 public class Payment {
     private int paymentId;                 // Unique ID for the payment
-    private PaymentStatus paymentStatus;  // COMPLETE, PENDING, FAILED
-    private Member member;                // Member associated with the payment
-    private LocalDate paymentDate;        // Date of payment
-    private double amountPerYear;         // Annual membership fee
+    private PaymentStatus paymentStatus;   // COMPLETE, PENDING, FAILED
+    private Member member;                 // Member associated with the payment
+    private LocalDate paymentDate;         // Date of payment
+    private double amountPerYear;          // Annual membership fee
 
     /**
      * Constructor for Payment.

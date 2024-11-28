@@ -1,2 +1,2 @@
-1;esben viinblad jensen;esbenviinblad@gmail.com,;valby;gåsebæksvej 4;cph;2500;32;21125899;SENIOR COMPETITIVE Swimmer;ACTIVE;PENDING
-2;rasmus;rasbiehl@gmail.com;hej;hej;hej;2323;16;20212830;JUNIOR COMPETITIVE Swimmer;ACTIVE;PENDING
+1;test;test@;test;test;test;0;34;23232323;SENIOR COMPETITIVE;ACTIVE;COMPLETE
+2;test2;test2@test;test2;test2;test2;1111;15;33333333;JUNIOR COMPETITIVE;ACTIVE;COMPLETE

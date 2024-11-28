@@ -1,75 +1,99 @@
 package swimclub.repositories;
 
+import swimclub.models.Member;
 import swimclub.models.Payment;
+import swimclub.models.PaymentStatus;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.logging.Logger;
 
-/**
- * Repository for managing Payment entities.
- */
 public class PaymentRepository {
+    private static final Logger LOGGER = Logger.getLogger(PaymentRepository.class.getName());
     private final List<Payment> payments;
 
-    // Constructor initializes an empty list of payments
     public PaymentRepository() {
         this.payments = new ArrayList<>();
     }
 
-    /**
-     * Adds a new payment to the repository.
-     *
-     * @param payment The payment to add.
-     */
     public void save(Payment payment) {
-        payments.add(payment);
-    }
-
-    /**
-     * Retrieves a payment by its ID.
-     *
-     * @param paymentId The ID of the payment to retrieve.
-     * @return The payment if found, or null otherwise.
-     */
-    public Payment findById(int paymentId) {
-
-        return payments.stream()
-                .filter(p -> p.getPaymentId() == paymentId)
-                .findFirst()
-                .orElse(null);
-    }
-
-    /**
-     * Retrieves all payments in the repository.
-     *
-     * @return A list of all payments.
-     */
-    public List<Payment> findAll() {
-        return new ArrayList<>(payments); // Return a copy to avoid external modification
-    }
-
-    /**
-     * Retrieves all payments for a specific member by their ID.
-     *
-     * @param memberId The member ID to search for payments.
-     * @return A list of payments for the specified member.
-     */
-    public List<Payment> findPaymentsByMemberId(int memberId) {
-        List<Payment> memberPayments = new ArrayList<>();
-        for (Payment payment : payments) {
-            if (payment.getMember().getMemberId() == memberId) {
-                memberPayments.add(payment);
-            }
+        if (payment == null) {
+            throw new IllegalArgumentException("Payment cannot be null.");
         }
-        return memberPayments;
+
+        if (payments.stream().anyMatch(p -> p.getPaymentId() == payment.getPaymentId())) {
+            LOGGER.warning("Duplicate payment attempt for Payment ID: " + payment.getPaymentId());
+            return;
+        }
+
+        payments.add(payment);
+        LOGGER.info("Payment added successfully with ID: " + payment.getPaymentId());
     }
 
-    /**
-     * Get the next available payment ID (similar to getNextMemberId)
-     *
-     * @return The next available payment ID.
-     */
+    // In PaymentRepository.java
+    public void loadPayments(String filePath, MemberRepository memberRepository) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                Payment payment = parsePayment(line, memberRepository); // Associate payment with member
+                if (payment != null) {
+                    payments.add(payment); // Add payment to the in-memory list
+                    // Update the member's payment status based on the loaded payment
+                    Member member = payment.getMember(); // Get the member from the payment
+                    if (member != null) {
+                        member.setPaymentStatus(payment.getPaymentStatus());
+                    }
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Error loading payments: " + e.getMessage());
+        }
+    }
+
+    private Payment parsePayment(String line, MemberRepository memberRepository) {
+        String[] parts = line.split(";");
+        try {
+            int paymentId = Integer.parseInt(parts[0]);
+            int memberId = Integer.parseInt(parts[1]);
+            double amount = Double.parseDouble(parts[2]);
+            LocalDate paymentDate = LocalDate.parse(parts[3]);
+            PaymentStatus status = PaymentStatus.valueOf(parts[4].toUpperCase());
+
+            // Find the member associated with this payment
+            Member member = memberRepository.findById(memberId);
+            if (member == null) {
+                throw new IllegalArgumentException("Member not found for ID: " + memberId);
+            }
+
+            return new Payment(paymentId, status, member, paymentDate, amount);
+        } catch (Exception e) {
+            System.err.println("Error parsing payment: " + line + " - " + e.getMessage());
+            return null;
+        }
+    }
+
+    // Fetch payments by memberId
+    public List<Payment> findPaymentsByMemberId(int memberId) {
+        return payments.stream()
+                .filter(payment -> payment.getMember().getMemberId() == memberId)
+                .toList();
+    }
+
+    // Return all payments in the repository
+    public List<Payment> findAll() {
+        return new ArrayList<>(payments);
+    }
+
+    // Get next available payment ID
     public int getNextPaymentId() {
-        return payments.size() + 1;  // Assuming payment IDs are sequential
+        return payments.stream()
+                .mapToInt(Payment::getPaymentId)
+                .max()
+                .orElse(0) + 1;
     }
 }
