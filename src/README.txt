@@ -1,5 +1,9 @@
 Swim Club Management System
-Overview
+Project Description
+
+This is a Swim Club Management System, a software project developed by 4 programming developers.
+The goal of this project is to provide a comprehensive solution for managing swim club members, their memberships, activities, and payments.
+The system allows for member registration, updates, deletion, payment management, and more. It is designed to make the management of a swim club easier and more efficient.
 
 The Swim Club Management System is a software solution for managing a swim club's members, payments, and related activities. The system allows you to:
 
@@ -22,6 +26,26 @@ Technologies Used
     Java: The core programming language.
     File Handling: For saving and loading member and payment data from text files.
     Object-Oriented Programming: Designed using classes and objects to manage members, payments, and activities.
+
+
+Features
+
+    Member Management:
+        Register new members.
+        Update member information.
+        View all members.
+        Delete members.
+        Search members by ID, name, or phone number.
+
+    Membership Types:
+        Different membership types: Junior, Senior, Competitive, and Exercise.
+
+    Payment Management:
+        Register payments for members.
+        View payments made by a specific member.
+        Filter members by payment status (Complete, Pending, Failed).
+        Generate payment summaries.
+        Set payment reminders.
 
 File Structure
 
