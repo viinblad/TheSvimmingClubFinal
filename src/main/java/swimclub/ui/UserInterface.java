@@ -138,7 +138,7 @@ public class UserInterface {
         PaymentStatus paymentStatus = PaymentStatus.PENDING;  // Default payment status
 
         // Call the controller to register the new member
-        Member newMember = memberController.registerMember(name, email, city, street, region, zipcode, membershipType, membershipStatus, activityType, paymentStatus, age, phoneNumber);
+        Member newMember = memberController.registerMember(name, email, city, street, region, Integer.parseInt(zipcode), membershipType, membershipStatus, activityType, paymentStatus, age, Integer.parseInt(phoneNumber));
 
         if (newMember != null) {
             // Calculate the membership fee
@@ -189,7 +189,7 @@ public class UserInterface {
 
 
         // Call the controller's updateMember method with all new attributes
-        memberController.updateMember(memberId, name, email, age, city, street, region, zipcode, membershipType, membershipStatus, activitytype, paymentStatus, phoneNumber);
+        memberController.updateMember(memberId, name, email, age, city, street, region, Integer.parseInt(zipcode), membershipType, membershipStatus, activitytype, paymentStatus, Integer.parseInt(phoneNumber));
     }
 
     /**

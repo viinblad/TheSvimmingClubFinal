@@ -24,9 +24,9 @@ class MemberControllerTest {
     @BeforeEach
     void setUp() {
         // Sørg for at initialisere FileHandler med korrekte argumenter (fiktive stier for test)
-        String memberFilePath = "test_members.dat";
-        String paymentFilePath = "test_payments.dat";
-        String reminderFilePath = "test_reminders.dat";
+        String memberFilePath = "test_members.txt";
+        String paymentFilePath = "test_payments.txt";
+        String reminderFilePath = "test_reminders.txt";
         fileHandler = new FileHandler(memberFilePath, paymentFilePath, reminderFilePath);
 
         // Initialiser MemberRepository med den korrekte FileHandler
@@ -62,8 +62,8 @@ class MemberControllerTest {
         String phoneNumber = "60126754";
 
         // Act
-        Member registeredMember = controller.registerMember(name, email, city, street, region, zipcode,
-                membershipType, membershipStatus, activityType, paymentStatus, ageStr, phoneNumber);
+        Member registeredMember = controller.registerMember(name, email, city, street, region, Integer.parseInt(zipcode),
+                membershipType, membershipStatus, activityType, paymentStatus, ageStr, Integer.parseInt(phoneNumber));
 
         // Assert
         assertNotNull(registeredMember); // Ensure a member is returned
@@ -87,8 +87,8 @@ class MemberControllerTest {
         String phoneNumber = "60126754";
 
         // Act
-        Member registeredMember = controller.registerMember(name, email, city, street, region, zipcode,
-                membershipType, membershipStatus, activityType, paymentStatus, ageStr, phoneNumber);
+        Member registeredMember = controller.registerMember(name, email, city, street, region, Integer.parseInt(zipcode),
+                membershipType, membershipStatus, activityType, paymentStatus, ageStr, Integer.parseInt(phoneNumber));
 
         // Assert
         assertNotNull(registeredMember); // Ensure a member is returned
@@ -113,8 +113,8 @@ class MemberControllerTest {
         String phoneNumber = "60126754";
 
         // Act - Register the member using the controller
-        Member registeredMember = controller.registerMember(name, email, city, street, region, zipcode,
-                membershipType, membershipStatus, activityType, paymentStatus, ageStr, phoneNumber);
+        Member registeredMember = controller.registerMember(name, email, city, street, region, Integer.parseInt(zipcode),
+                membershipType, membershipStatus, activityType, paymentStatus, ageStr, Integer.parseInt(phoneNumber));
 
         // Store the member's ID for later use in the update
         int memberId = registeredMember.getMemberId();
@@ -135,8 +135,8 @@ class MemberControllerTest {
 
         // Act - Update the member with the new information
         controller.updateMember(memberId, newName, newEmail,
-                newAgeStr, newCity, newStreet, newRegion, newZipcode,
-                newMembershipType, newMembershipStatus, newActivityType, newPaymentStatus, newPhoneNumber);
+                newAgeStr, newCity, newStreet, newRegion, Integer.parseInt(newZipcode),
+                newMembershipType, newMembershipStatus, newActivityType, newPaymentStatus, Integer.parseInt(newPhoneNumber));
 
         // Fetch the updated member from the repository
         Member updatedMember = memberRepository.findById(memberId);
@@ -171,8 +171,8 @@ class MemberControllerTest {
 
         //Act - Deleting the member
         Member registeredMember = controller.registerMember(name, email, city,
-                street, region, zipcode, membershipType, membershipStatus, activityType,
-                paymentStatus, ageStr, phoneNumber);
+                street, region, Integer.parseInt(zipcode), membershipType, membershipStatus, activityType,
+                paymentStatus, ageStr, Integer.parseInt(phoneNumber));
 
         controller.deleteMember(registeredMember.getMemberId());
 
@@ -211,12 +211,12 @@ class MemberControllerTest {
 
         // Act - Register Carsten and Kasper
         Member carsten = controller.registerMember(carstenName, carstenEmail, carstenCity, carstenStreet, carstenRegion,
-                carstenZipcode, carstenMembershipType, carstenMembershipStatus, carstenActivityType, carstenPaymentStatus,
-                carstenAgeStr, carstenPhoneNumber);
+                Integer.parseInt(carstenZipcode), carstenMembershipType, carstenMembershipStatus, carstenActivityType, carstenPaymentStatus,
+                carstenAgeStr, Integer.parseInt(carstenPhoneNumber));
 
         Member kasper = controller.registerMember(kasperName, kasperEmail, kasperCity, kasperStreet, kasperRegion,
-                kasperZipcode, kasperMembershipType, kasperMembershipStatus, kasperActivityType, kasperPaymentStatus,
-                kasperAgeStr, kasperPhoneNumber);
+                Integer.parseInt(kasperZipcode), kasperMembershipType, kasperMembershipStatus, kasperActivityType, kasperPaymentStatus,
+                kasperAgeStr, Integer.parseInt(kasperPhoneNumber));
 
         controller.viewAllMembers();
 
@@ -242,8 +242,8 @@ class MemberControllerTest {
         String phoneNumber = "60126754";
 
         // Act - Register the new member
-        Member registeredMember = controller.registerMember(name, email, city, street, region, zipcode,
-                membershipType, membershipStatus, activityType, paymentStatus, ageStr, phoneNumber);
+        Member registeredMember = controller.registerMember(name, email, city, street, region, Integer.parseInt(zipcode),
+                membershipType, membershipStatus, activityType, paymentStatus, ageStr, Integer.parseInt(phoneNumber));
 
         // Act - Search for members by name
         List<Member> memberList = controller.searchMembers("Carsten");
