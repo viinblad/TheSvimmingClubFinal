@@ -291,7 +291,9 @@ public class UserInterface {
         // Call the PaymentController to view payments for the member
         paymentController.viewPaymentsForMember(memberId);
     }
-
+    /**
+     * Displays the payment summary, including the total payments made and the number of members who have paid.
+     */
     private void viewPaymentSummary() {
         System.out.println("Payment Summary: ");
         List<Member> paidMembers = paymentController.getMembersPaidList();
@@ -301,7 +303,9 @@ public class UserInterface {
         System.out.println("Total Payments Made: " + totalPayments);
         System.out.println("Number of Members Paid: " + paidMembers.size());
     }
-
+    /**
+     * Filters members based on their payment status and displays the filtered list.
+     */
     private void filterMembersByPaymentStatus() {
         System.out.println("Enter payment status (COMPLETE or PENDING): ");
         String statusInput = scanner.nextLine().toUpperCase();
@@ -311,8 +315,13 @@ public class UserInterface {
         System.out.println("Members with payment status " + paymentStatus + ":");
         filteredMembers.forEach(member -> System.out.println("ID: " + member.getMemberId() + ", Name: " + member.getName()));
     }
-
-    //User input age rule
+    /**
+     * Validates and retrieves a positive numeric age input from the user.
+     *
+     * @param scanner The Scanner object for reading user input.
+     * @param prompt  The prompt message displayed to the user.
+     * @return A valid age input as a string.
+     */
     private static String correctAgeInput(Scanner scanner, String prompt) {
         String age;
         while (true) {
@@ -340,7 +349,13 @@ public class UserInterface {
             }
         }
     }
-
+    /**
+     * Validates and retrieves a valid 8-digit phone number input from the user.
+     *
+     * @param scanner The Scanner object for reading user input.
+     * @param prompt  The prompt message displayed to the user.
+     * @return A valid phone number as an integer.
+     */
     // Rule for right phonenumber input
     private static int correctPHInput(Scanner scanner, String prompt) {
         int phoneNumber;

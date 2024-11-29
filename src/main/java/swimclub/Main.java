@@ -10,6 +10,12 @@ import swimclub.ui.UserInterface;
 import swimclub.utilities.FileHandler;
 
 public class Main {
+    /**
+     * The main method that initializes the application, loads data, and starts the user interface.
+     * It also handles saving changes back to the files after the user interaction.
+     *
+     * @param args Command-line arguments (not used in this program).
+     */
     public static void main(String[] args) {
         // File paths for member data, payment data, and reminder data
         String memberFilePath = "src/main/resources/members.txt";

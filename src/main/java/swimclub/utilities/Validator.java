@@ -114,8 +114,11 @@ public class Validator {
      * @param phoneNumber      The phone number of the member.
      * @param membershipStatus The membership status of the member.
      * @param paymentStatus    The payment status of the member.
+     * @param activityType     The preferred activity type of the member (e.g., Breaststroke, Crawl).
      * @throws IllegalArgumentException if any validation fails.
+     *
      */
+
     public static void validateMemberData(String name, int age, String membershipType,
                                           String email, String city, String street, String region, int zipcode, int phoneNumber,
                                           MembershipStatus membershipStatus, String activityType, PaymentStatus paymentStatus) throws IllegalArgumentException {

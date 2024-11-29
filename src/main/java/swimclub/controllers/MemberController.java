@@ -12,6 +12,12 @@ public class MemberController {
     private final MemberRepository memberRepository;
 
     // Constructor to initialize the service and repository
+    /**
+     * Initializes the MemberController with the provided service and repository.
+     *
+     * @param memberService The service to handle member logic.
+     * @param memberRepository The repository to interact with member data.
+     */
     public MemberController(MemberService memberService, MemberRepository memberRepository) {
         this.memberService = memberService;
         this.memberRepository = memberRepository;
@@ -19,6 +25,22 @@ public class MemberController {
 
     /**
      * Registers a new member after validating the input.
+     * This method also assigns the next available member ID, parses the membership type and activity type,
+     * and determines if the member is a Junior or Senior based on age.
+     *
+     * @param name             The name of the member.
+     * @param email            The email address of the member.
+     * @param city             The city where the member lives.
+     * @param street           The street address of the member.
+     * @param region           The region where the member lives.
+     * @param zipcode          The zip code of the member's address.
+     * @param membershipType   The type of membership (e.g., Junior or Senior, Competitive or Exercise).
+     * @param membershipStatus The current membership status (e.g., ACTIVE).
+     * @param activityType     The type of activity the member participates in (e.g., Breaststroke, Crawl).
+     * @param paymentStatus    The current payment status (e.g., PENDING, COMPLETE).
+     * @param ageStr           The age of the member as a string.
+     * @param phoneNumber      The phone number of the member.
+     * @return The newly registered member, or null if there was an error during registration.
      */
     public Member registerMember(String name, String email, String city, String street, String region, int zipcode,
                                  String membershipType, MembershipStatus membershipStatus, String activityType,
@@ -68,6 +90,21 @@ public class MemberController {
 
     /**
      * Updates an existing member after validating the input.
+     * This method also parses and validates the updated member's details.
+     *
+     * @param memberId         The ID of the member to update.
+     * @param newName          The updated name of the member.
+     * @param newEmail         The updated email address of the member.
+     * @param newAgeStr        The updated age of the member as a string.
+     * @param newCity          The updated city of the member.
+     * @param newStreet        The updated street address of the member.
+     * @param newRegion        The updated region where the member lives.
+     * @param newZipcode       The updated zip code of the member's address.
+     * @param newMembershipType The updated type of membership (e.g., Junior or Senior).
+     * @param newMembershipStatus The updated membership status (e.g., ACTIVE).
+     * @param newActivityType  The updated activity type the member participates in.
+     * @param newPaymentStatus The updated payment status (e.g., PENDING, COMPLETE).
+     * @param newPhoneNumber   The updated phone number of the member.
      */
     public void updateMember(int memberId, String newName, String newEmail, String newAgeStr, String newCity,
                              String newStreet, String newRegion, int newZipcode, String newMembershipType,
@@ -119,6 +156,10 @@ public class MemberController {
 
     /**
      * Deletes a member by ID.
+     * This method removes the member from both the repository and the service.
+     *
+     * @param memberId The ID of the member to delete.
+     * @return true if the member was deleted successfully, false if the member was not found.
      */
     public boolean deleteMember(int memberId) {
         Member member = memberRepository.findById(memberId);
@@ -139,6 +180,7 @@ public class MemberController {
 
     /**
      * View all members stored in the repository.
+     * This method prints the details of all registered members.
      */
     public void viewAllMembers() {
         List<Member> allMembers = memberRepository.findAll();
@@ -157,11 +199,21 @@ public class MemberController {
 
     /**
      * Searches for members by ID, name, or phone number.
+     * This method delegates the search functionality to the service layer.
+     *
+     * @param query The search query to match.
+     * @return A list of members matching the query.
      */
     public List<Member> searchMembers(String query) {
         return memberService.searchMembers(query);
     }
-
+    /**
+     * Safely parses the age from a string.
+     *
+     * @param ageStr The age as a string to be parsed.
+     * @return The parsed age as an integer.
+     * @throws IllegalArgumentException If the age is not a valid positive number.
+     */
     private int parseAge(String ageStr) {
         try {
             // Parse the age safely, throw exception if not valid

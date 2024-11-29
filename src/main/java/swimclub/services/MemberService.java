@@ -9,6 +9,12 @@ import java.util.List;
 
 public class MemberService {
     private final MemberRepository repository;
+    // Constructor to initialize the repository
+    /**
+     * Initializes the member service with the provided member repository.
+     *
+     * @param repository The repository to interact with member data.
+     */
 
     // Constructor to initialize the repository
     public MemberService(MemberRepository repository) {
@@ -21,6 +27,7 @@ public class MemberService {
      * determines the membership level based on age, and then saves the member to the repository.
      *
      * @param member The member to register.
+     * @throws IllegalArgumentException If the member data is invalid during validation.
      */
     public void registerMember(Member member) {
         // Assign the next available member ID automatically
@@ -51,11 +58,12 @@ public class MemberService {
     }
 
     /**
-     * Update an existing member's details.
+     * Updates an existing member's details.
      * This method validates the updated member data, applies age-based membership level logic,
      * and then updates the member in the repository.
      *
      * @param updatedMember The updated member data.
+     * @throws IllegalArgumentException If the updated member data is invalid during validation.
      */
     public void updateMember(Member updatedMember) {
         // Validate updated member data before updating using the Validator class
@@ -75,9 +83,14 @@ public class MemberService {
         setMembershipLevelBasedOnAge(updatedMember);
 
         // Update the member in the repository
-        repository.update(updatedMember); // Update the member in the repository
+        repository.update(updatedMember);
     }
-
+    /**
+     * Deletes a member by their ID.
+     *
+     * @param memberId The ID of the member to delete.
+     * @throws RuntimeException If the member cannot be found by the ID.
+     */
     public void deleteMember(int memberId) {
         Member member = repository.findById(memberId);
 
@@ -115,14 +128,6 @@ public class MemberService {
     public List<Member> searchMembers(String query) {
         return repository.search(query); // Delegate to repository for searching members
     }
-
-    /**
-     * Registers a payment for a specific member.
-     *
-     * @param memberId The member ID to register the payment for.
-     * @param paymentStatus The status of the payment (e.g., COMPLETE, PENDING).
-     * @param amount The amount of the payment.
-     */
 
 
     /**

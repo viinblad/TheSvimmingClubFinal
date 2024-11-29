@@ -66,6 +66,7 @@ public class PaymentRepository {
      * Saves a payment to the repository.
      *
      * @param payment The payment object to save.
+     * @throws IllegalArgumentException If the payment is null or a duplicate Payment ID exists.
      */
     public void save(Payment payment) {
         if (payment == null) {
@@ -104,7 +105,13 @@ public class PaymentRepository {
             System.err.println("Error loading payments: " + e.getMessage());
         }
     }
-
+    /**
+     * Parses a payment from a string and associates it with a member.
+     *
+     * @param line            The string containing payment details.
+     * @param memberRepository The repository to find members by ID.
+     * @return A Payment object parsed from the string or null if parsing fails.
+     */
     private Payment parsePayment(String line, MemberRepository memberRepository) {
         String[] parts = line.split(";");
         try {
