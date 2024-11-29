@@ -4,7 +4,7 @@ Project Description
 This is a Swim Club Management System, a software project developed by 4 programming student developers.
 The goal of this project is to provide a comprehensive solution for managing swim club members, their memberships, activities, and payments.
 The system allows for member registration, updates, deletion, payment management, and more. It is designed to make the management of a swim club easier and more efficient.
-The software is apart of a school delivery assignment.
+The software is a part of a school delivery assignment.
 
 The Swim Club Management System is a software solution for managing a swim club's members, payments, and related activities. The system allows you to:
 
