@@ -1,4 +1,4 @@
-package swimclub.utilities;
+package swimclub.Utilities;
 
 import swimclub.models.*;
 import swimclub.repositories.MemberRepository;

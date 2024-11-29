@@ -4,8 +4,8 @@ import swimclub.models.Member;
 import swimclub.models.PaymentStatus;
 import swimclub.services.PaymentService;
 import swimclub.repositories.MemberRepository;
-import swimclub.utilities.FileHandler;
-import swimclub.utilities.Validator;
+import swimclub.Utilities.FileHandler;
+import swimclub.Utilities.Validator;
 
 import java.util.ArrayList;
 import java.util.List;
