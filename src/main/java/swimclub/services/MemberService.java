@@ -2,10 +2,8 @@ package swimclub.services;
 
 import swimclub.models.Member;
 import swimclub.models.MembershipLevel;
-import swimclub.models.Payment;
-import swimclub.models.PaymentStatus;
 import swimclub.repositories.MemberRepository;
-import swimclub.Utilities.Validator;
+import swimclub.utilities.Validator;
 
 import java.util.List;
 

@@ -3,7 +3,7 @@ package swimclub.repositories;
 import swimclub.models.Member;
 import swimclub.models.MembershipLevel;
 import swimclub.models.MembershipType;
-import swimclub.Utilities.FileHandler;
+import swimclub.utilities.FileHandler;
 
 import java.util.List;
 import java.util.Optional;
