@@ -7,7 +7,7 @@ import swimclub.repositories.PaymentRepository;
 import swimclub.services.MemberService;
 import swimclub.services.PaymentService;
 import swimclub.ui.UserInterface;
-import swimclub.utilities.FileHandler;
+import swimclub.Utilities.FileHandler;
 
 public class Main {
     public static void main(String[] args) {

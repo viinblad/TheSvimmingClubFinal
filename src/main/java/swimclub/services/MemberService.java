@@ -5,7 +5,7 @@ import swimclub.models.MembershipLevel;
 import swimclub.models.Payment;
 import swimclub.models.PaymentStatus;
 import swimclub.repositories.MemberRepository;
-import swimclub.utilities.Validator;
+import swimclub.Utilities.Validator;
 
 import java.util.List;
 

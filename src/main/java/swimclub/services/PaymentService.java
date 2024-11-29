@@ -6,7 +6,7 @@ import swimclub.models.Payment;
 import swimclub.models.PaymentStatus;
 import swimclub.repositories.MemberRepository;
 import swimclub.repositories.PaymentRepository;
-import swimclub.utilities.FileHandler;
+import swimclub.Utilities.FileHandler;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -159,6 +159,7 @@ public class PaymentService {
             if (member.getPaymentStatus() == PaymentStatus.COMPLETE) {
                 totalAmount += calculateMembershipFee(member);
             }
+
         }
 
         return "Total Members Paid: " + paidCount +
