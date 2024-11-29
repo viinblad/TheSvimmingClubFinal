@@ -56,7 +56,7 @@ Requirements
 Setup and Running the Project
 1. Clone the repository or download the project files.
 
-git clone https://github.com/your-repository-link/swim-club-management.git
+git clone https://github.com/rassbiehl/TheSwimmingClub.git
 
 2. Navigate to the project directory.
 
