@@ -20,13 +20,13 @@ public class MemberController {
     /**
      * Registers a new member after validating the input.
      */
-    public Member registerMember(String name, String email, String city, String street, String region, int zipcode,
+    public Member registerMember(String name, String email, String city, String street, String region, String zipcodeStr,
                                  String membershipType, MembershipStatus membershipStatus, String activityType,
-                                 PaymentStatus paymentStatus, String ageStr, int phoneNumber) {
+                                 PaymentStatus paymentStatus, String ageStr, String phoneNumberStr) {
         Member returnMember = null;
         try {
             // Validate member data
-            Validator.validateMemberData(name, Integer.parseInt(ageStr), membershipType, email, city, street, region, zipcode, phoneNumber,
+            Validator.validateMemberData(name, Integer.parseInt(ageStr), membershipType, email, city, street, region, Integer.parseInt(zipcodeStr), Integer.parseInt(phoneNumberStr),
                     membershipStatus, activityType, paymentStatus);
 
             // Parse the membershipType into a MembershipType object
@@ -37,6 +37,12 @@ public class MemberController {
 
             // Parse the age safely
             int age = parseAge(ageStr);
+
+            // Parse the age safely
+            int phoneNumber = parsePhoneNumber(phoneNumberStr);
+
+            // Parse the zipcode safely
+            int zipcode = parseZipCode(zipcodeStr);
 
             // Generate the next available member ID
             int memberId = memberRepository.getNextMemberId();
@@ -70,13 +76,13 @@ public class MemberController {
      * Updates an existing member after validating the input.
      */
     public void updateMember(int memberId, String newName, String newEmail, String newAgeStr, String newCity,
-                             String newStreet, String newRegion, int newZipcode, String newMembershipType,
+                             String newStreet, String newRegion, String newZipcodeStr, String newMembershipType,
                              MembershipStatus newMembershipStatus, String newActivityType, PaymentStatus newPaymentStatus,
-                             int newPhoneNumber) {
+                             String newPhoneNumberStr) {
         try {
             // Validate updated member data
             Validator.validateMemberData(newName, Integer.parseInt(newAgeStr), newMembershipType, newEmail, newCity, newStreet, newRegion,
-                    newZipcode, newPhoneNumber, newMembershipStatus, newActivityType, newPaymentStatus);
+                    Integer.parseInt(newZipcodeStr), Integer.parseInt(newPhoneNumberStr), newMembershipStatus, newActivityType, newPaymentStatus);
 
             // Find the existing member by ID
             Member memberToUpdate = memberRepository.findById(memberId);
@@ -86,6 +92,12 @@ public class MemberController {
             }
             // Parse the age safely
             int newAge = parseAge(newAgeStr);
+
+            // Parse the phonenumber safely
+            int newPhoneNumber = parsePhoneNumber(newPhoneNumberStr);
+
+            // Parse the zipcode safely
+            int newZipcode = parseZipCode(newZipcodeStr);
 
             // Parse updated types
             MembershipType membershipType = MembershipType.fromString(newMembershipType);
@@ -162,7 +174,7 @@ public class MemberController {
         return memberService.searchMembers(query);
     }
 
-    private int parseAge(String ageStr) {
+    public int parseAge(String ageStr) {
         try {
             // Parse the age safely, throw exception if not valid
             int age = Integer.parseInt(ageStr);
@@ -172,6 +184,22 @@ public class MemberController {
             return age;
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Invalid age input. Please enter a valid number.");
+        }
+    }
+    public int parsePhoneNumber(String phonenumberStr){
+        try {
+            // Parse the phonenumber safely,  throw exeption if not valid
+            return Integer.parseInt(phonenumberStr);
+            } catch (NumberFormatException e){
+            throw new IllegalArgumentException("Invalid phonenumber input. Please enter a valid phone number (8 digits):");
+        }
+    }
+    public int parseZipCode(String zipCodeStr){
+        try{
+            // Parse the phonenumber safely, trhwo exception if not valid
+            return Integer.parseInt(zipCodeStr);
+        } catch (Exception e){
+            throw new IllegalArgumentException("Invalid zipcode input. Please enter a valid zipcode number (4 digits):");
         }
     }
 }

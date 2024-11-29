@@ -2,9 +2,7 @@ package swimclub.ui;
 
 import swimclub.controllers.MemberController;
 import swimclub.controllers.PaymentController;
-import swimclub.models.Member;
-import swimclub.models.MembershipStatus;
-import swimclub.models.PaymentStatus;
+import swimclub.models.*;
 
 import java.util.List;
 import java.util.Scanner;
@@ -21,7 +19,7 @@ public class UserInterface {
     /**
      * Constructor to initialize the UserInterface with the member controller and payment controller.
      *
-     * @param memberController The controller that handles the logic for member actions.
+     * @param memberController  The controller that handles the logic for member actions.
      * @param paymentController The controller that handles the logic for payment actions.
      */
     public UserInterface(MemberController memberController, PaymentController paymentController) {
@@ -121,23 +119,20 @@ public class UserInterface {
     private void registerMember() {
         System.out.print("Enter member name: ");
         String name = scanner.nextLine();
-        String age = correctAgeInput(scanner,"Enter member age:");
-        System.out.print("Enter member email: ");
-        String email = scanner.nextLine();
-        System.out.println("Enter city of member");
+        String age = correctAgeInput(scanner, "Enter member age:");
+        String email = correctEmailInput(scanner, "Enter email:");
+        System.out.print("Enter city of member:");
         String city = scanner.nextLine();
-        System.out.println("Enter street of member");
+        System.out.print("Enter street of member:");
         String street = scanner.nextLine();
-        System.out.println("Enter region of member");
+        System.out.print("Enter region of member:");
         String region = scanner.nextLine();
-        System.out.print("Enter Zip code: ");
-        int zipcode = Integer.parseInt(scanner.nextLine());
+        String zipcode = correctZipCodeInput(scanner,"Enter Zip code (4 digits):");
         System.out.print("Enter membership type (Junior/Senior, Competitive/Exercise): ");
         String membershipType = scanner.nextLine();
         System.out.print("Enter activity type (Breaststroke, Crawl, Backcrawl or Butterfly):");
         String activityType = scanner.nextLine();
-        System.out.print("Enter phone number (8 digits): ");
-        int phoneNumber = Integer.parseInt(scanner.nextLine());
+        String phoneNumber = correctPHInput(scanner, "Enter phone number (8 digits):");
 
         MembershipStatus membershipStatus = MembershipStatus.ACTIVE;  // Default membership status
         PaymentStatus paymentStatus = PaymentStatus.PENDING;  // Default payment status
@@ -171,29 +166,27 @@ public class UserInterface {
     private void updateMember() {
         System.out.print("Enter member ID to update: ");
         int memberId = Integer.parseInt(scanner.nextLine());
-
         // Gather all the required updated attributes
         System.out.print("Enter new name: ");
         String name = scanner.nextLine();
-        System.out.print("Enter new email: ");
-        String email = scanner.nextLine();
-        String age = correctAgeInput(scanner,"Enter new age:");
+        String email = correctEmailInput(scanner,"Enter new Email:");
+        String age = correctAgeInput(scanner, "Enter new age:");
         System.out.print("Enter new city: ");
         String city = scanner.nextLine();
         System.out.print("Enter new street: ");
         String street = scanner.nextLine();
         System.out.print("Enter new region: ");
         String region = scanner.nextLine();
-        System.out.print("Enter new zip code: ");
-        int zipcode = Integer.parseInt(scanner.nextLine());
+        String zipcode = correctZipCodeInput(scanner,"Enter new zipcode");
         System.out.print("Enter new membership type (Junior/Senior, Competitive/Exercise): ");
         String membershipType = scanner.nextLine();
         System.out.println("Enter new activity type (Crawl, Backcrawl, Breathstroke or Butterfly):");
         String activitytype = scanner.nextLine();
-        int phoneNumber = correctPHInput(scanner,"Enter new phone number (8 digits): ");
+        String phoneNumber = correctPHInput(scanner, "Enter new phone number (8 digits): ");
 
         MembershipStatus membershipStatus = MembershipStatus.ACTIVE;  // Default to ACTIVE
         PaymentStatus paymentStatus = PaymentStatus.PENDING;  // Default to PENDING
+
 
         // Call the controller's updateMember method with all new attributes
         memberController.updateMember(memberId, name, email, age, city, street, region, zipcode, membershipType, membershipStatus, activitytype, paymentStatus, phoneNumber);
@@ -336,30 +329,64 @@ public class UserInterface {
                 }
             } catch (NumberFormatException e) {
                 // Handle invalid input and provide feedback to the user
-                System.out.println("Wrong input. Please enter numbers");
+                System.out.println("Invalid input. Please enter numbers");
             }
         }
     }
 
     // Rule for right phonenumber input
-    private static int correctPHInput(Scanner scanner, String prompt) {
-        int phoneNumber;
+    private static String correctPHInput(Scanner scanner, String prompt) {
+        String phoneNumber;
         while (true) {
-            System.out.print(prompt);
             try {
-                phoneNumber = scanner.nextInt();
-                scanner.nextLine(); //consume line
-                
-                if (phoneNumber >= 10000000 && phoneNumber <= 99999999) {
-                    break;
+                System.out.print(prompt);
+                phoneNumber = scanner.nextLine().trim();
+                if (!phoneNumber.matches("\\d+")) {
+                    throw new NumberFormatException("Only numeric values are allowed.");
+                }
+
+                if (Integer.parseInt(phoneNumber) >= 10000000 && Integer.parseInt(phoneNumber) <= 99999999) {
+                    return phoneNumber;
                 } else {
                     System.out.println("Phonenumber must be exactly 8 digits.");
                 }
 
-            } catch(Exception e){
+            } catch (NumberFormatException e) {
                 System.out.println("Invalid input. Please enter a 8 digits number.");
             }
         }
-        return phoneNumber;
+    }
+
+    private static String correctZipCodeInput(Scanner scanner, String prompt) {
+        String zipCode;
+        while (true) {
+            try {
+                System.out.print(prompt);
+                zipCode = scanner.nextLine().trim();
+                if (!zipCode.matches("\\d+")) {
+                    throw new NumberFormatException("Only numeric values are allowed");
+                }
+                if (Integer.parseInt(zipCode) >= 1000 && Integer.parseInt(zipCode) <= 9990) {
+                    return zipCode;
+                } else {
+                    System.out.println("Zipcode has to be 4 digits.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a 4 digits number.");
+            }
+        }
+    }
+    private static String correctEmailInput(Scanner scanner, String prompt){
+        String email;
+        while (true){
+            System.out.print(prompt);
+            email = scanner.nextLine();
+
+            if (email.contains("@") && email.contains(".")){
+                return email;
+            } else {
+                System.out.println("Invalid input. Email must contain '@' and '.' - Try again.");
+            }
+        }
     }
 }

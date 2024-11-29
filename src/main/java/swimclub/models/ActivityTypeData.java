@@ -11,6 +11,10 @@ public class ActivityTypeData {
         return type;
     }
 
+    public ActivityType getType() {
+        return type;
+    }
+
     public void setType(ActivityType type) {
         this.type = type;
     }

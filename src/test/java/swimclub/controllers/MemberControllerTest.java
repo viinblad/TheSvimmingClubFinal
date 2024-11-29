@@ -1,5 +1,6 @@
 package swimclub.controllers;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import swimclub.models.*;
@@ -8,6 +9,7 @@ import swimclub.services.MemberService;
 import swimclub.utilities.FileHandler;
 
 
+import java.io.File;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,6 +37,14 @@ class MemberControllerTest {
         controller = new MemberController(memberService, memberRepository);
     }
 
+    @AfterEach
+    void tearDown(){
+        new File("test_members.dat").delete();
+        new File("test_payments.dat").delete();
+        new File("test_reminders.dat").delete();
+
+    }
+
     @Test
     void registerMember_ShouldCreateSeniorMember_WhenAgeIsAbove18() {
         // Arrange
@@ -43,13 +53,13 @@ class MemberControllerTest {
         String city = "Herning";
         String street = "HB Hansensvej 2";
         String region = "MidtJylland";
-        int zipcode = 7400;
+        String zipcode = "7400";
         String membershipType = "Senior competitive";
         MembershipStatus membershipStatus = MembershipStatus.ACTIVE;
         String activityType = "Crawl";
         PaymentStatus paymentStatus = PaymentStatus.COMPLETE;
         String ageStr = "23";
-        int phoneNumber = 60126754;
+        String phoneNumber = "60126754";
 
         // Act
         Member registeredMember = controller.registerMember(name, email, city, street, region, zipcode,
@@ -58,7 +68,7 @@ class MemberControllerTest {
         // Assert
         assertNotNull(registeredMember); // Ensure a member is returned
         assertEquals("Carsten", registeredMember.getName()); // Ensure the name is correctly set
-        assertTrue(registeredMember instanceof SeniorMember); // Ensure it's a SeniorMember based on the age
+        assertInstanceOf(SeniorMember.class, registeredMember); // Ensure it's a SeniorMember based on the age
     }
     @Test
     void registerMember_ShouldCreateJuniorMember_WhenAgeIsUnder18() {
@@ -68,13 +78,13 @@ class MemberControllerTest {
         String city = "Herning";
         String street = "HB Hansensvej 2";
         String region = "MidtJylland";
-        int zipcode = 7400;
+        String zipcode = "7400";
         String membershipType = "Senior competitive";
         MembershipStatus membershipStatus = MembershipStatus.ACTIVE;
         String activityType = "Crawl";
         PaymentStatus paymentStatus = PaymentStatus.COMPLETE;
         String ageStr = "17";
-        int phoneNumber = 60126754;
+        String phoneNumber = "60126754";
 
         // Act
         Member registeredMember = controller.registerMember(name, email, city, street, region, zipcode,
@@ -83,7 +93,7 @@ class MemberControllerTest {
         // Assert
         assertNotNull(registeredMember); // Ensure a member is returned
         assertEquals("Carsten", registeredMember.getName()); // Ensure the name is correctly set
-        assertTrue(registeredMember instanceof JuniorMember); // Ensure it's a SeniorMember based on the age
+        assertInstanceOf(JuniorMember.class, registeredMember); // Ensure it's a SeniorMember based on the age
     }
 
     @Test
@@ -94,13 +104,13 @@ class MemberControllerTest {
         String city = "Herning";
         String street = "HB Hansensvej 2";
         String region = "MidtJylland";
-        int zipcode = 7400;
+        String zipcode = "7400";
         String membershipType = "Senior competitive";
         MembershipStatus membershipStatus = MembershipStatus.ACTIVE;
         String activityType = "Crawl";
         PaymentStatus paymentStatus = PaymentStatus.COMPLETE;
         String ageStr = "23";
-        int phoneNumber = 60126754;
+        String phoneNumber = "60126754";
 
         // Act - Register the member using the controller
         Member registeredMember = controller.registerMember(name, email, city, street, region, zipcode,
@@ -115,13 +125,13 @@ class MemberControllerTest {
         String newCity = "Aarhus";
         String newStreet = "Aarhus vej 2";
         String newRegion = "Midtjylland";
-        int newZipcode = 8800;
+        String newZipcode = "8800";
         String newMembershipType = "Senior exercise";  // New membership type
         MembershipStatus newMembershipStatus = MembershipStatus.ACTIVE;
         String newActivityType = "Crawl";
         PaymentStatus newPaymentStatus = PaymentStatus.COMPLETE;
         String newAgeStr = "45";  // New age
-        int newPhoneNumber = 60336754;
+        String newPhoneNumber = "60336754";
 
         // Act - Update the member with the new information
         controller.updateMember(memberId, newName, newEmail,
@@ -151,13 +161,13 @@ class MemberControllerTest {
         String city = "Herning";
         String street = "HB Hansensvej 2";
         String region = "MidtJylland";
-        int zipcode = 7400;
+        String zipcode = "7400";
         String membershipType = "Senior competitive";
         MembershipStatus membershipStatus = MembershipStatus.ACTIVE;
         String activityType = "Crawl";
         PaymentStatus paymentStatus = PaymentStatus.COMPLETE;
         String ageStr = "23";
-        int phoneNumber = 60126754;
+        String phoneNumber = "60126754";
 
         //Act - Deleting the member
         Member registeredMember = controller.registerMember(name, email, city,
@@ -178,26 +188,26 @@ class MemberControllerTest {
         String carstenCity = "Herning";
         String carstenStreet = "HB Hansensvej 2";
         String carstenRegion = "MidtJylland";
-        int carstenZipcode = 7400;
+        String carstenZipcode = "7400";
         String carstenMembershipType = "Senior competitive";
         MembershipStatus carstenMembershipStatus = MembershipStatus.ACTIVE;
         String carstenActivityType = "Crawl";
         PaymentStatus carstenPaymentStatus = PaymentStatus.COMPLETE;
         String carstenAgeStr = "23";
-        int carstenPhoneNumber = 60126754;
+        String carstenPhoneNumber = "60126754";
 
         String kasperName = "Kasper";
         String kasperEmail = "KasperWork@email.dk";
         String kasperCity = "Aarhus";
         String kasperStreet = "Aarhus vej 2";
         String kasperRegion = "MidtJylland";
-        int kasperZipcode = 8800;
+        String kasperZipcode = "8800";
         String kasperMembershipType = "Senior exercise";
         MembershipStatus kasperMembershipStatus = MembershipStatus.ACTIVE;
         String kasperActivityType = "Butterfly";
         PaymentStatus kasperPaymentStatus = PaymentStatus.COMPLETE;
         String kasperAgeStr = "30";
-        int kasperPhoneNumber = 60336754;
+        String kasperPhoneNumber = "60336754";
 
         // Act - Register Carsten and Kasper
         Member carsten = controller.registerMember(carstenName, carstenEmail, carstenCity, carstenStreet, carstenRegion,
@@ -223,13 +233,13 @@ class MemberControllerTest {
         String city = "Herning";
         String street = "HB Hansensvej 2";
         String region = "MidtJylland";
-        int zipcode = 7400;
+        String zipcode = "7400";
         String membershipType = "Senior competitive";
         MembershipStatus membershipStatus = MembershipStatus.ACTIVE;
         String activityType = "Crawl";
         PaymentStatus paymentStatus = PaymentStatus.COMPLETE;
         String ageStr = "23";
-        int phoneNumber = 60126754;
+        String phoneNumber = "60126754";
 
         // Act - Register the new member
         Member registeredMember = controller.registerMember(name, email, city, street, region, zipcode,
