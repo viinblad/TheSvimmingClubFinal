@@ -10,11 +10,15 @@ import swimclub.utilities.FileHandler;
 
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class MemberControllerTest {
+    private static final String TEST_MEMBER_FILE = "src/test/java/testResources/testMembers.dat";
+    private static final String TEST_PAYMENT_FILE = "src/test/java/testResources/testPayments.dat";
+    private static final String TEST_REMINDER_FILE = "src/test/java/testResources/testReminders.dat";
 
     private MemberService memberService;
     private MemberRepository memberRepository;
@@ -24,12 +28,12 @@ class MemberControllerTest {
     @BeforeEach
     void setUp() {
         // Ensure that FileHandler is initialized with the correct arguments (mock paths for the test)
-        String memberFilePath = "src/test/java/swimclub/controllers/testRessources/test_members.dat";
-        String paymentFilePath = "tsrc/test/java/swimclub/controllers/testRessources/test_members.dat"; // Note: This path seems incorrect (typo: "tsrc" should likely be "src")
-        String reminderFilePath = "src/test/java/swimclub/controllers/testRessources/test_members.dat";
+        createTestFile(TEST_MEMBER_FILE);
+        createTestFile(TEST_PAYMENT_FILE);
+        createTestFile(TEST_REMINDER_FILE);
 
         // Initialize the FileHandler with the file paths
-        fileHandler = new FileHandler(memberFilePath, paymentFilePath, reminderFilePath);
+        fileHandler = new FileHandler(TEST_MEMBER_FILE, TEST_PAYMENT_FILE, TEST_REMINDER_FILE);
 
         // Initialize MemberRepository with the FileHandler instance
         memberRepository = new MemberRepository(fileHandler);
@@ -38,13 +42,23 @@ class MemberControllerTest {
         memberService = new MemberService(memberRepository);
         controller = new MemberController(memberService, memberRepository);
     }
+    private void createTestFile(String fileName) {
+        File file = new File(fileName);
+        if (!file.exists()) {
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
 
     @AfterEach
     void tearDown(){
-        new File("src/test/java/swimclub/controllers/testRessources/test_members.dat").delete();
-        new File("src/test/java/swimclub/controllers/testRessources/test_members.dat").delete();
-        new File("src/test/java/swimclub/controllers/testRessources/test_members.dat").delete();
+        new File(TEST_MEMBER_FILE).delete();
+        new File(TEST_PAYMENT_FILE).delete();
+        new File(TEST_REMINDER_FILE).delete();
 
     }
 

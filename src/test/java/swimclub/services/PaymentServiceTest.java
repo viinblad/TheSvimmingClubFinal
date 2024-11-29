@@ -13,9 +13,9 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PaymentServiceTest {
-    private static final String TEST_MEMBER_FILE = "testMembers.txt";
-    private static final String TEST_PAYMENT_FILE = "testPayments.txt";
-    private static final String TEST_REMINDER_FILE = "testReminders.txt";
+    private static final String TEST_MEMBER_FILE = "src/test/java/testResources/testMembers.txt";
+    private static final String TEST_PAYMENT_FILE = "src/test/java/testResources/testPayments.txt";
+    private static final String TEST_REMINDER_FILE = "src/test/java/testResources/testReminders.txt";
 
     private FileHandler fileHandler;
     private MemberRepository memberRepository;
