@@ -15,7 +15,10 @@ public class Main {
      * It also handles saving changes back to the files after the user interaction.
      *
      * @param args Command-line arguments (not used in this program).
+     *             This parameter allows for passing arguments when running the program,
+     *             but in this specific implementation, it is not used in the code.
      */
+
     public static void main(String[] args) {
         // File paths for member data, payment data, and reminder data
         String memberFilePath = "src/main/resources/members.txt";
