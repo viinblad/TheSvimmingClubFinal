@@ -3,8 +3,8 @@ package swimclub.services;
 import org.junit.jupiter.api.*;
 import swimclub.models.*;
 import swimclub.repositories.*;
-import swimclub.Utilities.FileHandler;
-import swimclub.Utilities.Validator;
+import swimclub.utilities.FileHandler;
+import swimclub.utilities.Validator;
 
 import java.io.File;
 import java.io.IOException;
