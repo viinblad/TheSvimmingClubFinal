@@ -21,14 +21,18 @@ public class MembershipType {
     }
 
     /**
-     * @return The category of the membership.
+     * Gets the category of the membership.
+     *
+     * @return The category of the membership (Competitive or Exercise).
      */
     public MembershipCategory getCategory() {
         return category;
     }
 
     /**
-     * @return The level of the membership.
+     * Gets the level of the membership.
+     *
+     * @return The level of the membership (Junior or Senior).
      */
     public MembershipLevel getLevel() {
         return level;
@@ -45,7 +49,9 @@ public class MembershipType {
     }
 
     /**
-     * @return A descriptive string of the membership type.
+     * Provides a descriptive string of the membership type.
+     *
+     * @return A string representing the membership type in the format: "Junior Competitive Swimmer" or "Senior Exercise Swimmer".
      */
     @Override
     public String toString() {
@@ -58,6 +64,7 @@ public class MembershipType {
      *
      * @param membershipTypeStr A string representing the membership type (e.g., "Junior Competitive").
      * @return A MembershipType object corresponding to the string.
+     * @throws IllegalArgumentException If the string does not match a valid membership type format.
      */
     public static MembershipType fromString(String membershipTypeStr) {
         // Remove "Swimmer" suffix if it exists

@@ -13,7 +13,9 @@ public class MemberRepository {
     private final FileHandler fileHandler;
 
     /**
-     * Constructor for MemberRepository, initializes file handler and loads members.
+     * Constructor for MemberRepository, initializes the file handler and loads members from the file.
+     *
+     * @param fileHandler The file handler used to load and save members.
      */
     public MemberRepository(FileHandler fileHandler) {
         this.fileHandler = fileHandler;
@@ -22,67 +24,60 @@ public class MemberRepository {
 
     /**
      * Get the next available member ID based on the highest existing ID.
-     * This method will return the next available ID (current highest ID + 1).
+     * If there are no members, it starts from 1.
      *
-     * @return The next available member ID.
+     * @return The next available member ID as an integer.
      */
     public int getNextMemberId() {
         // If there are no members, return 1 as the first member ID
         if (members.isEmpty()) {
-            return 1;
+            return 1; // If no members, the first ID is 1
         }
 
         // Find the highest member ID
         int maxId = members.stream()
                 .mapToInt(Member::getMemberId)
                 .max()
-                .orElse(0);
+                .orElse(0); // Find the highest ID, default to 0 if no members
 
         return maxId + 1; // Return the next ID
     }
 
     /**
-     * Save a new member to the list and the file.
+     * Save a new member to the repository and persist the change to the file.
      *
-     * @param member The member to save.
+     * @param member The member to be saved.
      */
     public void save(Member member) {
-        // Ensure the correct membership level is set
-        ensureCorrectMembershipLevel(member);
-
-        // Add the member to the list
-        members.add(member);
-
-        // Save the member to the file
-        fileHandler.saveMembers(members);
-
-        // Reload members from the file to keep in-memory list updated
-        reloadMembers();
+        ensureCorrectMembershipLevel(member); // Ensure the member has the correct membership level
+        members.add(member); // Add the member to the list
+        fileHandler.saveMembers(members); // Save the updated list to the file
+        reloadMembers(); // Reload to keep the in-memory list updated
     }
 
     /**
-     * Delete a member from the list and th file.
+     * Delete a member from the repository and persist the change to the file.
      *
-     * @param member delete the member
+     * @param member The member to delete.
+     * @return True if the member was deleted, false otherwise.
      */
     public boolean delete(Member member) {
 
-        fileHandler.deleteMember(member);
-        return true;
+        fileHandler.deleteMember(member); // Delete the member using the file handler
+        return true; // Assume successful deletion
     }
 
     /**
-     * Ensure the membership level is set correctly based on the member's age.
-     * This ensures that a member is assigned to Senior or Junior based on age.
+     * Ensure the membership level (Junior or Senior) is correct based on the member's age.
      *
-     * @param member The member whose level needs to be set correctly.
+     * @param member The member whose membership level is to be validated and corrected.
      */
     public void ensureCorrectMembershipLevel(Member member) {
         MembershipType membershipType = member.getMembershipType();
         MembershipLevel correctLevel = (member.getAge() > 18) ? MembershipLevel.SENIOR : MembershipLevel.JUNIOR;
 
-        // Update the level dynamically
-        membershipType.setLevel(correctLevel);
+
+        membershipType.setLevel(correctLevel);  // Set the correct level
     }
 
     /**
@@ -95,13 +90,14 @@ public class MemberRepository {
         Optional<Member> member = members.stream()
                 .filter(m -> m.getMemberId() == id)
                 .findFirst();
-        return member.orElse(null); // Return null if not found
+        return member.orElse(null); // Return null if the member is not found
     }
 
     /**
-     * Update an existing member's data and save the updated list.
+     * Update an existing member's information in the repository and persist the change.
      *
-     * @param updatedMember The updated member data.
+     * @param updatedMember The member object with updated details.
+     * @throws RuntimeException If the member with the given ID is not found.
      */
     public void update(Member updatedMember) {
         Member existingMember = findById(updatedMember.getMemberId());
@@ -110,8 +106,8 @@ public class MemberRepository {
             throw new RuntimeException("Member not found for ID " + updatedMember.getMemberId());
         }
 
-        // Ensure the correct membership level is set
-        ensureCorrectMembershipLevel(updatedMember);
+
+        ensureCorrectMembershipLevel(updatedMember); // Ensure the correct membership level is set
 
         // Update the member details
         existingMember.setName(updatedMember.getName());
@@ -142,12 +138,12 @@ public class MemberRepository {
     public void reloadMembers() {
         this.members = fileHandler.loadMembers(); // Reload members from the file
     }
-    // Other methods...
 
     /**
-     * Searches members by ID, name, or phone number.
+     * Search for members by their ID, name, or phone number.
+     * The search is case-insensitive for name and exact for ID and phone number.
      *
-     * @param query The search query to match.
+     * @param query The search query (ID, name, or phone number).
      * @return A list of members matching the query.
      */
     public List<Member> search(String query) {
