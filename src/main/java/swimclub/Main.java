@@ -21,9 +21,9 @@ public class Main {
 
     public static void main(String[] args) {
         // File paths for member data, payment data, and reminder data
-        String memberFilePath = "src/main/resources/members.txt";
-        String paymentFilePath = "src/main/resources/payments.txt";
-        String reminderFilePath = "src/main/resources/reminders.txt";
+        String memberFilePath = "src/main/resources/members.dat";
+        String paymentFilePath = "src/main/resources/payments.dat";
+        String reminderFilePath = "src/main/resources/reminders.dat";
 
         // Initialize the FileHandler for members, payments, and reminders
         FileHandler memberFileHandler = new FileHandler(memberFilePath, paymentFilePath, reminderFilePath);

@@ -23,19 +23,22 @@ class MemberControllerTest {
 
     @BeforeEach
     void setUp() {
-        // Sørg for at initialisere FileHandler med korrekte argumenter (fiktive stier for test)
+        // Ensure that FileHandler is initialized with the correct arguments (mock paths for the test)
         String memberFilePath = "src/test/java/swimclub/controllers/testRessources/test_members.dat";
-        String paymentFilePath = "tsrc/test/java/swimclub/controllers/testRessources/test_members.dat";
+        String paymentFilePath = "tsrc/test/java/swimclub/controllers/testRessources/test_members.dat"; // Note: This path seems incorrect (typo: "tsrc" should likely be "src")
         String reminderFilePath = "src/test/java/swimclub/controllers/testRessources/test_members.dat";
+
+        // Initialize the FileHandler with the file paths
         fileHandler = new FileHandler(memberFilePath, paymentFilePath, reminderFilePath);
 
-        // Initialiser MemberRepository med den korrekte FileHandler
+        // Initialize MemberRepository with the FileHandler instance
         memberRepository = new MemberRepository(fileHandler);
 
-        // Initialiser MemberService og MemberController med de nødvendige afhængigheder
+        // Initialize MemberService and MemberController with the necessary dependencies
         memberService = new MemberService(memberRepository);
         controller = new MemberController(memberService, memberRepository);
     }
+
 
     @AfterEach
     void tearDown(){
