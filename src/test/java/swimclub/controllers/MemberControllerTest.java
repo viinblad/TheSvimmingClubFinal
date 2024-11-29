@@ -24,9 +24,9 @@ class MemberControllerTest {
     @BeforeEach
     void setUp() {
         // Sørg for at initialisere FileHandler med korrekte argumenter (fiktive stier for test)
-        String memberFilePath = "test_members.txt";
-        String paymentFilePath = "test_payments.txt";
-        String reminderFilePath = "test_reminders.txt";
+        String memberFilePath = "src/test/java/swimclub/controllers/testRessources/test_members.dat";
+        String paymentFilePath = "tsrc/test/java/swimclub/controllers/testRessources/test_members.dat";
+        String reminderFilePath = "src/test/java/swimclub/controllers/testRessources/test_members.dat";
         fileHandler = new FileHandler(memberFilePath, paymentFilePath, reminderFilePath);
 
         // Initialiser MemberRepository med den korrekte FileHandler
@@ -39,9 +39,9 @@ class MemberControllerTest {
 
     @AfterEach
     void tearDown(){
-        new File("test_members.dat").delete();
-        new File("test_payments.dat").delete();
-        new File("test_reminders.dat").delete();
+        new File("src/test/java/swimclub/controllers/testRessources/test_members.dat").delete();
+        new File("src/test/java/swimclub/controllers/testRessources/test_members.dat").delete();
+        new File("src/test/java/swimclub/controllers/testRessources/test_members.dat").delete();
 
     }
 
