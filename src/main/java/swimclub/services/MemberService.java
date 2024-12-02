@@ -2,8 +2,6 @@ package swimclub.services;
 
 import swimclub.models.Member;
 import swimclub.models.MembershipLevel;
-import swimclub.models.Payment;
-import swimclub.models.PaymentStatus;
 import swimclub.repositories.MemberRepository;
 import swimclub.utilities.Validator;
 
@@ -11,6 +9,12 @@ import java.util.List;
 
 public class MemberService {
     private final MemberRepository repository;
+    // Constructor to initialize the repository
+    /**
+     * Initializes the member service with the provided member repository.
+     *
+     * @param repository The repository to interact with member data.
+     */
 
     // Constructor to initialize the repository
     public MemberService(MemberRepository repository) {
@@ -23,6 +27,7 @@ public class MemberService {
      * determines the membership level based on age, and then saves the member to the repository.
      *
      * @param member The member to register.
+     * @throws IllegalArgumentException If the member data is invalid during validation.
      */
     public void registerMember(Member member) {
         // Assign the next available member ID automatically
@@ -38,7 +43,7 @@ public class MemberService {
             Validator.validateMemberData(member.getName(), member.getAge(),
                     member.getMembershipType().toString(), member.getEmail(), member.getCity(), member.getStreet(),
                     member.getRegion(), member.getZipcode(), member.getPhoneNumber(),
-                    member.getMembershipStatus(), member.getPaymentStatus());
+                    member.getMembershipStatus(),member.getActivityType().toString(), member.getPaymentStatus());
         } catch (IllegalArgumentException e) {
             System.out.println("Error registering member: " + e.getMessage());
             return; // Don't proceed if validation fails
@@ -53,11 +58,12 @@ public class MemberService {
     }
 
     /**
-     * Update an existing member's details.
+     * Updates an existing member's details.
      * This method validates the updated member data, applies age-based membership level logic,
      * and then updates the member in the repository.
      *
      * @param updatedMember The updated member data.
+     * @throws IllegalArgumentException If the updated member data is invalid during validation.
      */
     public void updateMember(Member updatedMember) {
         // Validate updated member data before updating using the Validator class
@@ -66,7 +72,7 @@ public class MemberService {
             Validator.validateMemberData(updatedMember.getName(), updatedMember.getAge(),
                     updatedMember.getMembershipType().toString(), updatedMember.getEmail(), updatedMember.getCity(),
                     updatedMember.getStreet(), updatedMember.getRegion(), updatedMember.getZipcode(),
-                    updatedMember.getPhoneNumber(), updatedMember.getMembershipStatus(), updatedMember.getPaymentStatus());
+                    updatedMember.getPhoneNumber(), updatedMember.getMembershipStatus(),updatedMember.getActivityType().toString(), updatedMember.getPaymentStatus());
         } catch (IllegalArgumentException e) {
             // Handle the validation exception and log the error
             System.out.println("Error updating member: " + e.getMessage());
@@ -77,9 +83,14 @@ public class MemberService {
         setMembershipLevelBasedOnAge(updatedMember);
 
         // Update the member in the repository
-        repository.update(updatedMember); // Update the member in the repository
+        repository.update(updatedMember);
     }
-
+    /**
+     * Deletes a member by their ID.
+     *
+     * @param memberId The ID of the member to delete.
+     * @throws RuntimeException If the member cannot be found by the ID.
+     */
     public void deleteMember(int memberId) {
         Member member = repository.findById(memberId);
 
@@ -118,25 +129,6 @@ public class MemberService {
         return repository.search(query); // Delegate to repository for searching members
     }
 
-    /**
-     * Registers a payment for a specific member.
-     *
-     * @param memberId The member ID to register the payment for.
-     * @param paymentStatus The status of the payment (e.g., COMPLETE, PENDING).
-     * @param amount The amount of the payment.
-     */
-    public void registerPayment(int memberId, PaymentStatus paymentStatus, double amount) {
-        Member member = repository.findById(memberId);
-        if (member == null) {
-            System.out.println("Member not found with ID: " + memberId);
-            return;
-        }
-
-        // Assuming that you have a PaymentRepository to save the payment (not implemented here)
-        Payment newPayment = new Payment(0, paymentStatus, member, java.time.LocalDate.now(), amount); // Set the payment with current date
-        // PaymentRepository.save(newPayment); // Save the payment in the repository
-        System.out.println("Payment registered for member ID: " + memberId);
-    }
 
     /**
      * Views all payments made by a specific member.

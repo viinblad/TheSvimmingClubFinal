@@ -4,10 +4,10 @@ import java.time.LocalDate;
 
 public class Payment {
     private int paymentId;                 // Unique ID for the payment
-    private PaymentStatus paymentStatus;  // COMPLETE, PENDING, FAILED
-    private Member member;                // Member associated with the payment
-    private LocalDate paymentDate;        // Date of payment
-    private double amountPerYear;         // Annual membership fee
+    private PaymentStatus paymentStatus;   // COMPLETE, PENDING, FAILED
+    private Member member;                 // Member associated with the payment
+    private LocalDate paymentDate;         // Date of payment
+    private double amountPerYear;          // Annual membership fee
 
     /**
      * Constructor for Payment.
@@ -39,51 +39,93 @@ public class Payment {
         this.amountPerYear = amountPerYear;
         this.paymentDate = paymentDate;
     }
-
-    // Get Methods
+    /**
+     * Gets the unique payment ID.
+     *
+     * @return The payment ID.
+     */
     public int getPaymentId() {
         return paymentId;
     }
-
+    /**
+     * Gets the payment status.
+     *
+     * @return The payment status (COMPLETE, PENDING, FAILED).
+     */
     public PaymentStatus getPaymentStatus() {
         return paymentStatus;
     }
-
+    /**
+     * Gets the member associated with the payment.
+     *
+     * @return The associated Member object.
+     */
     public Member getMember() {
         return member;
     }
-
+    /**
+     * Gets the date of the payment.
+     *
+     * @return The payment date as a LocalDate object.
+     */
     public LocalDate getPaymentDate() {
         return paymentDate;
     }
-
+    /**
+     * Gets the annual membership fee for the payment.
+     *
+     * @return The annual fee amount.
+     */
     public double getAmountPerYear() {
         return amountPerYear;
     }
+    /**
+     * Sets the payment ID.
+     *
+     * @param paymentId The unique payment ID to set.
+     */
 
-    // Set Methods
     public void setPaymentId(int paymentId) {
         this.paymentId = paymentId;
     }
-
+    /**
+     * Sets the payment status.
+     *
+     * @param paymentStatus The payment status to set (COMPLETE, PENDING, FAILED).
+     */
     public void setPaymentStatus(PaymentStatus paymentStatus) {
         this.paymentStatus = paymentStatus;
     }
-
+    /**
+     * Sets the payment date.
+     *
+     * @param paymentDate The payment date to set.
+     * @throws NullPointerException If the paymentDate is null.
+     */
     public void setPaymentDate(LocalDate paymentDate) {
         if (paymentDate == null) {
             throw new NullPointerException("Payment date cannot be null");
         }
         this.paymentDate = paymentDate;
     }
-
+    /**
+     * Sets the member associated with the payment.
+     *
+     * @param member The member to associate with the payment.
+     * @throws NullPointerException If the member is null.
+     */
     public void setMember(Member member) {
         if (member == null) {
             throw new NullPointerException("Member cannot be null");
         }
         this.member = member;
     }
-
+    /**
+     * Sets the annual membership fee.
+     *
+     * @param amountPerYear The annual fee amount to set.
+     * @throws IllegalArgumentException If the amount is not positive.
+     */
     public void setAmountPerYear(double amountPerYear) {
         if (amountPerYear <= 0) {
             throw new IllegalArgumentException("Amount per year must be positive");

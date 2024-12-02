@@ -2,9 +2,7 @@ package swimclub.ui;
 
 import swimclub.controllers.MemberController;
 import swimclub.controllers.PaymentController;
-import swimclub.models.Member;
-import swimclub.models.MembershipStatus;
-import swimclub.models.PaymentStatus;
+import swimclub.models.*;
 
 import java.util.List;
 import java.util.Scanner;
@@ -21,7 +19,7 @@ public class UserInterface {
     /**
      * Constructor to initialize the UserInterface with the member controller and payment controller.
      *
-     * @param memberController The controller that handles the logic for member actions.
+     * @param memberController  The controller that handles the logic for member actions.
      * @param paymentController The controller that handles the logic for payment actions.
      */
     public UserInterface(MemberController memberController, PaymentController paymentController) {
@@ -79,6 +77,7 @@ public class UserInterface {
      * @param option The selected option from the menu (1-7).
      */
     private void handleOption(int option) {
+
         switch (option) {
             case 1:
                 registerMember();  // Register a new member
@@ -99,11 +98,19 @@ public class UserInterface {
                 handlePayments();  // Handle payments (new option)
                 break;
             case 7:
-                System.out.println("Exiting the program. Goodbye!");  // Exit
+                exitProgram(); // Exit the program
                 break;
             default:
                 System.out.println("Invalid option. Please choose a number between 1 and 7.");
         }
+    }
+
+    /**
+     * Exits the program.
+     */
+    private void exitProgram() {
+        System.out.println("Exiting the program. Goodbye!");  // Print a goodbye message
+        System.exit(0);  // Exit the program
     }
 
     /**
@@ -112,30 +119,45 @@ public class UserInterface {
     private void registerMember() {
         System.out.print("Enter member name: ");
         String name = scanner.nextLine();
-        System.out.print("Enter age: ");
-        int age = Integer.parseInt(scanner.nextLine());
-        System.out.print("Enter member email: ");
-        String email = scanner.nextLine();
-        System.out.println("Enter city of member");
+        String age = correctAgeInput(scanner, "Enter member age:");
+        String email = correctEmailInput(scanner, "Enter email:");
+        System.out.print("Enter city of member:");
         String city = scanner.nextLine();
-        System.out.println("Enter street of member");
+        System.out.print("Enter street of member:");
         String street = scanner.nextLine();
-        System.out.println("Enter region of member");
+        System.out.print("Enter region of member:");
         String region = scanner.nextLine();
-        System.out.print("Enter Zip code: ");
-        int zipcode = Integer.parseInt(scanner.nextLine());
+        String zipcode = correctZipCodeInput(scanner,"Enter Zip code (4 digits):");
         System.out.print("Enter membership type (Junior/Senior, Competitive/Exercise): ");
         String membershipType = scanner.nextLine();
-        System.out.print("Enter phone number (8 digits): ");
-        int phoneNumber = Integer.parseInt(scanner.nextLine());
+        System.out.print("Enter activity type (Breaststroke, Crawl, Backcrawl or Butterfly):");
+        String activityType = scanner.nextLine();
+        String phoneNumber = correctPHInput(scanner, "Enter phone number (8 digits):");
 
-        // You might need to define default values for membership status and payment status
-        // As they are part of the member class, let's use ACTIVE for membership status and PENDING for payment status
-        MembershipStatus membershipStatus = MembershipStatus.ACTIVE;  // Assuming the default membership status is ACTIVE
+        MembershipStatus membershipStatus = MembershipStatus.ACTIVE;  // Default membership status
         PaymentStatus paymentStatus = PaymentStatus.PENDING;  // Default payment status
 
         // Call the controller to register the new member
-        memberController.registerMember(name, email, city, street, region, zipcode, membershipType, membershipStatus, paymentStatus ,age, phoneNumber);
+        Member newMember = memberController.registerMember(name, email, city, street, region, Integer.parseInt(zipcode), membershipType, membershipStatus, activityType, paymentStatus, age, Integer.parseInt(phoneNumber));
+
+        if (newMember != null) {
+            // Calculate the membership fee
+            double fee = paymentController.calculateMembershipFeeForMember(newMember.getMemberId());
+
+            // Prompt user to pay now or later
+            System.out.println("\nMembership fee for " + newMember.getName() + " is $" + fee);
+            System.out.print("Do you want to pay now? (yes/no): ");
+            String choice = scanner.nextLine().toLowerCase();
+
+            if (choice.equals("yes")) {
+                // Register the payment immediately
+                paymentController.registerPayment(newMember.getMemberId(), fee);
+            } else {
+                // Provide reminder information and set a reminder
+                System.out.println("A reminder will be sent to: " + email);
+                paymentController.setPaymentReminder(newMember.getMemberId(), "Payment reminder for " + newMember.getName());
+            }
+        }
     }
 
     /**
@@ -144,34 +166,30 @@ public class UserInterface {
     private void updateMember() {
         System.out.print("Enter member ID to update: ");
         int memberId = Integer.parseInt(scanner.nextLine());
-
         // Gather all the required updated attributes
         System.out.print("Enter new name: ");
         String name = scanner.nextLine();
-        System.out.print("Enter new email: ");
-        String email = scanner.nextLine();
-        System.out.print("Enter new age: ");
-        int age = Integer.parseInt(scanner.nextLine());
+        String email = correctEmailInput(scanner,"Enter new Email:");
+        String age = correctAgeInput(scanner, "Enter new age:");
         System.out.print("Enter new city: ");
         String city = scanner.nextLine();
         System.out.print("Enter new street: ");
         String street = scanner.nextLine();
         System.out.print("Enter new region: ");
         String region = scanner.nextLine();
-        System.out.print("Enter new zip code: ");
-        int zipcode = Integer.parseInt(scanner.nextLine());
+        String zipcode = correctZipCodeInput(scanner,"Enter new zipcode");
         System.out.print("Enter new membership type (Junior/Senior, Competitive/Exercise): ");
         String membershipType = scanner.nextLine();
-        System.out.print("Enter new phone number (8 digits): ");
-        int phoneNumber = Integer.parseInt(scanner.nextLine());
+        System.out.println("Enter new activity type (Crawl, Backcrawl, Breathstroke or Butterfly):");
+        String activitytype = scanner.nextLine();
+        String phoneNumber = correctPHInput(scanner, "Enter new phone number (8 digits): ");
 
-        // Assuming the membership status is ACTIVE and payment status is PENDING for updates
-        // You can update this logic if you want the user to choose these attributes
         MembershipStatus membershipStatus = MembershipStatus.ACTIVE;  // Default to ACTIVE
         PaymentStatus paymentStatus = PaymentStatus.PENDING;  // Default to PENDING
 
+
         // Call the controller's updateMember method with all new attributes
-        memberController.updateMember(memberId, name, email, age, city, street, region, zipcode, membershipType,  membershipStatus, paymentStatus, phoneNumber);
+        memberController.updateMember(memberId, name, email, age, city, street, region, Integer.parseInt(zipcode), membershipType, membershipStatus, activitytype, paymentStatus, Integer.parseInt(phoneNumber));
     }
 
     /**
@@ -216,9 +234,11 @@ public class UserInterface {
         System.out.println("\n--- Payment Management ---");
         System.out.println("1. Register Payment");
         System.out.println("2. View Payments for Member");
-        System.out.println("3. Exit to Main Menu");
+        System.out.println("3. Filter Members by Payment Status");
+        System.out.println("4. View Payment Summary");  // Added Payment Summary option
+        System.out.println("5. Exit to Main Menu");
 
-        System.out.print("Please choose an option (1-3): ");
+        System.out.print("Please choose an option (1-5): ");
         int paymentOption = Integer.parseInt(scanner.nextLine());
 
         switch (paymentOption) {
@@ -229,6 +249,12 @@ public class UserInterface {
                 viewPaymentsForMember();  // View payment history for the member
                 break;
             case 3:
+                filterMembersByPaymentStatus();  // Filter members by payment status
+                break;
+            case 4:
+                paymentController.viewPaymentSummary(); // Show payment summary
+                break;
+            case 5:
                 return;  // Exit to main menu
             default:
                 System.out.println("Invalid option. Please choose a valid number.");
@@ -257,5 +283,125 @@ public class UserInterface {
 
         // Call the PaymentController to view payments for the member
         paymentController.viewPaymentsForMember(memberId);
+    }
+    /**
+     * Displays the payment summary, including the total payments made and the number of members who have paid.
+     */
+    private void viewPaymentSummary() {
+        System.out.println("Payment Summary: ");
+        List<Member> paidMembers = paymentController.getMembersPaidList();
+        double totalPayments = paidMembers.stream()
+                .mapToDouble(member -> paymentController.calculateMembershipFeeForMember(member.getMemberId()))
+                .sum();
+        System.out.println("Total Payments Made: " + totalPayments);
+        System.out.println("Number of Members Paid: " + paidMembers.size());
+    }
+    /**
+     * Filters members based on their payment status and displays the filtered list.
+     */
+    private void filterMembersByPaymentStatus() {
+        System.out.println("Enter payment status (COMPLETE or PENDING): ");
+        String statusInput = scanner.nextLine().toUpperCase();
+        PaymentStatus paymentStatus = PaymentStatus.valueOf(statusInput);
+
+        List<Member> filteredMembers = paymentController.getMembersByPaymentStatus(paymentStatus);
+        System.out.println("Members with payment status " + paymentStatus + ":");
+        filteredMembers.forEach(member -> System.out.println("ID: " + member.getMemberId() + ", Name: " + member.getName()));
+    }
+    /**
+     * Validates and retrieves a positive numeric age input from the user.
+     *
+     * @param scanner The Scanner object for reading user input.
+     * @param prompt  The prompt message displayed to the user.
+     * @return A valid age input as a string.
+     */
+    private static String correctAgeInput(Scanner scanner, String prompt) {
+        String age;
+        while (true) {
+            try {
+                // Display the prompt message to the user
+                System.out.print(prompt);
+                age = scanner.nextLine().trim();
+
+                // Validate that the input only contains digits
+                if (!age.matches("\\d+")) {
+                    throw new NumberFormatException("Only numeric values are allowed.");
+                }
+
+                // Convert the input to an integer
+
+                // Ensure the age is a positive number
+                if (Integer.parseInt(age) > 0) {
+                    return age; // Return the valid age
+                } else {
+                    System.out.println("Invalid age. Age must be positive.");
+                }
+            } catch (NumberFormatException e) {
+                // Handle invalid input and provide feedback to the user
+                System.out.println("Invalid input. Please enter numbers");
+            }
+        }
+    }
+    /**
+     * Validates and retrieves a valid 8-digit phone number input from the user.
+     *
+     * @param scanner The Scanner object for reading user input.
+     * @param prompt  The prompt message displayed to the user.
+     * @return A valid phone number as an integer.
+     */
+    // Rule for right phonenumber input
+    private static String correctPHInput(Scanner scanner, String prompt) {
+        String phoneNumber;
+        while (true) {
+            try {
+                System.out.print(prompt);
+                phoneNumber = scanner.nextLine().trim();
+                if (!phoneNumber.matches("\\d+")) {
+                    throw new NumberFormatException("Only numeric values are allowed.");
+                }
+
+                if (Integer.parseInt(phoneNumber) >= 10000000 && Integer.parseInt(phoneNumber) <= 99999999) {
+                    return phoneNumber;
+                } else {
+                    System.out.println("Phonenumber must be exactly 8 digits.");
+                }
+
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a 8 digits number.");
+            }
+        }
+    }
+
+    private static String correctZipCodeInput(Scanner scanner, String prompt) {
+        String zipCode;
+        while (true) {
+            try {
+                System.out.print(prompt);
+                zipCode = scanner.nextLine().trim();
+                if (!zipCode.matches("\\d+")) {
+                    throw new NumberFormatException("Only numeric values are allowed");
+                }
+                if (Integer.parseInt(zipCode) >= 1000 && Integer.parseInt(zipCode) <= 9990) {
+                    return zipCode;
+                } else {
+                    System.out.println("Zipcode has to be 4 digits.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a 4 digits number.");
+            }
+        }
+    }
+    private static String correctEmailInput(Scanner scanner, String prompt){
+        String email;
+        while (true){
+            System.out.print(prompt);
+            email = scanner.nextLine();
+
+            if (email.contains("@") && email.contains(".")){
+                return email;
+            } else {
+                System.out.println("Invalid input. Email must contain '@' and '.' - Try again.");
+            }
+        }
     }
 }

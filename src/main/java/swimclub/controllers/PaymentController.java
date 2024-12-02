@@ -4,7 +4,10 @@ import swimclub.models.Member;
 import swimclub.models.PaymentStatus;
 import swimclub.repositories.MemberRepository;
 import swimclub.services.PaymentService;
+import swimclub.utilities.FileHandler;
+import swimclub.utilities.Validator;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -13,16 +16,23 @@ import java.util.List;
 public class PaymentController {
     private final PaymentService paymentService;
     private final MemberRepository memberRepository;
+    private final FileHandler paymentFileHandler; // FileHandler for payments
+    private final String paymentFilePath; // Path to the payment file
 
     /**
      * Constructor to initialize the PaymentController.
      *
-     * @param paymentService   The service handling payment-related logic.
-     * @param memberRepository The repository for accessing member data.
+     * @param paymentService     The service handling payment-related logic.
+     * @param memberRepository   The repository for accessing member data.
+     * @param paymentFileHandler The file handler for payments.
+     * @param paymentFilePath    Path to the payment file.
      */
-    public PaymentController(PaymentService paymentService, MemberRepository memberRepository) {
+    public PaymentController(PaymentService paymentService, MemberRepository memberRepository,
+                             FileHandler paymentFileHandler, String paymentFilePath) {
         this.paymentService = paymentService;
         this.memberRepository = memberRepository;
+        this.paymentFileHandler = paymentFileHandler;
+        this.paymentFilePath = paymentFilePath;
     }
 
     /**
@@ -41,17 +51,55 @@ public class PaymentController {
     }
 
     /**
-     * Calculates the total expected payments for all members.
+     * Registers a new payment for a member by entering member ID and payment amount.
      *
-     * @return The total expected payments across all members.
+     * @param memberId The ID of the member making the payment.
+     * @param amount   The amount of the payment.
      */
-    public double calculateTotalExpectedPayments() {
-        List<Member> members = memberRepository.findAll();
-        return paymentService.calculateTotalExpectedPayments(members);
+    public void registerPayment(int memberId, double amount) {
+        // Validate payment amount
+        try {
+            Validator.validatePayment(amount, PaymentStatus.COMPLETE); // Defaulting to COMPLETE
+        } catch (IllegalArgumentException e) {
+            System.out.println("Validation error: " + e.getMessage());
+            return;
+        }
+
+        // Get the member by ID
+        Member member = memberRepository.findById(memberId);
+        if (member == null) {
+            System.out.println("Member not found with ID: " + memberId);
+            return;
+        }
+
+        // Register the payment through the service
+        paymentService.registerPayment(memberId, amount, memberRepository, paymentFileHandler, paymentFilePath);
+
+        // Update the member's payment status to COMPLETE after payment registration
+        member.setPaymentStatus(PaymentStatus.COMPLETE);
+        memberRepository.update(member);  // Save changes to the repository
+
+        System.out.println("Payment of " + amount + " registered for Member ID: " + memberId);
     }
 
     /**
-     * Retrieves a list of members who have completed their payments.
+     * Displays all payments made by a specific member.
+     *
+     * @param memberId The ID of the member whose payments are being viewed.
+     */
+    public void viewPaymentsForMember(int memberId) {
+        // Validate if the member exists
+        if (memberRepository.findById(memberId) == null) {
+            System.out.println("Member not found with ID: " + memberId);
+            return;
+        }
+
+        // Call PaymentService to display payments
+        paymentService.viewPaymentsForMember(memberId);
+    }
+
+    /**
+     * Retrieves all members who have completed their payment.
      *
      * @return A list of members with a payment status of COMPLETE.
      */
@@ -61,45 +109,73 @@ public class PaymentController {
     }
 
     /**
-     * Retrieves a list of members whose payments are pending.
+     * Retrieves a list of members whose payment status is either COMPLETE or PENDING.
      *
-     * @return A list of members with a payment status of PENDING.
+     * @param paymentStatus The payment status to filter by.
+     * @return A list of members with the specified payment status.
      */
-    public List<Member> getMembersPendingList() {
+    public List<Member> getMembersByPaymentStatus(PaymentStatus paymentStatus) {
         List<Member> members = memberRepository.findAll();
-        return paymentService.getMembersPendingList(members);
-    }
-
-    /**
-     * Updates the payment status for a specific member by ID.
-     *
-     * @param memberId      The ID of the member whose payment status is being updated.
-     * @param paymentStatus The new payment status to set.
-     */
-    public void updateMemberPaymentStatus(int memberId, PaymentStatus paymentStatus) {
-        Member member = memberRepository.findById(memberId);
-        if (member == null) {
-            System.out.println("Member not found with ID: " + memberId);
-            return;
+        if (paymentStatus == PaymentStatus.COMPLETE) {
+            return paymentService.getMembersPaidList(members);
+        } else if (paymentStatus == PaymentStatus.PENDING) {
+            return paymentService.getMembersPendingList(members);
+        } else {
+            System.out.println("Invalid payment status.");
+            return new ArrayList<>();
         }
-        paymentService.updateMemberPaymentStatus(member, paymentStatus);
-        memberRepository.update(member); // Save changes to the repository.
-        System.out.println("Payment status updated for member ID: " + memberId);
     }
 
     /**
-     * Registers a new payment for a member by entering member ID and payment amount.
+     * Retrieves and displays the payment summary.
      */
-    public void registerPayment(int memberId, double amount) {
-        // Call the PaymentService to register the payment
-        paymentService.registerPayment(memberId, amount); // Register payment using PaymentService
+    public void viewPaymentSummary() {
+        List<Member> members = memberRepository.findAll();  // Get all members
+        String summary = paymentService.getPaymentSummary(members);  // Get the summary from the service
+        System.out.println("\n--- Payment Summary ---");
+        System.out.println(summary);  // Display the summary
     }
 
     /**
-     * Displays all payments made by a specific member.
+     * Set a payment reminder for a member.
+     *
+     * @param memberId         The ID of the member.
+     * @param reminderMessage  The reminder message.
      */
-    public void viewPaymentsForMember(int memberId) {
-        // Call the PaymentService to get payments for a member
-        paymentService.viewPaymentsForMember(memberId); // View all payments for the specified member
+    public void setPaymentReminder(int memberId, String reminderMessage) {
+        // Pass the reminder logic to the PaymentService for setting reminders
+        paymentService.setPaymentReminder(memberId, reminderMessage);
+        System.out.println("Reminder set for Member ID: " + memberId);
+    }
+
+    /**
+     * View all reminders for payments.
+     */
+    public void viewAllReminders() {
+        List<String> reminders = paymentService.getAllReminders();
+        if (reminders.isEmpty()) {
+            System.out.println("No reminders set.");
+        } else {
+            System.out.println("--- Payment Reminders ---");
+            reminders.forEach(System.out::println);
+        }
+    }
+
+    /**
+     * Remove a specific reminder for a member.
+     *
+     * @param memberId    The ID of the member.
+     * @param reminderMessage The reminder message to remove.
+     */
+    public void removePaymentReminder(int memberId, String reminderMessage) {
+        paymentService.removeReminder(memberId, reminderMessage);
+    }
+
+    /**
+     * Clear all reminders.
+     */
+    public void clearAllReminders() {
+        paymentService.clearAllReminders();
+        System.out.println("All reminders cleared.");
     }
 }

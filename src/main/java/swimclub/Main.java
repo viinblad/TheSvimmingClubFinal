@@ -10,27 +10,54 @@ import swimclub.ui.UserInterface;
 import swimclub.utilities.FileHandler;
 
 public class Main {
+    /**
+     * The main method that initializes the application, loads data, and starts the user interface.
+     * It also handles saving changes back to the files after the user interaction.
+     *
+     * @param args Command-line arguments (not used in this program).
+     *             This parameter allows for passing arguments when running the program,
+     *             but in this specific implementation, it is not used in the code.
+     */
+
     public static void main(String[] args) {
-        // Initialize the FileHandler, MemberRepository, and MemberService
-        String filePath = "src/main/resources/members.txt"; // Adjust the file path as needed
-        FileHandler fileHandler = new FileHandler(filePath);
-        MemberRepository memberRepository = new MemberRepository(fileHandler);
+        // File paths for member data, payment data, and reminder data
+        String memberFilePath = "src/main/resources/members.dat";
+        String paymentFilePath = "src/main/resources/payments.dat";
+        String reminderFilePath = "src/main/resources/reminders.dat";
+
+        // Initialize the FileHandler for members, payments, and reminders
+        FileHandler memberFileHandler = new FileHandler(memberFilePath, paymentFilePath, reminderFilePath);
+
+        // Initialize the repositories, passing the respective FileHandlers
+        MemberRepository memberRepository = new MemberRepository(memberFileHandler);
+        PaymentRepository paymentRepository = new PaymentRepository();
+
+        // Load members, payments, and reminders from the file
+        memberRepository.reloadMembers(); // Assuming loadMembers method exists to load member data
+        paymentRepository.loadPayments(paymentFilePath, memberRepository);
+
+        // Initialize services for member and payment
         MemberService memberService = new MemberService(memberRepository);
+        PaymentService paymentService = new PaymentService(paymentRepository);
 
-        // Initialize the PaymentRepository and PaymentService
-        PaymentRepository paymentRepository = new PaymentRepository(); // Payment repository for managing payments
-        PaymentService paymentService = new PaymentService(paymentRepository); // Payment service for payment-related operations
-
-        // Instantiate the MemberController
+        // Instantiate the controllers
         MemberController memberController = new MemberController(memberService, memberRepository);
+        PaymentController paymentController = new PaymentController(
+                paymentService,
+                memberRepository,
+                memberFileHandler,
+                paymentFilePath
+        );
 
-        // Instantiate the PaymentController
-        PaymentController paymentController = new PaymentController(paymentService, memberRepository);
+        // Instantiate the UserInterface, passing both controllers
+        UserInterface userInterface = new UserInterface(memberController, paymentController);
 
-        // Instantiate the UserInterface and pass in both the MemberController and PaymentController
-        UserInterface userInterface = new UserInterface(memberController, paymentController); // Pass paymentController to UI
+        // Start the User Interface to handle interactions
+        userInterface.start();
 
-        // Start the User Interface
-        userInterface.start(); // This will now handle both member and payment actions
+        // After user interaction, save any changes to file
+        memberFileHandler.saveMembers(memberRepository.findAll());
+        memberFileHandler.savePayments(paymentRepository.findAll(), paymentFilePath);
+        memberFileHandler.saveReminders(paymentService.getAllReminders()); // Save reminders after interaction
     }
 }

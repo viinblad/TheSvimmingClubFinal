@@ -1,5 +1,8 @@
 package swimclub.models;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Abstract base class representing a member.
  * Contains common attributes and methods for all members in the swim club.
@@ -15,30 +18,19 @@ public abstract class Member {
     private MembershipType membershipType; // Membership type (e.g., Competitive Junior)
     private MembershipStatus membershipStatus; // Membership status (active/passive)
     private PaymentStatus paymentStatus; // Payment status
+    private ActivityType activityType;   // Members form of activity
     private int age;                     // Age of the member
     private int phoneNumber;             // Phone number of the member
+    private List<Payment> payments = new ArrayList<>(); // List of all payments made by the member.
 
     /**
      * Constructor for initializing a Member object.
-     *
-     * @param memberId       Unique ID of the member (parsed as int).
-     * @param name           Full name of the member.
-     * @param city           Living city of the member
-     * @param region         Living region of the member
-     * @param street         Living street of the member
-     * @param zipcode        Living zip code of the member
-     * @param email          Email address of the member.
-     * @param membershipType The membership type of the member.
-     * @param membershipStatus The membership status of the member.
-     * @param paymentStatus  Payment status type of the member.
-     * @param age            Age of the member.
-     * @param phoneNumber    Phone number of the member.
      */
-
-    //constructor
     public Member(String memberId, String name, String email, String city, String street,
-                  String region, int zipcode,MembershipType membershipType, MembershipStatus membershipStatus, PaymentStatus paymentStatus, int age, int phoneNumber) {
-        this.memberId = Integer.parseInt(memberId); // Parse memberId from String to int
+                  String region, int zipcode, MembershipType membershipType,
+                  MembershipStatus membershipStatus,ActivityType activityType, PaymentStatus paymentStatus,
+                  int age, int phoneNumber) {
+        this.memberId = Integer.parseInt(memberId);
         this.name = name;
         this.email = email;
         this.city = city;
@@ -47,6 +39,7 @@ public abstract class Member {
         this.zipcode =  zipcode;
         this.membershipType = membershipType;
         this.membershipStatus = membershipStatus;
+        this.activityType = activityType;
         this.paymentStatus = paymentStatus;
         this.age = age;
         this.phoneNumber = phoneNumber;
@@ -120,7 +113,11 @@ public abstract class Member {
         return this.membershipStatus;
     }
 
-    public PaymentStatus getPaymentStatus () {
+    public ActivityType getActivityType() {
+        return activityType;
+    }
+
+    public PaymentStatus getPaymentStatus() {
         return this.paymentStatus;
     }
 
@@ -137,6 +134,10 @@ public abstract class Member {
      */
     public int getPhoneNumber() {
         return this.phoneNumber;
+    }
+
+    public List<Payment> getPayments() {
+        return new ArrayList<>(this.payments); // Return a copy to avoid external modification
     }
 
     // -----------------------------------------------------------------------------------------------------
@@ -214,7 +215,13 @@ public abstract class Member {
     public void setMembershipStatus(MembershipStatus membershipStatus) {
         this.membershipStatus = membershipStatus;
 
-    } public void setPaymentStatus(PaymentStatus paymentStatus) {
+    }
+
+    public void setActivityType(ActivityType activityType) {
+        this.activityType = activityType;
+    }
+
+    public void setPaymentStatus(PaymentStatus paymentStatus) {
         this.paymentStatus = paymentStatus;
     }
 
@@ -236,6 +243,43 @@ public abstract class Member {
      */
     public void setPhoneNumber(int phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    // -----------------------------------------------------------------------------------------------------
+    // Payment Management Methods
+    // -----------------------------------------------------------------------------------------------------
+
+    /**
+     * Adds a payment to the member's payment list.
+     */
+    public void addPayment(Payment payment) {
+        this.payments.add(payment);
+        updatePaymentStatus(); // Update the overall payment status based on the new payment
+    }
+
+    /**
+     * Calculates the total amount paid by the member.
+     *
+     * @return The total amount paid.
+     */
+    public double calculateTotalPaid() {
+        return payments.stream()
+                .filter(payment -> payment.getPaymentStatus() == PaymentStatus.COMPLETE)
+                .mapToDouble(Payment::getAmountPerYear)
+                .sum();
+    }
+
+    /**
+     * Updates the overall payment status of the member based on individual payments.
+     */
+    private void updatePaymentStatus() {
+        if (payments.stream().anyMatch(payment -> payment.getPaymentStatus() == PaymentStatus.PENDING)) {
+            this.paymentStatus = PaymentStatus.PENDING;
+        } else if (payments.stream().allMatch(payment -> payment.getPaymentStatus() == PaymentStatus.COMPLETE)) {
+            this.paymentStatus = PaymentStatus.COMPLETE;
+        } else {
+            this.paymentStatus = PaymentStatus.FAILED;
+        }
     }
 
     // -----------------------------------------------------------------------------------------------------

@@ -44,6 +44,14 @@ public class Validator {
                         membershipType.getLevel() == MembershipLevel.SENIOR);
     }
 
+    public static boolean isValidMemberActivityType(ActivityTypeData activityType){
+        return activityType != null &&
+                (activityType.toActivityType() == ActivityType.BACKCRAWL ||
+                        activityType.toActivityType() == ActivityType.BREASTSTROKE ||
+                        activityType.toActivityType() == ActivityType.BUTTERFLY ||
+                        activityType.toActivityType() == ActivityType.CRAWL);
+    }
+
     /**
      * Validates the membership status of the member.
      * The status must be either ACTIVE or PASSIVE.
@@ -106,11 +114,14 @@ public class Validator {
      * @param phoneNumber      The phone number of the member.
      * @param membershipStatus The membership status of the member.
      * @param paymentStatus    The payment status of the member.
+     * @param activityType     The preferred activity type of the member (e.g., Breaststroke, Crawl).
      * @throws IllegalArgumentException if any validation fails.
+     *
      */
+
     public static void validateMemberData(String name, int age, String membershipType,
                                           String email, String city, String street, String region, int zipcode, int phoneNumber,
-                                          MembershipStatus membershipStatus, PaymentStatus paymentStatus) throws IllegalArgumentException {
+                                          MembershipStatus membershipStatus, String activityType, PaymentStatus paymentStatus) throws IllegalArgumentException {
         if (!isValidName(name)) {
             throw new IllegalArgumentException("Invalid name: Name cannot be null or empty.");
         }
@@ -132,6 +143,51 @@ public class Validator {
         }
         if (!isValidPaymentStatus(paymentStatus)) {
             throw new IllegalArgumentException("Invalid payment status: Must be 'COMPLETE', 'PENDING', or 'FAILED'.");
+        }
+        ActivityTypeData activity = ActivityTypeData.fromString(activityType);
+        if (!isValidMemberActivityType(activity)) {
+            throw new IllegalArgumentException("Invalid activitytype: Must be 'Crawl', 'Backcrawl', 'Breathstroke' or 'Butterfly'");
+        }
+    }
+
+    /**
+     * Validates the payment amount.
+     * The amount must be greater than 0.
+     *
+     * @param amount The payment amount to validate.
+     * @return true if the payment amount is valid, false otherwise.
+     */
+    public static boolean isValidPaymentAmount(double amount) {
+        return amount > 0;
+    }
+
+    /**
+     * Validates a payment.
+     * Ensures the payment amount and status are valid.
+     *
+     * @param amount        The payment amount.
+     * @param paymentStatus The payment status.
+     * @throws IllegalArgumentException if validation fails.
+     */
+    public static void validatePayment(double amount, PaymentStatus paymentStatus) {
+        if (!isValidPaymentAmount(amount)) {
+            throw new IllegalArgumentException("Invalid payment amount: Amount must be greater than 0.");
+        }
+        if (!isValidPaymentStatus(paymentStatus)) {
+            throw new IllegalArgumentException("Invalid payment status: Must be 'COMPLETE', 'PENDING', or 'FAILED'.");
+        }
+    }
+
+    /**
+     * Validates the payment reminder message.
+     * Ensures the message is not too short, too long, and is not empty.
+     *
+     * @param reminder The reminder message to validate.
+     * @throws IllegalArgumentException if validation fails.
+     */
+    public static void validatePaymentReminder(String reminder) {
+        if (reminder == null || reminder.trim().isEmpty() || reminder.length() < 5 || reminder.length() > 255) {
+            throw new IllegalArgumentException("Invalid reminder: Reminder must be between 5 and 255 characters long.");
         }
     }
 }
