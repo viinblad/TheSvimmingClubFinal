@@ -24,9 +24,10 @@ public class Main {
         String memberFilePath = "src/main/resources/members.dat";
         String paymentFilePath = "src/main/resources/payments.dat";
         String reminderFilePath = "src/main/resources/reminders.dat";
+        String paymentRatesFilePath = "src/main/ressources/paymentRates.dat";
 
         // Initialize the FileHandler for members, payments, and reminders
-        FileHandler memberFileHandler = new FileHandler(memberFilePath, paymentFilePath, reminderFilePath);
+        FileHandler memberFileHandler = new FileHandler(memberFilePath, paymentFilePath, reminderFilePath, paymentRatesFilePath);
 
         // Initialize the repositories, passing the respective FileHandlers
         MemberRepository memberRepository = new MemberRepository(memberFileHandler);
@@ -38,7 +39,7 @@ public class Main {
 
         // Initialize services for member and payment
         MemberService memberService = new MemberService(memberRepository);
-        PaymentService paymentService = new PaymentService(paymentRepository);
+        PaymentService paymentService = new PaymentService(paymentRepository, memberFileHandler);
 
         // Instantiate the controllers
         MemberController memberController = new MemberController(memberService, memberRepository);
@@ -46,7 +47,8 @@ public class Main {
                 paymentService,
                 memberRepository,
                 memberFileHandler,
-                paymentFilePath
+                paymentFilePath,
+                paymentRatesFilePath
         );
 
         // Instantiate the UserInterface, passing both controllers

@@ -28,7 +28,7 @@ public class PaymentController {
      * @param paymentFilePath    Path to the payment file.
      */
     public PaymentController(PaymentService paymentService, MemberRepository memberRepository,
-                             FileHandler paymentFileHandler, String paymentFilePath) {
+                             FileHandler paymentFileHandler, String paymentFilePath, String paymentRateFilesPath) {
         this.paymentService = paymentService;
         this.memberRepository = memberRepository;
         this.paymentFileHandler = paymentFileHandler;

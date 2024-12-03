@@ -14,7 +14,8 @@ import java.util.List;
 public class FileHandler {
     private String memberFilePath;
     private String paymentFilePath;
-    private String reminderFilePath;  // Added for reminder file
+    private String reminderFilePath;// Added for reminder file
+    private String paymentRatesFilePath;
 
     /**
      * Constructor for FileHandler.
@@ -23,10 +24,11 @@ public class FileHandler {
      * @param paymentFilePath  Path to the file for saving/loading payment data.
      * @param reminderFilePath Path to the file for saving/loading reminder data.
      */
-    public FileHandler(String memberFilePath, String paymentFilePath, String reminderFilePath) {
+    public FileHandler(String memberFilePath, String paymentFilePath, String reminderFilePath, String paymentRatesFilePath) {
         this.memberFilePath = memberFilePath;
         this.paymentFilePath = paymentFilePath;
         this.reminderFilePath = reminderFilePath;
+        this.paymentRatesFilePath = paymentRatesFilePath;
     }
 
 
@@ -296,4 +298,41 @@ public class FileHandler {
             return null;
         }
     }
+
+
+
+
+    public double[] loadPaymentRates() {
+        double[] rates = new double[2];
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(paymentRatesFilePath))) {
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith("Junior Rate:")) {
+                    rates[0] = Double.parseDouble(line.split(":")[1].trim());
+                } else if (line.startsWith("Senior Rate:")) {
+                    rates[1] = Double.parseDouble(line.split(":")[1].trim());
+                }
+            }
+
+        } catch (IOException e) {
+            System.out.println("Error loading payment rates from file: " + e.getMessage());
+            rates[0] = 1000;
+            rates[1] = 1600;
+        }
+        return rates;
+    }
+    public void savePaymentRates(double juniorRate, double seniorRate) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(paymentRatesFilePath, false))) {
+            //false means that it overwrites everything in the file every time.
+            writer.write("Junior Rate: " + juniorRate);
+            writer.newLine();
+            writer.write("Senior Rate: " + seniorRate);
+            writer.newLine();
+        } catch (IOException e) {
+            System.out.println("Error saving payment rates: " + e.getMessage());
+        }
+    }
+
 }

@@ -8,6 +8,9 @@ import swimclub.repositories.MemberRepository;
 import swimclub.repositories.PaymentRepository;
 import swimclub.utilities.FileHandler;
 
+import java.io.*;
+
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,10 +20,16 @@ import java.util.List;
  */
 public class PaymentService {
     private final PaymentRepository paymentRepository; // Payment repository reference
+    private double juniorRate;
+    private double seniorRate;
+    private FileHandler fileHandler;
 
     // Constructor accepts a PaymentRepository to interact with payment data
-    public PaymentService(PaymentRepository paymentRepository) {
+    public PaymentService(PaymentRepository paymentRepository, FileHandler fileHandler) {
         this.paymentRepository = paymentRepository;
+        this.fileHandler = fileHandler;
+        //this ensures that every time the program runs, the paymentRates will be set according to the paymentRates.dat document.
+        updatePaymentRatesFromFile();
     }
 
     /**
@@ -36,11 +45,11 @@ public class PaymentService {
 
         if (member.getMembershipStatus() == MembershipStatus.ACTIVE) {
             if (member.getAge() < 18) {
-                return 1000; // Active members under 18 pay 1000.
+                return juniorRate; // Active members under 18 pay 1000.
             } else if (member.getAge() < 60) {
-                return 1600; // Active members aged 18-59 pay 1600.
+                return seniorRate; // Active members aged 18-59 pay 1600.
             } else {
-                return 1600 * 0.75; // Active members 60+ receive a 25% discount.
+                return seniorRate * 0.75; // Active members 60+ receive a 25% discount.
             }
         }
 
@@ -50,11 +59,11 @@ public class PaymentService {
     /**
      * Registers a payment for a member.
      *
-     * @param memberId         The ID of the member making the payment.
-     * @param amount           The payment amount.
-     * @param memberRepository The repository to find the member.
+     * @param memberId           The ID of the member making the payment.
+     * @param amount             The payment amount.
+     * @param memberRepository   The repository to find the member.
      * @param paymentFileHandler The file handler to save payments.
-     * @param filePath         The file path for saving payments.
+     * @param filePath           The file path for saving payments.
      */
     public void registerPayment(int memberId, double amount, MemberRepository memberRepository, FileHandler paymentFileHandler, String filePath) {
         if (amount <= 0) {
@@ -241,4 +250,22 @@ public class PaymentService {
         paymentRepository.clearReminders();
         System.out.println("All reminders cleared.");
     }
+
+    // Setters to update the rates
+    public void setJuniorRate(double juniorRate) {
+        this.juniorRate = juniorRate;
+        fileHandler.savePaymentRates(juniorRate, seniorRate); // Save the changes to the file after updating the rate
+    }
+
+    public void setSeniorRate(double seniorRate) {
+        this.seniorRate = seniorRate;
+        fileHandler.savePaymentRates(juniorRate, seniorRate); // Save the changes to the file after updating the rate
+    }
+
+    public void updatePaymentRatesFromFile() {
+        double[] rates =fileHandler.loadPaymentRates();
+        this.juniorRate = rates[0];
+        this.seniorRate = rates[1];
+    }
+
 }
