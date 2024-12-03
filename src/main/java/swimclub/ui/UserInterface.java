@@ -145,7 +145,7 @@ public class UserInterface {
             double fee = paymentController.calculateMembershipFeeForMember(newMember.getMemberId());
 
             // Prompt user to pay now or later
-            System.out.println("\nMembership fee for " + newMember.getName() + " is $" + fee);
+            System.out.println("\nMembership fee for " + newMember.getName() + " is " + fee + " DKK");
             System.out.print("Do you want to pay now? (yes/no): ");
             String choice = scanner.nextLine().toLowerCase();
 

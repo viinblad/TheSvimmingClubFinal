@@ -144,7 +144,7 @@ public class Payment {
                 "Payment ID: " + paymentId +
                 ", Member: " + member.getName() +
                 ", Payment Date: " + paymentDate +
-                ", Amount: $" + amountPerYear +
+                ", Amount: " + amountPerYear + " DKK " +
                 ", Status: " + paymentStatus +
                 "}";
     }
