@@ -8,17 +8,20 @@ import java.util.List;
  * A Team contains a list of Members assigned to it.
  */
 public class Team {
-    private String teamName;
+    private String teamName; // Name of the team
+    private TeamType teamType; // Type of the team (Junior Competitive, Senior Competitive)
     private Member teamLeader; // Optional: Define a team leader
     private List<Member> members; // List of members in the team
 
     /**
-     * Constructor for Team.
+     * Constructor for creating a team.
      *
      * @param teamName The name of the team.
+     * @param teamType The type of the team.
      */
-    public Team(String teamName) {
+    public Team(String teamName, TeamType teamType) {
         this.teamName = teamName;
+        this.teamType = teamType;
         this.members = new ArrayList<>();
     }
 
@@ -30,6 +33,8 @@ public class Team {
     public void addMember(Member member) {
         if (!members.contains(member)) {
             members.add(member);
+        } else {
+            throw new IllegalArgumentException("Member is already part of the team.");
         }
     }
 
@@ -39,7 +44,11 @@ public class Team {
      * @param member The member to remove.
      */
     public void removeMember(Member member) {
-        members.remove(member);
+        if (members.contains(member)) {
+            members.remove(member);
+        } else {
+            throw new IllegalArgumentException("Member is not part of the team.");
+        }
     }
 
     /**
@@ -55,6 +64,7 @@ public class Team {
      * Sets the team leader.
      *
      * @param leader The member to assign as the team leader.
+     * @throws IllegalArgumentException if the leader is not a member of the team.
      */
     public void setTeamLeader(Member leader) {
         if (members.contains(leader)) {
@@ -85,15 +95,35 @@ public class Team {
     /**
      * Sets the team name.
      *
-     * @param teamName The name of the team.
+     * @param teamName The new name of the team.
      */
     public void setTeamName(String teamName) {
         this.teamName = teamName;
     }
 
+    /**
+     * Gets the team type.
+     *
+     * @return The type of the team.
+     */
+    public TeamType getTeamType() {
+        return teamType;
+    }
+
+    /**
+     * Sets the team type.
+     *
+     * @param teamType The new type of the team.
+     */
+    public void setTeamType(TeamType teamType) {
+        this.teamType = teamType;
+    }
+
     @Override
     public String toString() {
-        return "Team: " + teamName + ", Leader: " + (teamLeader != null ? teamLeader.getName() : "None") +
+        return "Team: " + teamName +
+                " (" + teamType.getDisplayName() + ")" +
+                ", Leader: " + (teamLeader != null ? teamLeader.getName() : "None") +
                 ", Members: " + members.size();
     }
 }

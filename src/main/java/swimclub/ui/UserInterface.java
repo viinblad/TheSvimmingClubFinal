@@ -376,6 +376,8 @@ public class UserInterface {
             System.out.println("Operation cancelled.");
         }
     }
+
+
     /**
      * Validates and retrieves a positive numeric age input from the user.
      *
