@@ -172,7 +172,7 @@ public class PaymentService {
 
         return "Total Members Paid: " + paidCount +
                 "\nTotal Members Pending: " + pendingCount +
-                "\nTotal Payments Collected: $" + totalAmount;
+                "\nTotal Payments Collected: " + totalAmount + " DKK";
     }
 
     /**
