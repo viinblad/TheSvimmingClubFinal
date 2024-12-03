@@ -4,9 +4,7 @@ import swimclub.models.Member;
 import swimclub.models.Payment;
 import swimclub.models.PaymentStatus;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,10 +14,20 @@ public class PaymentRepository {
     private static final Logger LOGGER = Logger.getLogger(PaymentRepository.class.getName());
     private final List<Payment> payments;  // List to store payments
     private final List<String> reminders; // List to store reminders
+    private final String reminderFilePath; // Path to the reminders file
 
-    public PaymentRepository() {
+    /**
+     * Constructor for PaymentRepository.
+     *
+     * @param reminderFilePath The file path where reminders are saved and loaded.
+     */
+    public PaymentRepository(String reminderFilePath) {
         this.payments = new ArrayList<>();
-        this.reminders = new ArrayList<>(); // Initialize reminders list
+        this.reminders = new ArrayList<>();
+        this.reminderFilePath = reminderFilePath;
+
+        // Load reminders at initialization
+        loadReminders();
     }
 
     /**
@@ -32,6 +40,7 @@ public class PaymentRepository {
             throw new IllegalArgumentException("Reminder cannot be null or empty.");
         }
         reminders.add(reminder);
+        saveRemindersToFile();
         LOGGER.info("Reminder saved: " + reminder);
     }
 
@@ -51,7 +60,11 @@ public class PaymentRepository {
      * @return true if the reminder was found and removed, false otherwise.
      */
     public boolean removeReminder(String reminder) {
-        return reminders.remove(reminder);
+        boolean removed = reminders.remove(reminder);
+        if (removed) {
+            saveRemindersToFile();
+        }
+        return removed;
     }
 
     /**
@@ -59,7 +72,38 @@ public class PaymentRepository {
      */
     public void clearReminders() {
         reminders.clear();
+        saveRemindersToFile();
         LOGGER.info("All reminders cleared.");
+    }
+
+    /**
+     * Saves all reminders to the file.
+     */
+    private void saveRemindersToFile() {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(reminderFilePath))) {
+            for (String reminder : reminders) {
+                writer.write(reminder);
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            LOGGER.severe("Error saving reminders to file: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Loads reminders from the file.
+     */
+    private void loadReminders() {
+        try (BufferedReader reader = new BufferedReader(new FileReader(reminderFilePath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                reminders.add(line);
+            }
+        } catch (FileNotFoundException e) {
+            LOGGER.info("Reminder file not found, starting with an empty list.");
+        } catch (IOException e) {
+            LOGGER.severe("Error loading reminders from file: " + e.getMessage());
+        }
     }
 
     /**
@@ -85,7 +129,7 @@ public class PaymentRepository {
     /**
      * Loads payments from a file and associates them with members.
      *
-     * @param filePath        The path to the payment file.
+     * @param filePath         The path to the payment file.
      * @param memberRepository The member repository to link payments with members.
      */
     public void loadPayments(String filePath, MemberRepository memberRepository) {
@@ -105,10 +149,11 @@ public class PaymentRepository {
             System.err.println("Error loading payments: " + e.getMessage());
         }
     }
+
     /**
      * Parses a payment from a string and associates it with a member.
      *
-     * @param line            The string containing payment details.
+     * @param line             The string containing payment details.
      * @param memberRepository The repository to find members by ID.
      * @return A Payment object parsed from the string or null if parsing fails.
      */
