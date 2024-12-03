@@ -18,7 +18,6 @@ public class Main {
      *             This parameter allows for passing arguments when running the program,
      *             but in this specific implementation, it is not used in the code.
      */
-
     public static void main(String[] args) {
         // File paths for member data, payment data, and reminder data
         String memberFilePath = "src/main/resources/members.dat";
@@ -30,11 +29,11 @@ public class Main {
 
         // Initialize the repositories, passing the respective FileHandlers
         MemberRepository memberRepository = new MemberRepository(memberFileHandler);
-        PaymentRepository paymentRepository = new PaymentRepository();
+        PaymentRepository paymentRepository = new PaymentRepository(reminderFilePath); // Pass the reminder file path
 
-        // Load members, payments, and reminders from the file
-        memberRepository.reloadMembers(); // Assuming loadMembers method exists to load member data
-        paymentRepository.loadPayments(paymentFilePath, memberRepository);
+        // Load members and payments from the file
+        memberRepository.reloadMembers(); // Load member data
+        paymentRepository.loadPayments(paymentFilePath, memberRepository); // Load payment data
 
         // Initialize services for member and payment
         MemberService memberService = new MemberService(memberRepository);
@@ -58,6 +57,6 @@ public class Main {
         // After user interaction, save any changes to file
         memberFileHandler.saveMembers(memberRepository.findAll());
         memberFileHandler.savePayments(paymentRepository.findAll(), paymentFilePath);
-        memberFileHandler.saveReminders(paymentService.getAllReminders()); // Save reminders after interaction
+        // Reminders are saved directly by PaymentRepository via its methods, no need to use FileHandler here
     }
 }
