@@ -21,7 +21,9 @@ public abstract class Member {
     private ActivityType activityType;   // Members form of activity
     private int age;                     // Age of the member
     private int phoneNumber;             // Phone number of the member
-    private List<Payment> payments = new ArrayList<>(); // List of all payments made by the member.
+    private List<Payment> payments = new ArrayList<>(); // List of all payments made by the member
+    private Team team; // Reference to the team this member belongs to
+
 
     /**
      * Constructor for initializing a Member object.
@@ -136,6 +138,16 @@ public abstract class Member {
         return this.phoneNumber;
     }
 
+    /**
+     * Gets the team the member belongs to.
+     *
+     * @return The team or null if not assigned.
+     */
+    public Team getTeam() {
+        return team;
+    }
+
+
     public List<Payment> getPayments() {
         return new ArrayList<>(this.payments); // Return a copy to avoid external modification
     }
@@ -243,6 +255,14 @@ public abstract class Member {
      */
     public void setPhoneNumber(int phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+    /**
+     * Sets the team for the member.
+     *
+     * @param team The team to assign.
+     */
+    public void setTeam(Team team) {
+        this.team = team;
     }
 
     // -----------------------------------------------------------------------------------------------------
