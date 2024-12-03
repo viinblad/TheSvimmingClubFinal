@@ -235,8 +235,9 @@ public class UserInterface {
         System.out.println("1. Register Payment");
         System.out.println("2. View Payments for Member");
         System.out.println("3. Filter Members by Payment Status");
-        System.out.println("4. View Payment Summary");  // Added Payment Summary option
-        System.out.println("5. Exit to Main Menu");
+        System.out.println("4. View Payment Summary");
+        System.out.println("5. Payment reminder manager");
+        System.out.println("6. Exit to Main Menu");
 
         System.out.print("Please choose an option (1-5): ");
         int paymentOption = Integer.parseInt(scanner.nextLine());
@@ -244,6 +245,7 @@ public class UserInterface {
         switch (paymentOption) {
             case 1:
                 registerPayment();  // Register a new payment
+
                 break;
             case 2:
                 viewPaymentsForMember();  // View payment history for the member
@@ -255,6 +257,9 @@ public class UserInterface {
                 paymentController.viewPaymentSummary(); // Show payment summary
                 break;
             case 5:
+                managePaymentReminders();
+                break;
+            case 6:
                 return;  // Exit to main menu
             default:
                 System.out.println("Invalid option. Please choose a valid number.");
@@ -285,18 +290,6 @@ public class UserInterface {
         paymentController.viewPaymentsForMember(memberId);
     }
     /**
-     * Displays the payment summary, including the total payments made and the number of members who have paid.
-     */
-    private void viewPaymentSummary() {
-        System.out.println("Payment Summary: ");
-        List<Member> paidMembers = paymentController.getMembersPaidList();
-        double totalPayments = paidMembers.stream()
-                .mapToDouble(member -> paymentController.calculateMembershipFeeForMember(member.getMemberId()))
-                .sum();
-        System.out.println("Total Payments Made: " + totalPayments);
-        System.out.println("Number of Members Paid: " + paidMembers.size());
-    }
-    /**
      * Filters members based on their payment status and displays the filtered list.
      */
     private void filterMembersByPaymentStatus() {
@@ -307,6 +300,81 @@ public class UserInterface {
         List<Member> filteredMembers = paymentController.getMembersByPaymentStatus(paymentStatus);
         System.out.println("Members with payment status " + paymentStatus + ":");
         filteredMembers.forEach(member -> System.out.println("ID: " + member.getMemberId() + ", Name: " + member.getName()));
+    }
+
+    /**
+     * Manages payment reminders (add, view, delete, clear reminders).
+     */
+    private void managePaymentReminders() {
+        System.out.println("\n--- Payment Reminder Management ---");
+        System.out.println("1. Add Payment Reminder");
+        System.out.println("2. View All Reminders");
+        System.out.println("3. Remove Specific Reminder");
+        System.out.println("4. Clear All Reminders");
+        System.out.println("5. Exit to Payment Management");
+
+        System.out.print("Please choose an option (1-5): ");
+        int reminderOption = Integer.parseInt(scanner.nextLine());
+
+        switch (reminderOption) {
+            case 1 -> addPaymentReminder();
+            case 2 -> viewAllReminders();
+            case 3 -> removePaymentReminder();
+            case 4 -> clearAllReminders();
+            case 5 -> {
+                return;  // Exit to Payment Management
+            }
+            default -> System.out.println("Invalid option. Please choose a valid number.");
+        }
+    }
+
+    /**
+     * Adds a payment reminder for a specific member.
+     */
+    private void addPaymentReminder() {
+        System.out.print("Enter Member ID to set a reminder: ");
+        int memberId = Integer.parseInt(scanner.nextLine());
+        System.out.print("Enter Reminder Message: ");
+        String reminderMessage = scanner.nextLine();
+
+        paymentController.setPaymentReminder(memberId, reminderMessage);
+        System.out.println("Reminder added successfully for Member ID: " + memberId);
+    }
+
+    /**
+     * Displays all payment reminders.
+     */
+    private void viewAllReminders() {
+        System.out.println("\n--- All Payment Reminders ---");
+        paymentController.viewAllReminders();
+    }
+
+    /**
+     * Removes a specific reminder for a member.
+     */
+    private void removePaymentReminder() {
+        System.out.print("Enter Member ID for the reminder to remove: ");
+        int memberId = Integer.parseInt(scanner.nextLine());
+        System.out.print("Enter Reminder Message to remove: ");
+        String reminderMessage = scanner.nextLine();
+
+        paymentController.removePaymentReminder(memberId, reminderMessage);
+        System.out.println("Reminder removed successfully for Member ID: " + memberId);
+    }
+
+    /**
+     * Clears all payment reminders.
+     */
+    private void clearAllReminders() {
+        System.out.print("Are you sure you want to clear all reminders? (yes/no): ");
+        String confirmation = scanner.nextLine().toLowerCase();
+
+        if (confirmation.equals("yes")) {
+            paymentController.clearAllReminders();
+            System.out.println("All reminders have been cleared.");
+        } else {
+            System.out.println("Operation cancelled.");
+        }
     }
     /**
      * Validates and retrieves a positive numeric age input from the user.
