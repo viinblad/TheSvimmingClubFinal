@@ -1,29 +1,22 @@
 package swimclub.models;
 
-import java.time.LocalDate;
+
 
 public class CompetitionResults {
-    private int result;
     private Member member;
     private String event;
     private int placement;
     private double time;
-    private LocalDate competitionDate;
 
-    public CompetitionResults(int result, Member member, String event, int placement, double time, LocalDate competitionDate) {
 
-        this.result = result;
+    public CompetitionResults(Member member, String event, int placement, double time) {
+
         this.member = member;
         this.event = event;
         this.placement = placement;
         this.time = time;
-        this.competitionDate = competitionDate;
 
 
-    }
-
-    public int getResult() {
-        return result;
     }
 
     public Member getMember() {
@@ -42,14 +35,6 @@ public class CompetitionResults {
         return time;
     }
 
-    public LocalDate getCompetitionDate() {
-        return competitionDate;
-    }
-
-    public void setResult(int result) {
-        this.result = result;
-    }
-
     public void setMember(Member member) {
         this.member = member;
     }
@@ -66,19 +51,11 @@ public class CompetitionResults {
         this.time = time;
     }
 
-    public void setCompetitionDate(LocalDate competitionDate) {
-        this.competitionDate = competitionDate;
-    }
+
+
 
     @Override
     public String toString() {
-        return "CompetitionResult{" +
-                "resultId=" + result +
-                ", member=" + member.getName() + // Display the member's name
-                ", event='" + event + '\'' +
-                ", placement=" + placement +
-                ", time=" + time +
-                ", competitionDate=" + competitionDate +
-                '}';
+        return "Member: " + member.getName() + ", Event: " + event + ", Placement: " + placement + ", Time: " + time;
     }
 }
