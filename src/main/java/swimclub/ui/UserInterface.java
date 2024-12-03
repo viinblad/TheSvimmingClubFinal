@@ -2,6 +2,7 @@ package swimclub.ui;
 
 import swimclub.controllers.MemberController;
 import swimclub.controllers.PaymentController;
+import swimclub.controllers.TeamController;
 import swimclub.models.*;
 
 import java.util.List;
@@ -14,17 +15,20 @@ import java.util.Scanner;
 public class UserInterface {
     private final MemberController memberController;  // Controller to handle member actions
     private final PaymentController paymentController;  // Controller to handle payment actions
+    private final TeamController teamController;  // Controller to handle team actions
     private final Scanner scanner; // Scanner to read user input
 
     /**
-     * Constructor to initialize the UserInterface with the member controller and payment controller.
+     * Constructor to initialize the UserInterface with controllers.
      *
      * @param memberController  The controller that handles the logic for member actions.
      * @param paymentController The controller that handles the logic for payment actions.
+     * @param teamController    The controller that handles the logic for team actions.
      */
-    public UserInterface(MemberController memberController, PaymentController paymentController) {
+    public UserInterface(MemberController memberController, PaymentController paymentController, TeamController teamController) {
         this.memberController = memberController;
-        this.paymentController = paymentController;  // Initialize PaymentController
+        this.paymentController = paymentController;
+        this.teamController = teamController;
         this.scanner = new Scanner(System.in);
     }
 
@@ -37,9 +41,8 @@ public class UserInterface {
             printMenu();  // Display the main menu
             option = getUserInput();  // Get user's input option
             handleOption(option);  // Handle the option selected by the user
-        } while (option != 7); // Exit when the user selects option 7
+        } while (option != 8); // Exit when the user selects option 8
     }
-
     /**
      * Prints the main menu of the user interface.
      */
@@ -50,9 +53,10 @@ public class UserInterface {
         System.out.println("3. Update Member");
         System.out.println("4. View All Members");
         System.out.println("5. Delete Member");
-        System.out.println("6. Payment Management");  // New menu option for payment handling
-        System.out.println("7. Exit");
-        System.out.print("Please choose an option (1-7): ");
+        System.out.println("6. Payment Management");
+        System.out.println("7. Team Management");
+        System.out.println("8. Exit");
+        System.out.print("Please choose an option (1-8): ");
     }
 
     /**
@@ -65,7 +69,7 @@ public class UserInterface {
         try {
             option = Integer.parseInt(scanner.nextLine());  // Parse the input as integer
         } catch (NumberFormatException e) {
-            System.out.println("Invalid input. Please enter a number between 1 and 7.");
+            System.out.println("Invalid input. Please enter a number between 1 and 8.");
         }
         return option;
     }
@@ -98,6 +102,9 @@ public class UserInterface {
                 handlePayments();  // Handle payments (new option)
                 break;
             case 7:
+                manageTeams();  // Handle payments (new option)
+                break;
+            case 8:
                 exitProgram(); // Exit the program
                 break;
             default:
@@ -186,6 +193,141 @@ public class UserInterface {
 
         MembershipStatus membershipStatus = MembershipStatus.ACTIVE;  // Default to ACTIVE
         PaymentStatus paymentStatus = PaymentStatus.PENDING;  // Default to PENDING
+
+    /**
+     * Manages team-related operations: creating, viewing, updating, and deleting teams.
+     */
+    private void manageTeams() {
+        System.out.println("\n--- Team Management ---");
+        System.out.println("1. Create Team");
+        System.out.println("2. Add Member to Team");
+        System.out.println("3. Remove Member from Team");
+        System.out.println("4. Assign Team Leader");
+        System.out.println("5. View Teams");
+        System.out.println("6. Delete Team");
+        System.out.println("7. Exit to Main Menu");
+
+        System.out.print("Please choose an option (1-7): ");
+        int teamOption = Integer.parseInt(scanner.nextLine());
+
+        switch (teamOption) {
+            case 1 -> createTeam();
+            case 2 -> addMemberToTeam();
+            case 3 -> removeMemberFromTeam();
+            case 4 -> assignTeamLeader();
+            case 5 -> viewTeams();
+            case 6 -> deleteTeam();
+            case 7 -> System.out.println("Returning to Main Menu...");
+            default -> System.out.println("Invalid option. Please choose a valid number.");
+        }
+    }
+
+    /**
+     * Creates a new team by collecting the team name and type from the user.
+     */
+    private void createTeam() {
+        System.out.print("Enter Team Name: ");
+        String teamName = scanner.nextLine();
+        System.out.print("Enter Team Type (Junior Competitive / Senior Competitive): ");
+        String teamTypeStr = scanner.nextLine().toUpperCase();
+
+        try {
+            teamController.createTeam(teamName, teamTypeStr);
+            System.out.println("Team '" + teamName + "' created successfully.");
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error creating team: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Adds a member to an existing team.
+     */
+    private void addMemberToTeam() {
+        System.out.print("Enter Team Name: ");
+        String teamName = scanner.nextLine();
+        System.out.print("Enter Member ID to Add: ");
+        int memberId = Integer.parseInt(scanner.nextLine());
+
+        Member member = memberController.findMemberById(memberId);
+        if (member == null) {
+            System.out.println("Member not found.");
+            return;
+        }
+
+        try {
+            teamController.addMemberToTeam(teamName, member);
+            System.out.println("Member '" + member.getName() + "' added to team '" + teamName + "'.");
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error adding member to team: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Removes a member from an existing team.
+     */
+    private void removeMemberFromTeam() {
+        System.out.print("Enter Team Name: ");
+        String teamName = scanner.nextLine();
+        System.out.print("Enter Member ID to Remove: ");
+        int memberId = Integer.parseInt(scanner.nextLine());
+
+        Member member = memberController.findMemberById(memberId);
+        if (member == null) {
+            System.out.println("Member not found.");
+            return;
+        }
+
+        try {
+            teamController.removeMemberFromTeam(teamName, member);
+            System.out.println("Member '" + member.getName() + "' removed from team '" + teamName + "'.");
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error removing member from team: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Assigns a team leader to a specific team.
+     */
+    private void assignTeamLeader() {
+        System.out.print("Enter Team Name: ");
+        String teamName = scanner.nextLine();
+        System.out.print("Enter Member ID to Assign as Leader: ");
+        int memberId = Integer.parseInt(scanner.nextLine());
+
+        Member member = memberController.findMemberById(memberId);
+        if (member == null) {
+            System.out.println("Member not found.");
+            return;
+        }
+
+        try {
+            teamController.assignTeamLeader(teamName, member);
+            System.out.println("Member '" + member.getName() + "' assigned as leader of team '" + teamName + "'.");
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error assigning team leader: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Displays all teams and their members.
+     */
+    private void viewTeams() {
+        List<Team> teams = teamController.getAllTeams();
+        if (teams.isEmpty()) {
+            System.out.println("No teams found.");
+            return;
+        }
+
+        System.out.println("\n--- Teams ---");
+        teams.forEach(team -> {
+            System.out.println("Team: " + team.getTeamName());
+            System.out.println("Leader: " + (team.getTeamLeader() != null ? team.getTeamLeader().getName() : "None"));
+            System.out.println("Members:");
+            team.getMembers().forEach(member -> System.out.println("- " + member.getName()));
+            System.out.println();
+        });
+    }
+
 
 
         // Call the controller's updateMember method with all new attributes

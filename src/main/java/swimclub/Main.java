@@ -2,6 +2,7 @@ package swimclub;
 
 import swimclub.controllers.MemberController;
 import swimclub.controllers.PaymentController;
+import swimclub.controllers.TeamController;
 import swimclub.repositories.MemberRepository;
 import swimclub.repositories.PaymentRepository;
 import swimclub.services.MemberService;
@@ -41,6 +42,7 @@ public class Main {
 
         // Instantiate the controllers
         MemberController memberController = new MemberController(memberService, memberRepository);
+        TeamController teamController = new TeamController();
         PaymentController paymentController = new PaymentController(
                 paymentService,
                 memberRepository,
