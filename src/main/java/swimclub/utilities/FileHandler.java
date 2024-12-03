@@ -14,7 +14,8 @@ import java.util.List;
 public class FileHandler {
     private String memberFilePath;
     private String paymentFilePath;
-    private String reminderFilePath;  // Added for reminder file
+    private String reminderFilePath;// Added for reminder file
+    private String paymentRatesFilePath;
 
     /**
      * Constructor for FileHandler.
@@ -23,10 +24,11 @@ public class FileHandler {
      * @param paymentFilePath  Path to the file for saving/loading payment data.
      * @param reminderFilePath Path to the file for saving/loading reminder data.
      */
-    public FileHandler(String memberFilePath, String paymentFilePath, String reminderFilePath) {
+    public FileHandler(String memberFilePath, String paymentFilePath, String reminderFilePath, String paymentRatesFilePath) {
         this.memberFilePath = memberFilePath;
         this.paymentFilePath = paymentFilePath;
         this.reminderFilePath = reminderFilePath;
+        this.paymentRatesFilePath = paymentRatesFilePath;
     }
 
 
@@ -296,4 +298,73 @@ public class FileHandler {
             return null;
         }
     }
+
+
+    /**
+     *
+     * @return a double arrayList which can be used in paymentService to load juniorRate and seniorRate.
+     */
+    public double[] loadPaymentRates() {
+        double[] rates = new double[2];
+        try (BufferedReader reader = new BufferedReader(new FileReader(paymentRatesFilePath))) {
+            String line;
+            boolean foundJuniorRate = false;
+            boolean foundSeniorRate = false;
+
+            while ((line = reader.readLine()) != null) { // proceeds until the paymentRAtes.dat is read to the bottom.
+                line = line.trim(); // cleans whitespaces in the documen
+                if (line.startsWith("Junior Rate:")) {
+                    try {
+                        rates[0] = Double.parseDouble(line.split(":")[1].trim()); /*turns the data into double and splits it
+                        into an array before and after ":" and then takes the second element */
+                        foundJuniorRate = true;
+                    } catch (NumberFormatException e) { // in case that the string cant be converted to a double.
+                        System.out.println("Invalid format for Junior Rate. Using default value.");
+                    }
+                } else if (line.startsWith("Senior Rate:")) {
+                    try {
+                        rates[1] = Double.parseDouble(line.split(":")[1].trim()); /*turns the data into double and splits it
+                        into an array before and after ":" and then takes the second element */
+                        foundSeniorRate = true;
+                    } catch (NumberFormatException e) {  // in case that the string cant be converted to a double.
+                        System.out.println("Invalid format for Senior Rate. Using default value.");
+                    }
+                }
+            }
+
+            // Set default values if rates were not found
+            if (!foundJuniorRate) {
+                rates[0] = 1000; // Default Junior rate if no rates were found in the document.
+            }
+            if (!foundSeniorRate) {
+                rates[1] = 1600; // Default Senior rate if no rates were found in the document.
+            }
+
+        } catch (IOException e) {
+            System.out.println("Error loading payment rates from file: " + e.getMessage());
+            // Default values in case of error
+            rates[0] = 1000; // default junior rate
+            rates[1] = 1600; // default senior rate
+
+        }
+        return rates;
+    }
+
+    /**
+     * This method saves the juniorRate and seniorRate from paymentService class to paymentsRates.dat document.
+     * @param juniorRate - the price for how much a junior member has to pay.
+     * @param seniorRate - the price for how much a senior member has to pay.
+     */
+    public void savePaymentRates(double juniorRate, double seniorRate) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(paymentRatesFilePath, false))) {
+            //false means that it overwrites everything in the file every time.
+            writer.write("Junior Rate: " + juniorRate);
+            writer.newLine();
+            writer.write("Senior Rate: " + seniorRate);
+            writer.newLine();
+        } catch (IOException e) {
+            System.out.println("Error saving payment rates: " + e.getMessage());
+        }
+    }
+
 }

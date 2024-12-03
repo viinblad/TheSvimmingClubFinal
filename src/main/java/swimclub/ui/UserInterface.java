@@ -2,7 +2,6 @@ package swimclub.ui;
 
 import swimclub.controllers.MemberController;
 import swimclub.controllers.PaymentController;
-import swimclub.controllers.TeamController;
 import swimclub.models.*;
 
 import java.util.List;
@@ -19,7 +18,7 @@ public class UserInterface {
     private final Scanner scanner; // Scanner to read user input
 
     /**
-     * Constructor to initialize the UserInterface with controllers.
+     * Constructor to initialize the UserInterface with the member controller and payment controller.
      *
      * @param memberController  The controller that handles the logic for member actions.
      * @param paymentController The controller that handles the logic for payment actions.
@@ -43,6 +42,7 @@ public class UserInterface {
             handleOption(option);  // Handle the option selected by the user
         } while (option != 8); // Exit when the user selects option 8
     }
+
     /**
      * Prints the main menu of the user interface.
      */
@@ -134,7 +134,7 @@ public class UserInterface {
         String street = scanner.nextLine();
         System.out.print("Enter region of member:");
         String region = scanner.nextLine();
-        String zipcode = correctZipCodeInput(scanner,"Enter Zip code (4 digits):");
+        String zipcode = correctZipCodeInput(scanner, "Enter Zip code (4 digits):");
         System.out.print("Enter membership type (Junior/Senior, Competitive/Exercise): ");
         String membershipType = scanner.nextLine();
         System.out.print("Enter activity type (Breaststroke, Crawl, Backcrawl or Butterfly):");
@@ -176,7 +176,7 @@ public class UserInterface {
         // Gather all the required updated attributes
         System.out.print("Enter new name: ");
         String name = scanner.nextLine();
-        String email = correctEmailInput(scanner,"Enter new Email:");
+        String email = correctEmailInput(scanner, "Enter new Email:");
         String age = correctAgeInput(scanner, "Enter new age:");
         System.out.print("Enter new city: ");
         String city = scanner.nextLine();
@@ -184,7 +184,7 @@ public class UserInterface {
         String street = scanner.nextLine();
         System.out.print("Enter new region: ");
         String region = scanner.nextLine();
-        String zipcode = correctZipCodeInput(scanner,"Enter new zipcode");
+        String zipcode = correctZipCodeInput(scanner, "Enter new zipcode");
         System.out.print("Enter new membership type (Junior/Senior, Competitive/Exercise): ");
         String membershipType = scanner.nextLine();
         System.out.println("Enter new activity type (Crawl, Backcrawl, Breathstroke or Butterfly):");
@@ -379,7 +379,8 @@ public class UserInterface {
         System.out.println("3. Filter Members by Payment Status");
         System.out.println("4. View Payment Summary");
         System.out.println("5. Payment reminder manager");
-        System.out.println("6. Exit to Main Menu");
+        System.out.println("6. Update Payment Rates");
+        System.out.println("7. Exit to Main Menu");
 
         System.out.print("Please choose an option (1-5): ");
         int paymentOption = Integer.parseInt(scanner.nextLine());
@@ -402,9 +403,81 @@ public class UserInterface {
                 managePaymentReminders();
                 break;
             case 6:
+                managePaymentRates();
+            case 7:
                 return;  // Exit to main menu
             default:
                 System.out.println("Invalid option. Please choose a valid number.");
+        }
+    }
+
+    /**
+     * gives an overview of the current payment rates to the user, and gives the user the possibility of updating the payment rates
+     * which will lead to update paymentrates() method.
+     */
+    private void managePaymentRates() {
+        DecimalFormat df = new DecimalFormat("#.##"); // Format to show up to 2 decimal places
+
+        System.out.println("The current payment rates:");
+        System.out.println("Yearly junior-membership price: " + df.format(paymentController.getPaymentRates()[0]) + " DKK");
+        System.out.println("Yearly senior-membership price: " + df.format(paymentController.getPaymentRates()[1]) + " DKK");
+
+        System.out.println("Do you want to update the payment rates? Type \"Yes\" or \"No\"");
+        String choice = scanner.nextLine();
+        boolean validInput = false;
+
+        while (!validInput) {
+            switch (choice.toLowerCase()) {
+                case "yes":
+                    updatePaymentRates();
+                    validInput = true;
+                    break;
+                case "no":
+                    validInput = true;
+                    break;
+                default:
+                    System.out.println("Invalid input.");
+            }
+        }
+    }
+
+    /**
+     * updates the payment rates with userinput.
+     */
+    private void updatePaymentRates() {
+        DecimalFormat df = new DecimalFormat("#.##"); // Format to show up to 2 decimal places
+
+        boolean validInput = false;
+
+        while (!validInput) {
+            // prints out junior price.
+            System.out.println("(Old yearly junior-membership price: " + df.format(paymentController.getPaymentRates()[0]) + " DKK) " +
+                    "Please type in the updated price in DKK: ");
+            try {
+                double newJuniorPrice = scanner.nextDouble(); // Get the new junior price
+                scanner.nextLine(); // Clear the buffer
+
+                // prints out senior price.
+                System.out.println("(Old yearly senior-membership price: " + df.format(paymentController.getPaymentRates()[1]) + " DKK) " +
+                        "Please type in the updated price in DKK: ");
+                double newSeniorPrice = scanner.nextDouble(); // Get the new senior price
+                scanner.nextLine(); // Clear the buffer
+
+                // updates the payment rates.
+                paymentController.setPaymentRates(newJuniorPrice, newSeniorPrice);
+
+                // print outs the new updated payment rates.
+                System.out.println("You have now updated the prices. The updated payment rates:");
+                System.out.println("Yearly junior-membership price: " + df.format(paymentController.getPaymentRates()[0]) + " DKK");
+                System.out.println("Yearly senior-membership price: " + df.format(paymentController.getPaymentRates()[1]) + " DKK");
+
+                validInput = true; // Exit loop since input is valid
+
+            } catch (InputMismatchException e) {
+                // Handle invalid input (values that are not a double)
+                System.out.println("Invalid input. Please enter a valid number for the price.");
+                scanner.nextLine(); // Clear the buffer to consume the invalid input
+            }
         }
     }
 
@@ -431,6 +504,7 @@ public class UserInterface {
         // Call the PaymentController to view payments for the member
         paymentController.viewPaymentsForMember(memberId);
     }
+
     /**
      * Filters members based on their payment status and displays the filtered list.
      */
@@ -519,7 +593,6 @@ public class UserInterface {
         }
     }
 
-
     /**
      * Validates and retrieves a positive numeric age input from the user.
      *
@@ -554,6 +627,7 @@ public class UserInterface {
             }
         }
     }
+
     /**
      * Validates and retrieves a valid 8-digit phone number input from the user.
      *
@@ -603,13 +677,14 @@ public class UserInterface {
             }
         }
     }
-    private static String correctEmailInput(Scanner scanner, String prompt){
+
+    private static String correctEmailInput(Scanner scanner, String prompt) {
         String email;
-        while (true){
+        while (true) {
             System.out.print(prompt);
             email = scanner.nextLine();
 
-            if (email.contains("@") && email.contains(".")){
+            if (email.contains("@") && email.contains(".")) {
                 return email;
             } else {
                 System.out.println("Invalid input. Email must contain '@' and '.' - Try again.");

@@ -8,6 +8,9 @@ import swimclub.repositories.MemberRepository;
 import swimclub.repositories.PaymentRepository;
 import swimclub.utilities.FileHandler;
 
+import java.io.*;
+
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,14 +20,20 @@ import java.util.List;
  */
 public class PaymentService {
     private final PaymentRepository paymentRepository; // Payment repository reference
+    private double juniorRate;
+    private double seniorRate;
+    private FileHandler fileHandler;
 
     // Constructor accepts a PaymentRepository to interact with payment data
-    public PaymentService(PaymentRepository paymentRepository) {
+    public PaymentService(PaymentRepository paymentRepository, FileHandler fileHandler) {
         this.paymentRepository = paymentRepository;
+        this.fileHandler = fileHandler;
+        //this ensures that every time the program runs, the paymentRates will be set according to the paymentRates.dat document.
+        updatePaymentRatesFromFile();
     }
 
     /**
-     * Calculates the annual membership fee based on the member's status and age.
+     * Calculates the annual membership fee based on the member's status and age and is determined by the chair master.
      *
      * @param member The member whose membership fee is being calculated.
      * @return The calculated membership fee.
@@ -36,11 +45,11 @@ public class PaymentService {
 
         if (member.getMembershipStatus() == MembershipStatus.ACTIVE) {
             if (member.getAge() < 18) {
-                return 1000; // Active members under 18 pay 1000.
+                return juniorRate; // Active members under 18
             } else if (member.getAge() < 60) {
-                return 1600; // Active members aged 18-59 pay 1600.
+                return seniorRate; // Active members aged 18-59
             } else {
-                return 1600 * 0.75; // Active members 60+ receive a 25% discount.
+                return seniorRate * 0.75; // Active members 60+ receive a 25% discount on seniorRate
             }
         }
 
@@ -50,11 +59,11 @@ public class PaymentService {
     /**
      * Registers a payment for a member.
      *
-     * @param memberId         The ID of the member making the payment.
-     * @param amount           The payment amount.
-     * @param memberRepository The repository to find the member.
+     * @param memberId           The ID of the member making the payment.
+     * @param amount             The payment amount.
+     * @param memberRepository   The repository to find the member.
      * @param paymentFileHandler The file handler to save payments.
-     * @param filePath         The file path for saving payments.
+     * @param filePath           The file path for saving payments.
      */
     public void registerPayment(int memberId, double amount, MemberRepository memberRepository, FileHandler paymentFileHandler, String filePath) {
         if (amount <= 0) {
@@ -241,4 +250,46 @@ public class PaymentService {
         paymentRepository.clearReminders();
         System.out.println("All reminders cleared.");
     }
+
+    /**
+     *     Setter to update junior rate
+     */
+    public void setJuniorRate(double juniorRate) {
+        this.juniorRate = juniorRate;
+        saveRatestoFile(); // Save the changes to the file after updating the rate
+    }
+
+    /**
+     *  setter to update senior rate
+      */
+    public void setSeniorRate(double seniorRate) {
+        this.seniorRate = seniorRate;
+        saveRatestoFile(); // Save the changes to the file after updating the rate
+    }
+
+    /**
+     *  saves junior rate and senior rate to paymentRates.dat
+      */
+
+    private void saveRatestoFile () {
+        fileHandler.savePaymentRates(juniorRate, seniorRate);
+    }
+
+    /**
+     *     takes the rates from paymentrates.dat and updates the attributes junior and senior in paymentservice.
+      */
+    public void updatePaymentRatesFromFile() {
+        double[] rates = fileHandler.loadPaymentRates();
+        this.juniorRate = rates[0];
+        this.seniorRate = rates[1];
+    }
+
+    public double[] getPaymentRates () {
+        double[] paymentRates = new double[2];
+        paymentRates[0] = this.juniorRate;
+        paymentRates[1] = this.seniorRate;
+
+        return paymentRates;
+    }
+
 }
