@@ -2,11 +2,14 @@ package swimclub.ui;
 
 import swimclub.controllers.MemberController;
 import swimclub.controllers.PaymentController;
+import swimclub.controllers.TeamController;
 import swimclub.models.*;
 
+import java.util.InputMismatchException;
 import java.util.List;
+import java.util.Locale;
 import java.util.Scanner;
-
+import java.text.DecimalFormat;
 /**
  * UserInterface handles the interaction between the user and the program.
  * It allows the user to register, update, and view members, as well as manage payments.
@@ -194,32 +197,44 @@ public class UserInterface {
         MembershipStatus membershipStatus = MembershipStatus.ACTIVE;  // Default to ACTIVE
         PaymentStatus paymentStatus = PaymentStatus.PENDING;  // Default to PENDING
 
+        // Call the controller's updateMember method with all new attributes
+        memberController.updateMember(memberId, name, email, age, city, street, region, Integer.parseInt(zipcode), membershipType, membershipStatus, activitytype, paymentStatus, Integer.parseInt(phoneNumber));
+    }
+
     /**
      * Manages team-related operations: creating, viewing, updating, and deleting teams.
      */
     private void manageTeams() {
-        System.out.println("\n--- Team Management ---");
-        System.out.println("1. Create Team");
-        System.out.println("2. Add Member to Team");
-        System.out.println("3. Remove Member from Team");
-        System.out.println("4. Assign Team Leader");
-        System.out.println("5. View Teams");
-        System.out.println("6. Delete Team");
-        System.out.println("7. Exit to Main Menu");
+        int teamOption = -1;
+        do {
+            System.out.println("\n--- Team Management ---");
+            System.out.println("1. Create Team");
+            System.out.println("2. Add Member to Team");
+            System.out.println("3. Remove Member from Team");
+            System.out.println("4. Assign Team Leader");
+            System.out.println("5. View Teams");
+            System.out.println("6. Delete Team");
+            System.out.println("7. Exit to Main Menu");
 
-        System.out.print("Please choose an option (1-7): ");
-        int teamOption = Integer.parseInt(scanner.nextLine());
+            System.out.print("Please choose an option (1-7): ");
+            try {
+                teamOption = Integer.parseInt(scanner.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a number between 1 and 7.");
+                continue;
+            }
 
-        switch (teamOption) {
-            case 1 -> createTeam();
-            case 2 -> addMemberToTeam();
-            case 3 -> removeMemberFromTeam();
-            case 4 -> assignTeamLeader();
-            case 5 -> viewTeams();
-            case 6 -> deleteTeam();
-            case 7 -> System.out.println("Returning to Main Menu...");
-            default -> System.out.println("Invalid option. Please choose a valid number.");
-        }
+            switch (teamOption) {
+                case 1 -> createTeam();
+                case 2 -> addMemberToTeam();
+                case 3 -> removeMemberFromTeam();
+                case 4 -> assignTeamLeader();
+                case 5 -> viewTeams();
+                case 6 -> deleteTeam();
+                case 7 -> System.out.println("Returning to Main Menu...");
+                default -> System.out.println("Invalid option. Please choose a valid number.");
+            }
+        } while (teamOption != 7);
     }
 
     /**
@@ -227,9 +242,16 @@ public class UserInterface {
      */
     private void createTeam() {
         System.out.print("Enter Team Name: ");
-        String teamName = scanner.nextLine();
+        String teamName = scanner.nextLine().trim();
+
         System.out.print("Enter Team Type (Junior Competitive / Senior Competitive): ");
-        String teamTypeStr = scanner.nextLine().toUpperCase();
+        String teamTypeStr = scanner.nextLine().trim().toUpperCase();
+
+        // Validate team type input
+        if (!teamTypeStr.equals("JUNIOR COMPETITIVE") && !teamTypeStr.equals("SENIOR COMPETITIVE")) {
+            System.out.println("Invalid team type. Please enter 'Junior Competitive' or 'Senior Competitive'.");
+            return;
+        }
 
         try {
             teamController.createTeam(teamName, teamTypeStr);
@@ -244,9 +266,16 @@ public class UserInterface {
      */
     private void addMemberToTeam() {
         System.out.print("Enter Team Name: ");
-        String teamName = scanner.nextLine();
+        String teamName = scanner.nextLine().trim();
+
         System.out.print("Enter Member ID to Add: ");
-        int memberId = Integer.parseInt(scanner.nextLine());
+        int memberId;
+        try {
+            memberId = Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid Member ID. Please enter a valid number.");
+            return;
+        }
 
         Member member = memberController.findMemberById(memberId);
         if (member == null) {
@@ -267,9 +296,16 @@ public class UserInterface {
      */
     private void removeMemberFromTeam() {
         System.out.print("Enter Team Name: ");
-        String teamName = scanner.nextLine();
+        String teamName = scanner.nextLine().trim();
+
         System.out.print("Enter Member ID to Remove: ");
-        int memberId = Integer.parseInt(scanner.nextLine());
+        int memberId;
+        try {
+            memberId = Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid Member ID. Please enter a valid number.");
+            return;
+        }
 
         Member member = memberController.findMemberById(memberId);
         if (member == null) {
@@ -290,9 +326,16 @@ public class UserInterface {
      */
     private void assignTeamLeader() {
         System.out.print("Enter Team Name: ");
-        String teamName = scanner.nextLine();
+        String teamName = scanner.nextLine().trim();
+
         System.out.print("Enter Member ID to Assign as Leader: ");
-        int memberId = Integer.parseInt(scanner.nextLine());
+        int memberId;
+        try {
+            memberId = Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid Member ID. Please enter a valid number.");
+            return;
+        }
 
         Member member = memberController.findMemberById(memberId);
         if (member == null) {
@@ -309,30 +352,35 @@ public class UserInterface {
     }
 
     /**
-     * Displays all teams and their members.
+     * Displays all teams and their details.
      */
     private void viewTeams() {
         List<Team> teams = teamController.getAllTeams();
         if (teams.isEmpty()) {
-            System.out.println("No teams found.");
-            return;
+            System.out.println("No teams available.");
+        } else {
+            System.out.println("--- All Teams ---");
+            for (Team team : teams) {
+                System.out.println(team);
+            }
         }
-
-        System.out.println("\n--- Teams ---");
-        teams.forEach(team -> {
-            System.out.println("Team: " + team.getTeamName());
-            System.out.println("Leader: " + (team.getTeamLeader() != null ? team.getTeamLeader().getName() : "None"));
-            System.out.println("Members:");
-            team.getMembers().forEach(member -> System.out.println("- " + member.getName()));
-            System.out.println();
-        });
     }
 
+    /**
+     * Deletes a team by its name.
+     */
+    private void deleteTeam() {
+        System.out.print("Enter Team Name to Delete: ");
+        String teamName = scanner.nextLine().trim();
 
-
-        // Call the controller's updateMember method with all new attributes
-        memberController.updateMember(memberId, name, email, age, city, street, region, Integer.parseInt(zipcode), membershipType, membershipStatus, activitytype, paymentStatus, Integer.parseInt(phoneNumber));
+        try {
+            teamController.deleteTeam(teamName);
+            System.out.println("Team '" + teamName + "' deleted successfully.");
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error deleting team: " + e.getMessage());
+        }
     }
+
 
     /**
      * Deletes a member by their ID.

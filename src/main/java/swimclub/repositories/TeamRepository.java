@@ -1,6 +1,8 @@
 package swimclub.repositories;
 
 import swimclub.models.Team;
+import swimclub.utilities.FileHandler;
+import swimclub.models.Member;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,12 +12,17 @@ import java.util.List;
  */
 public class TeamRepository {
     private final List<Team> teams; // List to store all teams
+    private final FileHandler fileHandler;  // Added fileHandler for persistence
 
     /**
      * Constructor to initialize the repository.
+     *
+     * @param fileHandler The file handler for loading and saving teams.
      */
-    public TeamRepository() {
+    public TeamRepository(FileHandler fileHandler) {
+        this.fileHandler = fileHandler;
         this.teams = new ArrayList<>();
+        loadTeams();  // Load teams from the file on initialization
     }
 
     /**
@@ -57,5 +64,31 @@ public class TeamRepository {
      */
     public boolean removeTeam(String teamName) {
         return teams.removeIf(team -> team.getTeamName().equalsIgnoreCase(teamName));
+    }
+
+    // ---------------------------
+    // Methods for file handling
+    // ---------------------------
+
+    /**
+     * Loads teams from the file using the FileHandler.
+     */
+    public void loadTeams() {
+        List<Member> allMembers = new ArrayList<>(); // This should be your actual list of members
+        // For this, you would typically call a method to load the members, like:
+        // allMembers = memberRepository.findAll(); // Or whatever method you use to get all members
+
+        List<Team> loadedTeams = fileHandler.loadTeams(allMembers);  // Pass members to load teams
+        if (loadedTeams != null) {
+            this.teams.clear();
+            this.teams.addAll(loadedTeams);  // Add loaded teams to the repository
+        }
+    }
+
+    /**
+     * Saves all teams to the file using the FileHandler.
+     */
+    public void saveTeams() {
+        fileHandler.saveTeams(teams);  // Save the list of teams using the FileHandler
     }
 }

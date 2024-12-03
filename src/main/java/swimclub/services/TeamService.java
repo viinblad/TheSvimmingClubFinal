@@ -26,6 +26,7 @@ public class TeamService {
      * Creates a new team.
      *
      * @param teamName The name of the team.
+     * @param teamTypeString The type of the team (e.g., Junior Competitive or Senior Competitive).
      * @return The created Team object.
      */
     public Team createTeam(String teamName, String teamTypeString) {
@@ -61,11 +62,49 @@ public class TeamService {
      */
     public void removeMemberFromTeam(String teamName, Member member) {
         Team team = teamRepository.findTeamByName(teamName);
+        if (team != null) {
+            // Ensure the member exists in the team
+            if (!team.getMembers().contains(member)) {
+                throw new IllegalArgumentException("Member is not part of the team.");
+            }
+            team.removeMember(member);  // Remove member from the team
+            member.setTeam(null); // Set the team reference in the member to null
+        } else {
+            throw new IllegalArgumentException("Team not found.");
+        }
+    }
+
+    /**
+     * Deletes a team by its name.
+     *
+     * @param teamName The name of the team to delete.
+     */
+    public void deleteTeam(String teamName) {
+        Team team = teamRepository.findTeamByName(teamName);
         if (team == null) {
             throw new IllegalArgumentException("Team not found.");
         }
-        team.removeMember(member);
-        member.setTeam(null); // Remove the team reference from the member
+        teamRepository.removeTeam(teamName); // Remove the team from the repository
+    }
+
+    /**
+     * Assigns a member as the team leader.
+     *
+     * @param teamName The name of the team.
+     * @param member   The member to assign as team leader.
+     */
+    public void assignTeamLeader(String teamName, Member member) {
+        Team team = teamRepository.findTeamByName(teamName);
+        if (team == null) {
+            throw new IllegalArgumentException("Team not found.");
+        }
+
+        // Ensure the member is part of the team before assigning as a leader
+        if (!team.getMembers().contains(member)) {
+            throw new IllegalArgumentException("Member is not part of the team.");
+        }
+
+        team.setTeamLeader(member); // Set the team leader
     }
 
     /**
