@@ -2,10 +2,13 @@ package swimclub;
 
 import swimclub.controllers.MemberController;
 import swimclub.controllers.PaymentController;
+import swimclub.controllers.TeamController;
 import swimclub.repositories.MemberRepository;
 import swimclub.repositories.PaymentRepository;
+import swimclub.repositories.TeamRepository;  // Import TeamRepository
 import swimclub.services.MemberService;
 import swimclub.services.PaymentService;
+import swimclub.services.TeamService;  // Import TeamService
 import swimclub.ui.UserInterface;
 import swimclub.utilities.FileHandler;
 
@@ -18,46 +21,57 @@ public class Main {
      *             This parameter allows for passing arguments when running the program,
      *             but in this specific implementation, it is not used in the code.
      */
-
     public static void main(String[] args) {
-        // File paths for member data, payment data, and reminder data
+        // File paths for member data, payment data, reminder data, and teams data
         String memberFilePath = "src/main/resources/members.dat";
         String paymentFilePath = "src/main/resources/payments.dat";
         String reminderFilePath = "src/main/resources/reminders.dat";
+        String paymentRatesFilePath = "src/main/resources/paymentRates.dat";
+        String teamsFilePath = "src/main/resources/teams.dat"; // Path for teams data
 
-        // Initialize the FileHandler for members, payments, and reminders
-        FileHandler memberFileHandler = new FileHandler(memberFilePath, paymentFilePath, reminderFilePath);
+        // Initialize the FileHandler for members, payments, reminders, and teams
+        FileHandler fileHandler = new FileHandler(memberFilePath, paymentFilePath, reminderFilePath, paymentRatesFilePath, teamsFilePath);
 
         // Initialize the repositories, passing the respective FileHandlers
-        MemberRepository memberRepository = new MemberRepository(memberFileHandler);
-        PaymentRepository paymentRepository = new PaymentRepository();
+        MemberRepository memberRepository = new MemberRepository(fileHandler);
+        PaymentRepository paymentRepository = new PaymentRepository(reminderFilePath); // Pass the reminder file path
 
-        // Load members, payments, and reminders from the file
-        memberRepository.reloadMembers(); // Assuming loadMembers method exists to load member data
-        paymentRepository.loadPayments(paymentFilePath, memberRepository);
+        // Load members, payments, and teams from the file
+        memberRepository.reloadMembers(); // Load member data
+        paymentRepository.loadPayments(paymentFilePath, memberRepository); // Load payment data
 
         // Initialize services for member and payment
         MemberService memberService = new MemberService(memberRepository);
-        PaymentService paymentService = new PaymentService(paymentRepository);
+        PaymentService paymentService = new PaymentService(paymentRepository, fileHandler);
+
+        // Initialize TeamRepository
+        TeamRepository teamRepository = new TeamRepository(fileHandler);  // Pass FileHandler to TeamRepository
+
+        // Initialize TeamService with TeamRepository
+        TeamService teamService = new TeamService(teamRepository);  // Pass TeamRepository to TeamService
 
         // Instantiate the controllers
         MemberController memberController = new MemberController(memberService, memberRepository);
+        TeamController teamController = new TeamController(teamService);  // Pass TeamService to TeamController
         PaymentController paymentController = new PaymentController(
                 paymentService,
                 memberRepository,
-                memberFileHandler,
-                paymentFilePath
+                fileHandler,
+                paymentFilePath,
+                paymentRatesFilePath
         );
 
-        // Instantiate the UserInterface, passing both controllers
-        UserInterface userInterface = new UserInterface(memberController, paymentController);
+        // Instantiate the UserInterface, passing all controllers (including teamController)
+        UserInterface userInterface = new UserInterface(memberController, paymentController, teamController);
 
         // Start the User Interface to handle interactions
         userInterface.start();
 
         // After user interaction, save any changes to file
-        memberFileHandler.saveMembers(memberRepository.findAll());
-        memberFileHandler.savePayments(paymentRepository.findAll(), paymentFilePath);
-        memberFileHandler.saveReminders(paymentService.getAllReminders()); // Save reminders after interaction
+        fileHandler.saveMembers(memberRepository.findAll()); // Save updated members
+        fileHandler.savePayments(paymentRepository.findAll(), paymentFilePath); // Save updated payments
+        // Reminder data is managed by PaymentRepository, so no need to handle it here
+        // Save the teams after user interaction
+        fileHandler.saveTeams(teamController.getAllTeams()); // Save teams to the file
     }
 }

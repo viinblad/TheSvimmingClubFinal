@@ -9,12 +9,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * FileHandler handles saving and loading Member, Payment, and Reminder data to and from a file.
+ * FileHandler handles saving and loading Member, Payment, Reminder, and Team data to and from a file.
  */
 public class FileHandler {
     private String memberFilePath;
     private String paymentFilePath;
-    private String reminderFilePath;  // Added for reminder file
+    private String reminderFilePath;
+    private String paymentRatesFilePath;
+    private String teamsFilePath;
 
     /**
      * Constructor for FileHandler.
@@ -22,13 +24,17 @@ public class FileHandler {
      * @param memberFilePath   Path to the file for saving/loading member data.
      * @param paymentFilePath  Path to the file for saving/loading payment data.
      * @param reminderFilePath Path to the file for saving/loading reminder data.
+     * @param paymentRatesFilePath Path to the file for saving/loading payment rates.
+     * @param teamFilePath     Path to the file for saving/loading team data.
      */
-    public FileHandler(String memberFilePath, String paymentFilePath, String reminderFilePath) {
+    public FileHandler(String memberFilePath, String paymentFilePath, String reminderFilePath,
+                       String paymentRatesFilePath, String teamFilePath) {
         this.memberFilePath = memberFilePath;
         this.paymentFilePath = paymentFilePath;
         this.reminderFilePath = reminderFilePath;
+        this.paymentRatesFilePath = paymentRatesFilePath;
+        this.teamsFilePath = teamFilePath;
     }
-
 
     // ---------------------------
     // Member Related Methods
@@ -72,6 +78,7 @@ public class FileHandler {
         }
         return members;
     }
+
     /**
      * Deletes a member from the file based on provided memberID.
      *
@@ -295,5 +302,166 @@ public class FileHandler {
             System.err.println("Error parsing payment: " + line + " - " + e.getMessage());
             return null;
         }
+    }
+
+
+    /**
+     *
+     * @return a double arrayList which can be used in paymentService to load juniorRate and seniorRate.
+     */
+    public double[] loadPaymentRates() {
+        double[] rates = new double[2];
+        try (BufferedReader reader = new BufferedReader(new FileReader(paymentRatesFilePath))) {
+            String line;
+            boolean foundJuniorRate = false;
+            boolean foundSeniorRate = false;
+
+            while ((line = reader.readLine()) != null) { // proceeds until the paymentRates.dat is read to the bottom.
+                line = line.trim(); // cleans whitespaces in the document
+                if (line.startsWith("Junior Rate:")) {
+                    try {
+                        rates[0] = Double.parseDouble(line.split(":")[1].trim()); /*turns the data into double and splits it
+                        into an array before and after ":" and then takes the second element */
+                        foundJuniorRate = true;
+                    } catch (NumberFormatException e) { // in case that the string can't be converted to a double.
+                        System.out.println("Invalid format for Junior Rate. Using default value.");
+                    }
+                } else if (line.startsWith("Senior Rate:")) {
+                    try {
+                        rates[1] = Double.parseDouble(line.split(":")[1].trim()); /*turns the data into double and splits it
+                        into an array before and after ":" and then takes the second element */
+                        foundSeniorRate = true;
+                    } catch (NumberFormatException e) {  // in case that the string can't be converted to a double.
+                        System.out.println("Invalid format for Senior Rate. Using default value.");
+                    }
+                }
+            }
+
+            // Set default values if rates were not found
+            if (!foundJuniorRate) {
+                rates[0] = 1000; // Default Junior rate if no rates were found in the document.
+            }
+            if (!foundSeniorRate) {
+                rates[1] = 1600; // Default Senior rate if no rates were found in the document.
+            }
+
+        } catch (IOException e) {
+            System.out.println("Error loading payment rates from file: " + e.getMessage());
+            // Default values in case of error
+            rates[0] = 1000; // default junior rate
+            rates[1] = 1600; // default senior rate
+
+        }
+        return rates;
+    }
+
+    /**
+     * This method saves the juniorRate and seniorRate from paymentService class to paymentRates.dat document.
+     * @param juniorRate - the price for how much a junior member has to pay.
+     * @param seniorRate - the price for how much a senior member has to pay.
+     */
+    public void savePaymentRates(double juniorRate, double seniorRate) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(paymentRatesFilePath, false))) {
+            //false means that it overwrites everything in the file every time.
+            writer.write("Junior Rate: " + juniorRate);
+            writer.newLine();
+            writer.write("Senior Rate: " + seniorRate);
+            writer.newLine();
+        } catch (IOException e) {
+            System.out.println("Error saving payment rates: " + e.getMessage());
+        }
+    }
+
+    // ---------------------------
+    // Team Related Methods
+    // ---------------------------
+
+    /**
+     * Saves all teams to the specified file.
+     *
+     * @param teams List of Team objects to save.
+     */
+    public void saveTeams(List<Team> teams) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(teamsFilePath))) {
+            for (Team team : teams) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(team.getTeamName()).append(";") // Team name
+                        .append(team.getTeamType().name()).append(";"); // Team type
+                if (team.getTeamLeader() != null) {
+                    sb.append(team.getTeamLeader().getMemberId()); // Team leader ID
+                } else {
+                    sb.append("null"); // No leader
+                }
+                sb.append(";"); // Separator
+                for (Member member : team.getMembers()) {
+                    sb.append(member.getMemberId()).append(","); // Member IDs
+                }
+                writer.write(sb.toString());
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            System.err.println("Error saving teams: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Loads teams from the specified file.
+     *
+     * @param allMembers List of all members to link teams with.
+     * @return List of Team objects loaded from the file.
+     */
+    public List<Team> loadTeams(List<Member> allMembers) {
+        List<Team> teams = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(teamsFilePath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(";");
+                if (parts.length < 3) continue;
+
+                String teamName = parts[0];
+                TeamType teamType = TeamType.valueOf(parts[1].toUpperCase());
+                String leaderId = parts[2];
+                String[] memberIds = parts.length > 3 ? parts[3].split(",") : new String[0];
+
+                Team team = new Team(teamName, teamType);
+
+                // Set team leader if specified
+                if (!leaderId.equals("null")) {
+                    Member leader = findMemberById(allMembers, Integer.parseInt(leaderId));
+                    if (leader != null) {
+                        team.setTeamLeader(leader);
+                    }
+                }
+
+                // Add members to the team
+                for (String memberId : memberIds) {
+                    if (!memberId.isEmpty()) {
+                        Member member = findMemberById(allMembers, Integer.parseInt(memberId));
+                        if (member != null) {
+                            team.addMember(member);
+                        }
+                    }
+                }
+
+                teams.add(team);
+            }
+        } catch (IOException e) {
+            System.err.println("Error loading teams: " + e.getMessage());
+        }
+        return teams;
+    }
+
+    /**
+     * Helper method to find a member by ID from a list of members.
+     *
+     * @param members List of members to search in.
+     * @param id      ID of the member to find.
+     * @return The Member object with the specified ID, or null if not found.
+     */
+    private Member findMemberById(List<Member> members, int id) {
+        return members.stream()
+                .filter(member -> member.getMemberId() == id)
+                .findFirst()
+                .orElse(null);
     }
 }

@@ -89,6 +89,16 @@ public class MemberController {
     }
 
     /**
+     * Finds a member by ID.
+     *
+     * @param memberId The ID of the member to find.
+     * @return The member if found, or null if not found.
+     */
+    public Member findMemberById(int memberId) {
+        return memberRepository.findById(memberId); // Use repository to find the member by ID
+    }
+
+    /**
      * Updates an existing member after validating the input.
      * This method also parses and validates the updated member's details.
      *
