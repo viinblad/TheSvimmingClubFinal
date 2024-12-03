@@ -54,7 +54,6 @@ public class Main {
         UserInterface userInterface = new UserInterface(memberController, paymentController);
 
         // Start the User Interface to handle interactions
-        paymentService.setJuniorRate(20);
         userInterface.start();
 
 

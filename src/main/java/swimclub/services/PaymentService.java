@@ -284,4 +284,12 @@ public class PaymentService {
         this.seniorRate = rates[1];
     }
 
+    public double[] getPaymentRates () {
+        double[] paymentRates = new double[2];
+        paymentRates[0] = this.juniorRate;
+        paymentRates[1] = this.seniorRate;
+
+        return paymentRates;
+    }
+
 }

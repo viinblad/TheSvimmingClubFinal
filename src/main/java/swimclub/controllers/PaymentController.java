@@ -178,4 +178,22 @@ public class PaymentController {
         paymentService.clearAllReminders();
         System.out.println("All reminders cleared.");
     }
+
+    /**
+     *
+     * @param juniorRate - from the paymentService class
+     * @param seniorRate - from the paymentService class
+     */
+    public void setPaymentRates(double juniorRate, double seniorRate) {
+        paymentService.setJuniorRate(juniorRate);
+        paymentService.setSeniorRate(seniorRate);
+}
+
+    /**
+     *
+     * @return paymentRates from payment service in a double array.
+     */
+    public double[] getPaymentRates() {
+        return paymentService.getPaymentRates();
+}
 }
