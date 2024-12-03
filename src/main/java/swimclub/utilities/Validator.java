@@ -1,4 +1,4 @@
-package swimclub.utilities;
+package swimclub.Utilities;
 
 import swimclub.models.*;
 
@@ -188,6 +188,37 @@ public class Validator {
     public static void validatePaymentReminder(String reminder) {
         if (reminder == null || reminder.trim().isEmpty() || reminder.length() < 5 || reminder.length() > 255) {
             throw new IllegalArgumentException("Invalid reminder: Reminder must be between 5 and 255 characters long.");
+        }
+    }
+
+    public static void validateCompetitionResult(CompetitionResults result) {
+        if (result == null) {
+            throw new IllegalArgumentException("Invalid competition result: Result cannot be null.");
+        }
+    }
+
+    public static void validateMemberNotNull(Member member) {
+        if (member == null) {
+            throw new IllegalArgumentException("Invalid member: Member cannot be null.");
+        }
+    }
+
+
+    public static void validateEventName(String event) {
+        if (event == null){
+            throw new IllegalArgumentException("Invalid event name: Event name cannot be null.");
+        }
+    }
+
+    public static void validatePlacement(int placement) {
+        if (placement < 1) {
+            throw new IllegalArgumentException("Invalid placement: Placement must be greater than 0.");
+        }
+    }
+
+    public static void validateTime(double time) {
+        if (time < 0) {
+            throw new IllegalArgumentException("Invalid time: Time must be greater than 0.");
         }
     }
 }
