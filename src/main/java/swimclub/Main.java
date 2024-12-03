@@ -24,7 +24,7 @@ public class Main {
         String memberFilePath = "src/main/resources/members.dat";
         String paymentFilePath = "src/main/resources/payments.dat";
         String reminderFilePath = "src/main/resources/reminders.dat";
-        String paymentRatesFilePath = "src/main/ressources/paymentRates.dat";
+        String paymentRatesFilePath = "src/main/resources/paymentRates.dat";
 
         // Initialize the FileHandler for members, payments, and reminders
         FileHandler memberFileHandler = new FileHandler(memberFilePath, paymentFilePath, reminderFilePath, paymentRatesFilePath);
@@ -55,7 +55,9 @@ public class Main {
         UserInterface userInterface = new UserInterface(memberController, paymentController);
 
         // Start the User Interface to handle interactions
+        paymentService.setJuniorRate(20);
         userInterface.start();
+
 
         // After user interaction, save any changes to file
         memberFileHandler.saveMembers(memberRepository.findAll());

@@ -33,7 +33,7 @@ public class PaymentService {
     }
 
     /**
-     * Calculates the annual membership fee based on the member's status and age.
+     * Calculates the annual membership fee based on the member's status and age and is determined by the chair master.
      *
      * @param member The member whose membership fee is being calculated.
      * @return The calculated membership fee.
@@ -45,11 +45,11 @@ public class PaymentService {
 
         if (member.getMembershipStatus() == MembershipStatus.ACTIVE) {
             if (member.getAge() < 18) {
-                return juniorRate; // Active members under 18 pay 1000.
+                return juniorRate; // Active members under 18
             } else if (member.getAge() < 60) {
-                return seniorRate; // Active members aged 18-59 pay 1600.
+                return seniorRate; // Active members aged 18-59
             } else {
-                return seniorRate * 0.75; // Active members 60+ receive a 25% discount.
+                return seniorRate * 0.75; // Active members 60+ receive a 25% discount on seniorRate
             }
         }
 
@@ -251,19 +251,35 @@ public class PaymentService {
         System.out.println("All reminders cleared.");
     }
 
-    // Setters to update the rates
+    /**
+     *     Setter to update junior rate
+     */
     public void setJuniorRate(double juniorRate) {
         this.juniorRate = juniorRate;
-        fileHandler.savePaymentRates(juniorRate, seniorRate); // Save the changes to the file after updating the rate
+        saveRatestoFile(); // Save the changes to the file after updating the rate
     }
 
+    /**
+     *  setter to update senior rate
+      */
     public void setSeniorRate(double seniorRate) {
         this.seniorRate = seniorRate;
-        fileHandler.savePaymentRates(juniorRate, seniorRate); // Save the changes to the file after updating the rate
+        saveRatestoFile(); // Save the changes to the file after updating the rate
     }
 
+    /**
+     *  saves junior rate and senior rate to paymentRates.dat
+      */
+
+    private void saveRatestoFile () {
+        fileHandler.savePaymentRates(juniorRate, seniorRate);
+    }
+
+    /**
+     *     takes the rates from paymentrates.dat and updates the attributes junior and senior in paymentservice.
+      */
     public void updatePaymentRatesFromFile() {
-        double[] rates =fileHandler.loadPaymentRates();
+        double[] rates = fileHandler.loadPaymentRates();
         this.juniorRate = rates[0];
         this.seniorRate = rates[1];
     }
