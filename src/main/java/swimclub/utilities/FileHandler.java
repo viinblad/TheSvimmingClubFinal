@@ -17,6 +17,7 @@ public class FileHandler {
     private String reminderFilePath;
     private String paymentRatesFilePath;
     private String teamsFilePath;
+    private String staffFilePath;
 
     /**
      * Constructor for FileHandler.
@@ -28,12 +29,13 @@ public class FileHandler {
      * @param teamFilePath     Path to the file for saving/loading team data.
      */
     public FileHandler(String memberFilePath, String paymentFilePath, String reminderFilePath,
-                       String paymentRatesFilePath, String teamFilePath) {
+                       String paymentRatesFilePath, String teamFilePath, String staffFilePath) {
         this.memberFilePath = memberFilePath;
         this.paymentFilePath = paymentFilePath;
         this.reminderFilePath = reminderFilePath;
         this.paymentRatesFilePath = paymentRatesFilePath;
         this.teamsFilePath = teamFilePath;
+        this.staffFilePath = staffFilePath;
     }
 
     // ---------------------------
@@ -463,5 +465,36 @@ public class FileHandler {
                 .filter(member -> member.getMemberId() == id)
                 .findFirst()
                 .orElse(null);
+    }
+
+
+
+    public void saveCoach(List<Member> members) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(memberFilePath))) {
+            for (Member member : members) {
+                writer.write(formatMember(member)); // Format and save each member
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            System.err.println("Error saving members: " + e.getMessage());
+        }
+    }
+
+    public List<Member> loadCoaches() {
+        List<Member> members = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(memberFilePath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (!line.trim().isEmpty()) {
+                    Member member = parseMember(line);
+                    if (member != null) {
+                        members.add(member);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Error loading members: " + e.getMessage());
+        }
+        return members;
     }
 }

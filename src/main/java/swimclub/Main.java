@@ -28,9 +28,10 @@ public class Main {
         String reminderFilePath = "src/main/resources/reminders.dat";
         String paymentRatesFilePath = "src/main/resources/paymentRates.dat";
         String teamsFilePath = "src/main/resources/teams.dat"; // Path for teams data
+        String staffFilePath = "src/main/resources/staff.dat";
 
         // Initialize the FileHandler for members, payments, reminders, and teams
-        FileHandler fileHandler = new FileHandler(memberFilePath, paymentFilePath, reminderFilePath, paymentRatesFilePath, teamsFilePath);
+        FileHandler fileHandler = new FileHandler(memberFilePath, paymentFilePath, reminderFilePath, paymentRatesFilePath, teamsFilePath, staffFilePath);
 
         // Initialize the repositories, passing the respective FileHandlers
         MemberRepository memberRepository = new MemberRepository(fileHandler);
