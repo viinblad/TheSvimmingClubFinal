@@ -55,6 +55,7 @@ public class TeamRepository {
         return new ArrayList<>(teams); // Return a copy to prevent modification
     }
 
+
     /**
      * Removes a team by its name.
      *
@@ -72,12 +73,12 @@ public class TeamRepository {
     /**
      * Loads teams from the file using the FileHandler.
      */
-    public void loadTeams(MemberRepository memberRepository) {
-        List<Member> allMembers = memberRepository.findAll();  // Hent alle medlemmer fra MemberRepository
-        List<Team> loadedTeams = fileHandler.loadTeams(allMembers);  // Pass medlemmerne til FileHandler
+    public void loadTeams(MemberRepository memberRepository, StaffRepository staffRepository) {
+        List<Member> allMembers = memberRepository.findAll();
+        List<Team> loadedTeams = fileHandler.loadTeams(allMembers, staffRepository);
         if (loadedTeams != null) {
             this.teams.clear();
-            this.teams.addAll(loadedTeams);  // Tilføj de indlæste teams til repository
+            this.teams.addAll(loadedTeams);
         }
     }
 

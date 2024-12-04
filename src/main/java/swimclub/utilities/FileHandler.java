@@ -2,6 +2,7 @@ package swimclub.utilities;
 
 import swimclub.models.*;
 import swimclub.repositories.MemberRepository;
+import swimclub.repositories.StaffRepository;
 
 import java.io.*;
 import java.time.LocalDate;
@@ -22,11 +23,11 @@ public class FileHandler {
     /**
      * Constructor for FileHandler.
      *
-     * @param memberFilePath   Path to the file for saving/loading member data.
-     * @param paymentFilePath  Path to the file for saving/loading payment data.
-     * @param reminderFilePath Path to the file for saving/loading reminder data.
+     * @param memberFilePath       Path to the file for saving/loading member data.
+     * @param paymentFilePath      Path to the file for saving/loading payment data.
+     * @param reminderFilePath     Path to the file for saving/loading reminder data.
      * @param paymentRatesFilePath Path to the file for saving/loading payment rates.
-     * @param teamFilePath     Path to the file for saving/loading team data.
+     * @param teamFilePath         Path to the file for saving/loading team data.
      */
     public FileHandler(String memberFilePath, String paymentFilePath, String reminderFilePath,
                        String paymentRatesFilePath, String teamFilePath, String staffFilePath) {
@@ -308,7 +309,6 @@ public class FileHandler {
 
 
     /**
-     *
      * @return a double arrayList which can be used in paymentService to load juniorRate and seniorRate.
      */
     public double[] loadPaymentRates() {
@@ -359,6 +359,7 @@ public class FileHandler {
 
     /**
      * This method saves the juniorRate and seniorRate from paymentService class to paymentRates.dat document.
+     *
      * @param juniorRate - the price for how much a junior member has to pay.
      * @param seniorRate - the price for how much a senior member has to pay.
      */
@@ -389,8 +390,8 @@ public class FileHandler {
                 StringBuilder sb = new StringBuilder();
                 sb.append(team.getTeamName()).append(";") // Team name
                         .append(team.getTeamType().name()).append(";"); // Team type
-                if (team.getTeamLeader() != null) {
-                    sb.append(team.getTeamLeader().getMemberId()); // Team leader ID
+                if (team.getTeamCoach() != null) {
+                    sb.append(team.getTeamCoach().getCoachId()); // Coach ID
                 } else {
                     sb.append("null"); // No leader
                 }
@@ -412,7 +413,7 @@ public class FileHandler {
      * @param allMembers List of all members to link teams with.
      * @return List of Team objects loaded from the file.
      */
-    public List<Team> loadTeams(List<Member> allMembers) {
+    public List<Team> loadTeams(List<Member> allMembers, StaffRepository staffRepository) {
         List<Team> teams = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(teamsFilePath))) {
             String line;
@@ -422,16 +423,15 @@ public class FileHandler {
 
                 String teamName = parts[0];
                 TeamType teamType = TeamType.valueOf(parts[1].toUpperCase());
-                String leaderId = parts[2];
+                String coachId = parts[2];
                 String[] memberIds = parts.length > 3 ? parts[3].split(",") : new String[0];
 
                 Team team = new Team(teamName, teamType);
 
-                // Set team leader if specified
-                if (!leaderId.equals("null")) {
-                    Member leader = findMemberById(allMembers, Integer.parseInt(leaderId));
-                    if (leader != null) {
-                        team.setTeamLeader(leader);
+                // Set team leader if specified from the staffrepository, if the coach matches.
+                for (Coach coach : staffRepository.getCoachList()) {
+                    if (coach.getName().equals(teamName)) {
+                        team.setTeamCoach(coach);
                     }
                 }
 
@@ -467,34 +467,140 @@ public class FileHandler {
                 .orElse(null);
     }
 
+// // ---------------------------
+//    // Staff Related Methods
+//    // ---------------------------
 
-
-    public void saveCoach(List<Member> members) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(memberFilePath))) {
-            for (Member member : members) {
-                writer.write(formatMember(member)); // Format and save each member
-                writer.newLine();
+    /**
+     * Saves all coaches on the staff repository to a file.
+     * This method will iterate through the list of coaches and write their information to the specified file.
+     *
+     * @param coaches A list of `Coach` objects to be saved to the file. Each `Coach` object contains the details
+     *                of a coach, which will be formatted and written to the file.
+     */
+    public void saveCoaches(List<Coach> coaches) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(staffFilePath))) {
+            // Iterate through the list of coaches and write their formatted details to the file
+            for (Coach coach : coaches) {
+                writer.write(formatCoach(coach)); // Format and save each coach's information
+                writer.newLine(); // Add a new line after each coach's data
             }
         } catch (IOException e) {
-            System.err.println("Error saving members: " + e.getMessage());
+            // Handle potential IOExceptions that could occur during the file writing process
+            System.err.println("Error saving coaches: " + e.getMessage());
         }
     }
 
-    public List<Member> loadCoaches() {
-        List<Member> members = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader(memberFilePath))) {
+    /**
+     * Loads coaches from the file into a list of `Coach` objects.
+     * This method reads the file, parses each line, and adds the parsed `Coach` object to a list.
+     *
+     * @return A list of `Coach` objects loaded from the file. Each `Coach` object represents a coach's details
+     * parsed from the file. If any errors occur during the reading process, an empty list will be returned.
+     */
+    public List<Coach> loadCoaches() {
+        List<Coach> coaches = new ArrayList<>(); // Create an empty list to store the loaded coaches
+        try (BufferedReader reader = new BufferedReader(new FileReader(staffFilePath))) {
             String line;
+            // Read each line from the file until the end
             while ((line = reader.readLine()) != null) {
+                // Check if the line is not empty (ignores blank lines)
                 if (!line.trim().isEmpty()) {
-                    Member member = parseMember(line);
-                    if (member != null) {
-                        members.add(member);
+                    Coach coach = parseCoach(line); // Parse the line to create a `Coach` object
+                    if (coach != null) {
+                        coaches.add(coach); // Add the parsed coach to the list
                     }
                 }
             }
         } catch (IOException e) {
-            System.err.println("Error loading members: " + e.getMessage());
+            // Handle potential IOExceptions that could occur during the file reading process
+            System.err.println("Error loading coaches: " + e.getMessage());
         }
-        return members;
+        return coaches; // Return the list of coaches loaded from the file
     }
+
+    /**
+     * Formats the details of a Coach object into a semicolon-separated string.
+     *
+     * @param coach The Coach object whose details are to be formatted.
+     * @return A formatted string containing the coach's details, separated by semicolons.
+     */
+    private String formatCoach(Coach coach) {
+        return coach.getCoachId() + ";" +                                  // Coach's ID (Unique identifier for the coach)
+                coach.getTeamName() + ";" +                        // Team name (assuming 'getTeamName()' method in Team class)
+                coach.getName() + ";" +                                      // Coach's name (from Staff class)
+                coach.getEmail() + ";" +                                     // Coach's email (from Staff class)
+                coach.getCity() + ";" +                                      // Coach's city (from Staff class)
+                coach.getStreet() + ";" +                                    // Coach's street address (from Staff class)
+                coach.getRegion() + ";" +                                    // Coach's region (from Staff class)
+                coach.getZipcode() + ";" +                                   // Coach's zipcode (from Staff class)
+                coach.getAge() + ";" +                                        // Coach's age (from Staff class)
+                coach.getPhoneNumber();                                       // Coach's phone number (from Staff class)
+    }
+
+    /**
+     * Parses a semicolon-separated string into a Coach object.
+     *
+     * @param line The string representing the coach's details, separated by semicolons.
+     * @return A Coach object with the details parsed from the string, or null if parsing fails.
+     */
+    private Coach parseCoach(String line) {
+        String[] parts = line.split(";");
+
+        // Ensure the expected number of fields (10 fields: coachId, teamName, email, name, city, street, region, zipcode, age, phoneNumber)
+        if (parts.length < 10) {
+            System.err.println("Skipping invalid coach data: " + line);
+            return null;  // Return null if the line doesn't have the expected number of fields
+        }
+
+        try {
+            // Parse basic coach details
+            int coachId = Integer.parseInt(parts[0]);                        // Coach's unique ID
+
+            // Assuming Team is an object, you need to find the team by name or ID
+            String teamName = parts[1];                                       // Team name associated with the coach
+
+            String email = parts[2];                                          // Coach's email address
+            String name = parts[3];                                           // Coach's name
+            String city = parts[4];                                           // Coach's city
+            String street = parts[5];                                         // Coach's street address
+            String region = parts[6];                                         // Coach's region
+            int zipcode = Integer.parseInt(parts[7]);                         // Coach's zipcode
+            int age = Integer.parseInt(parts[8]);                             // Coach's age
+            int phoneNumber = Integer.parseInt(parts[9]);                     // Coach's phone number
+
+            // Create a new Coach object with the parsed data
+            Coach coach = new Coach(coachId, teamName, name, email, city, street, region, zipcode, age, phoneNumber);
+            return coach;                                                     // Return the Coach object
+        } catch (Exception e) {
+            System.err.println("Error parsing coach: " + line + " - " + e.getMessage());
+            return null;  // Return null if any error occurs during parsing
+        }
+    }
+
+
+    public boolean deleteCoach(Coach coachToDelete) {
+        boolean coachDeleted = false;
+        List<Coach> coachList = loadCoaches(); // Load all coaches from the file
+
+        List<Coach> updatedCoaches = new ArrayList<>(); // List to store the updated coaches after deletion
+        int id = coachToDelete.getCoachId(); // Get the ID of the coach to delete
+
+        // Iterate through the current list of coaches
+        for (Coach coach : coachList) {
+            if (coach.getCoachId() != id) {
+                updatedCoaches.add(coach); // Keep coaches that don't match the ID
+            } else {
+                coachDeleted = true; // Mark the coach as deleted
+            }
+        }
+
+        // If the coach was deleted, save the updated list
+        if (coachDeleted) {
+            saveCoaches(updatedCoaches); // Save the updated list without the deleted coach
+        }
+
+        return coachDeleted; // Return true if coach was deleted, false if not
+    }
+
 }

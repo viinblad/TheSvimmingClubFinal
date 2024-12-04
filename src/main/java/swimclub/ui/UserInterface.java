@@ -2,6 +2,7 @@ package swimclub.ui;
 
 import swimclub.controllers.MemberController;
 import swimclub.controllers.PaymentController;
+import swimclub.controllers.StaffController;
 import swimclub.controllers.TeamController;
 import swimclub.models.*;
 
@@ -18,6 +19,7 @@ public class UserInterface {
     private final MemberController memberController;  // Controller to handle member actions
     private final PaymentController paymentController;  // Controller to handle payment actions
     private final TeamController teamController;  // Controller to handle team actions
+    private final StaffController staffController;
     private final Scanner scanner; // Scanner to read user input
 
     /**
@@ -27,11 +29,13 @@ public class UserInterface {
      * @param paymentController The controller that handles the logic for payment actions.
      * @param teamController    The controller that handles the logic for team actions.
      */
-    public UserInterface(MemberController memberController, PaymentController paymentController, TeamController teamController) {
+    public UserInterface(MemberController memberController, PaymentController paymentController, TeamController teamController, StaffController staffController) {
         this.memberController = memberController;
         this.paymentController = paymentController;
         this.teamController = teamController;
+        this.staffController = staffController;
         this.scanner = new Scanner(System.in);
+
     }
 
     /**
@@ -211,10 +215,12 @@ public class UserInterface {
             System.out.println("1. Create Team");
             System.out.println("2. Add Member to Team");
             System.out.println("3. Remove Member from Team");
-            System.out.println("4. Assign Team Leader");
-            System.out.println("5. View Teams");
-            System.out.println("6. Delete Team");
-            System.out.println("7. Exit to Main Menu");
+            System.out.println("4. Assign Coach to team");
+            System.out.println("5. Remove Coach from team");
+            System.out.println("6. Register new Coach to the Swimming Club");
+            System.out.println("7. View Teams");
+            System.out.println("8. Delete Team");
+            System.out.println("9. Exit to Main Menu");
 
             System.out.print("Please choose an option (1-7): ");
             try {
@@ -228,14 +234,68 @@ public class UserInterface {
                 case 1 -> createTeam();
                 case 2 -> addMemberToTeam();
                 case 3 -> removeMemberFromTeam();
-                case 4 -> assignTeamLeader();
-                case 5 -> viewTeams();
-                case 6 -> deleteTeam();
-                case 7 -> System.out.println("Returning to Main Menu...");
+                case 4 -> assignTeamCoach();
+                case 5 -> removeTeamCoach();
+                case 6 -> registerCoach();
+                case 7 -> viewTeams();
+                case 8 -> deleteTeam();
+                case 9 -> System.out.println("Returning to Main Menu...");
                 default -> System.out.println("Invalid option. Please choose a valid number.");
             }
         } while (teamOption != 7);
     }
+
+    /**
+     * Removes the coach from the specified team.
+     *
+     * This method prints all the available teams, prompts the user to input a team name,
+     * and removes the coach from that team. If the team or coach is not found, it will print
+     * an error message.
+     */
+    private void removeTeamCoach() {
+        // Print all teams and check if there are any teams available in the system
+        boolean foundTeams = teamController.printAllTeams();
+        if (!foundTeams) {
+            // If no teams are found, display a message and exit the method
+            System.out.println("No teams found on the list.");
+            return; // Exit if no teams are available
+        }
+
+        // Prompt the user for the team name to remove the coach from
+        System.out.print("Enter the name of the team of which the coach has to be removed: ");
+        String teamName = scanner.nextLine().trim();  // Read the team name input from the user
+
+        // Attempt to find the coach of the team and remove them
+        try {
+            // Find the team by name
+            Team team = teamController.findTeamByName(teamName);
+            if (team == null) {
+                // If no team is found by name, throw an exception
+                throw new IllegalArgumentException("Team not found.");
+            }
+
+            // Check if the team has a coach
+            Coach teamCoach = team.getTeamCoach();
+            if (teamCoach == null) {
+                // If the team has no coach, throw an exception
+                throw new IllegalArgumentException("No coach assigned to the team '" + teamName + "'.");
+            }
+
+            // Print the confirmation message before removing the coach
+            System.out.println("Coach '" + teamCoach.getName() + "' removed from team '" + teamName + "'.");
+
+            // Remove the coach from the team
+            teamController.removeTeamCoach(teamName);
+
+            // Set the team name of the coach to null as they are no longer assigned to the team
+            staffController.findCoachByTeamName(teamName).setTeamName(null);
+
+        } catch (IllegalArgumentException e) {
+            // Handle any error in the process, such as no team found or no coach assigned
+            System.out.println("Error removing team coach: " + e.getMessage());
+        }
+    }
+
 
     /**
      * Creates a new team by collecting the team name and type from the user.
@@ -322,32 +382,61 @@ public class UserInterface {
     }
 
     /**
-     * Assigns a team leader to a specific team.
+     * Assigns a team coach to a specific team.
      */
-    private void assignTeamLeader() {
-        System.out.print("Enter Team Name: ");
-        String teamName = scanner.nextLine().trim();
+    private void assignTeamCoach() {
+        // First, print all teams and check if there are any teams available in the system
+        boolean foundTeams = teamController.printAllTeams();
+        if (!foundTeams) {
+            // If no teams are found, display a message and exit the method
+            System.out.println("No teams found on the list.");
+            return; // Exit if no teams are available
+        }
 
-        System.out.print("Enter Member ID to Assign as Leader: ");
-        int memberId;
+        // Prompt the user for the team name
+        System.out.print("Enter the name of the team the new coach should be assigned to: ");
+        String teamName = scanner.nextLine().trim();  // Read the team name input from the user
+
+        // Check if the entered team name exists in the list of teams
+        Team team = teamController.findTeamByName(teamName);
+        if (team == null) {
+            // If the team doesn't exist, notify the user and exit
+            System.out.println("Team '" + teamName + "' not found.");
+            return;  // Exit if the team is not found
+        }
+
+        // Now that we know the team exists, check if there are any coaches available
+        boolean foundCoaches = staffController.getCoachList();
+        if (!foundCoaches) {
+            // If no coaches are found, display a message and exit the method
+            System.out.println("No coaches found on the coachList.");
+            return;  // Exit if no coaches are available
+        }
+
+        // Prompt for the coach ID
+        System.out.print("Enter the Coach ID of the coach you want to assign to the team: ");
+        int coachId;
         try {
-            memberId = Integer.parseInt(scanner.nextLine());
+            coachId = Integer.parseInt(scanner.nextLine().trim());  // Ensure leading/trailing spaces are removed
         } catch (NumberFormatException e) {
-            System.out.println("Invalid Member ID. Please enter a valid number.");
-            return;
+            System.out.println("Invalid coach ID. Please enter a valid number.");
+            return; // Exit on invalid input
         }
 
-        Member member = memberController.findMemberById(memberId);
-        if (member == null) {
-            System.out.println("Member not found.");
-            return;
+        // Find the coach by ID
+        Coach coach = staffController.findCoachById(coachId);
+        if (coach == null) {
+            // If the coach isn't found, notify the user and exit
+            System.out.println("Coach not found.");
+            return; // Exit if the coach isn't found
         }
 
+        // Attempt to assign the coach to the team
         try {
-            teamController.assignTeamLeader(teamName, member);
-            System.out.println("Member '" + member.getName() + "' assigned as leader of team '" + teamName + "'.");
+            teamController.assignTeamCoach(teamName, coach);
+            System.out.println("Coach '" + coach.getName() + "' assigned as coach of team '" + teamName + "'.");
         } catch (IllegalArgumentException e) {
-            System.out.println("Error assigning team leader: " + e.getMessage());
+            System.out.println("Error assigning team coach: " + e.getMessage());
         }
     }
 

@@ -10,7 +10,6 @@ import java.util.List;
 public class Team {
     private String teamName; // Name of the team
     private TeamType teamType; // Type of the team (Junior Competitive, Senior Competitive)
-    private Member teamLeader;// Optional: Define a team leader
     private Coach coach;
     private List<Member> members; // List of members in the team
 
@@ -64,15 +63,11 @@ public class Team {
     /**
      * Sets the team leader.
      *
-     * @param leader The member to assign as the team leader.
+     * @param coach The member to assign as the team leader.
      * @throws IllegalArgumentException if the leader is not a member of the team.
      */
-    public void setTeamLeader(Member leader) {
-        if (members.contains(leader)) {
-            this.teamLeader = leader;
-        } else {
-            throw new IllegalArgumentException("Team leader must be a member of the team.");
-        }
+    public void setTeamCoach(Coach coach) {
+            this.coach = coach;
     }
 
     /**
@@ -80,8 +75,8 @@ public class Team {
      *
      * @return The team leader, or null if not assigned.
      */
-    public Member getTeamLeader() {
-        return teamLeader;
+    public Coach getTeamCoach() {
+        return coach;
     }
 
     /**
@@ -124,7 +119,7 @@ public class Team {
     public String toString() {
         return "Team: " + teamName +
                 " (" + teamType.getDisplayName() + ")" +
-                ", Leader: " + (teamLeader != null ? teamLeader.getName() : "None") +
+                ", Leader: " + (coach != null ? coach.getName() : "None") +
                 ", Members: " + members.size();
     }
 }

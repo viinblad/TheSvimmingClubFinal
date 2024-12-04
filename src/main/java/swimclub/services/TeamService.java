@@ -1,5 +1,6 @@
 package swimclub.services;
 
+import swimclub.models.Coach;
 import swimclub.models.Member;
 import swimclub.models.Team;
 import swimclub.models.TeamType;
@@ -75,6 +76,23 @@ public class TeamService {
         }
     }
 
+    public boolean printAllTeams() {
+        List<Team> teams = teamRepository.getAllTeams();
+        if (teams.isEmpty()) {
+            return false;
+        } else {
+            System.out.println("List of all Teams:");
+            for (Team team : teams) {
+                System.out.println("Team Name: " + team.getTeamName() +
+                        ", Team Type: " + team.getTeamType().getDisplayName() +
+                        ", Coach: " + (team.getTeamCoach() != null ? team.getTeamCoach().getName() : "None") +
+                        ", Members Count: " + team.getMembers().size());
+                return true;
+            }
+        }
+        return true;
+    }
+
     /**
      * Deletes a team by its name.
      *
@@ -93,20 +111,22 @@ public class TeamService {
      * Assigns a member as the team leader.
      *
      * @param teamName The name of the team.
-     * @param member   The member to assign as team leader.
+     * @param coach   The member to assign as team leader.
      */
-    public void assignTeamLeader(String teamName, Member member) {
+    public void assignTeamCoach(String teamName, Coach coach) {
         Team team = teamRepository.findTeamByName(teamName);
         if (team == null) {
             throw new IllegalArgumentException("Team not found.");
         }
+        team.setTeamCoach(coach); // Set the team leader
+    }
 
-        // Ensure the member is part of the team before assigning as a leader
-        if (!team.getMembers().contains(member)) {
-            throw new IllegalArgumentException("Member is not part of the team.");
+    public void removeTeamCoach(String teamName) {
+        Team team = teamRepository.findTeamByName(teamName);
+        if (team == null) {
+            throw new IllegalArgumentException("Team not found.");
         }
-
-        team.setTeamLeader(member); // Set the team leader
+        team.setTeamCoach(null); // Set the team leader
     }
 
     /**
@@ -116,5 +136,9 @@ public class TeamService {
      */
     public List<Team> getAllTeams() {
         return teamRepository.getAllTeams();
+    }
+
+    public Team findTeamByName(String name) {
+        return teamRepository.findTeamByName(name);
     }
 }

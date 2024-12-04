@@ -164,6 +164,7 @@ public class MemberController {
         }
     }
 
+
     /**
      * Deletes a member by ID.
      * This method removes the member from both the repository and the service.

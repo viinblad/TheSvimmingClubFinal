@@ -2,12 +2,15 @@ package swimclub;
 
 import swimclub.controllers.MemberController;
 import swimclub.controllers.PaymentController;
+import swimclub.controllers.StaffController;
 import swimclub.controllers.TeamController;
 import swimclub.repositories.MemberRepository;
 import swimclub.repositories.PaymentRepository;
+import swimclub.repositories.StaffRepository;
 import swimclub.repositories.TeamRepository;  // Import TeamRepository
 import swimclub.services.MemberService;
 import swimclub.services.PaymentService;
+import swimclub.services.StaffService;
 import swimclub.services.TeamService;  // Import TeamService
 import swimclub.ui.UserInterface;
 import swimclub.utilities.FileHandler;
@@ -36,7 +39,7 @@ public class Main {
         // Initialize the repositories, passing the respective FileHandlers
         MemberRepository memberRepository = new MemberRepository(fileHandler);
         PaymentRepository paymentRepository = new PaymentRepository(reminderFilePath); // Pass the reminder file path
-
+        StaffRepository staffRepository = new StaffRepository(fileHandler);
         // Load members, payments, and teams from the file
         memberRepository.reloadMembers(); // Load member data
         paymentRepository.loadPayments(paymentFilePath, memberRepository); // Load payment data
@@ -47,14 +50,18 @@ public class Main {
 
         // Initialize TeamRepository
         TeamRepository teamRepository = new TeamRepository(fileHandler);
-        teamRepository.loadTeams(memberRepository);  // Pass MemberRepository til loadTeams
+        teamRepository.loadTeams(memberRepository, staffRepository);  // Pass MemberRepository til loadTeams
 
         // Initialize TeamService with TeamRepository
         TeamService teamService = new TeamService(teamRepository);  // Pass TeamRepository to TeamService
 
+        //intialize staffservice.
+        StaffService staffService = new StaffService(staffRepository);
+
         // Instantiate the controllers
         MemberController memberController = new MemberController(memberService, memberRepository);
         TeamController teamController = new TeamController(teamService);  // Pass TeamService to TeamController
+        StaffController staffController = new StaffController(staffService, staffRepository);
         PaymentController paymentController = new PaymentController(
                 paymentService,
                 memberRepository,
@@ -64,7 +71,7 @@ public class Main {
         );
 
         // Instantiate the UserInterface, passing all controllers (including teamController)
-        UserInterface userInterface = new UserInterface(memberController, paymentController, teamController);
+        UserInterface userInterface = new UserInterface(memberController, paymentController, teamController, staffController);
 
         // Start the User Interface to handle interactions
         userInterface.start();
