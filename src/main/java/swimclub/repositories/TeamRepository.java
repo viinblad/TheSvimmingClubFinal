@@ -22,7 +22,6 @@ public class TeamRepository {
     public TeamRepository(FileHandler fileHandler) {
         this.fileHandler = fileHandler;
         this.teams = new ArrayList<>();
-        loadTeams();  // Load teams from the file on initialization
     }
 
     /**
@@ -73,15 +72,12 @@ public class TeamRepository {
     /**
      * Loads teams from the file using the FileHandler.
      */
-    public void loadTeams() {
-        List<Member> allMembers = new ArrayList<>(); // This should be your actual list of members
-        // For this, you would typically call a method to load the members, like:
-        // allMembers = memberRepository.findAll(); // Or whatever method you use to get all members
-
-        List<Team> loadedTeams = fileHandler.loadTeams(allMembers);  // Pass members to load teams
+    public void loadTeams(MemberRepository memberRepository) {
+        List<Member> allMembers = memberRepository.findAll();  // Hent alle medlemmer fra MemberRepository
+        List<Team> loadedTeams = fileHandler.loadTeams(allMembers);  // Pass medlemmerne til FileHandler
         if (loadedTeams != null) {
             this.teams.clear();
-            this.teams.addAll(loadedTeams);  // Add loaded teams to the repository
+            this.teams.addAll(loadedTeams);  // Tilføj de indlæste teams til repository
         }
     }
 
