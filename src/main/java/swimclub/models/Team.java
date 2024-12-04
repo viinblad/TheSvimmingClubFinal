@@ -10,7 +10,8 @@ import java.util.List;
 public class Team {
     private String teamName; // Name of the team
     private TeamType teamType; // Type of the team (Junior Competitive, Senior Competitive)
-    private Member teamLeader; // Optional: Define a team leader
+    private Member teamLeader;// Optional: Define a team leader
+    private Coach coach;
     private List<Member> members; // List of members in the team
 
     /**
