@@ -51,7 +51,8 @@ public class TeamService {
             throw new IllegalArgumentException("Team not found.");
         }
         team.addMember(member);
-        member.setTeam(team); // Set the member's team
+        member.setTeam(team);
+        teamRepository.saveTeams(); // Save changes to the file
     }
 
     /**
@@ -63,12 +64,12 @@ public class TeamService {
     public void removeMemberFromTeam(String teamName, Member member) {
         Team team = teamRepository.findTeamByName(teamName);
         if (team != null) {
-            // Ensure the member exists in the team
             if (!team.getMembers().contains(member)) {
                 throw new IllegalArgumentException("Member is not part of the team.");
             }
-            team.removeMember(member);  // Remove member from the team
-            member.setTeam(null); // Set the team reference in the member to null
+            team.removeMember(member);
+            member.setTeam(null);
+            teamRepository.saveTeams(); // Save changes to the file
         } else {
             throw new IllegalArgumentException("Team not found.");
         }
@@ -84,7 +85,8 @@ public class TeamService {
         if (team == null) {
             throw new IllegalArgumentException("Team not found.");
         }
-        teamRepository.removeTeam(teamName); // Remove the team from the repository
+        teamRepository.removeTeam(teamName);
+        teamRepository.saveTeams(); // Save changes to the file
     }
 
     /**

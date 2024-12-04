@@ -45,7 +45,8 @@ public class Main {
         PaymentService paymentService = new PaymentService(paymentRepository, fileHandler);
 
         // Initialize TeamRepository
-        TeamRepository teamRepository = new TeamRepository(fileHandler);  // Pass FileHandler to TeamRepository
+        TeamRepository teamRepository = new TeamRepository(fileHandler);
+        teamRepository.loadTeams(memberRepository);  // Pass MemberRepository til loadTeams
 
         // Initialize TeamService with TeamRepository
         TeamService teamService = new TeamService(teamRepository);  // Pass TeamRepository to TeamService

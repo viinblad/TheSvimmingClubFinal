@@ -32,7 +32,7 @@ class PaymentServiceTest {
 
         fileHandler = new FileHandler(TEST_MEMBER_FILE, TEST_PAYMENT_FILE, TEST_REMINDER_FILE, TEST_PAYMENTRATES_FILE, TEST_TEAMS_FILE);
         memberRepository = new MemberRepository(fileHandler);
-        paymentRepository = new PaymentRepository();
+        paymentRepository = new PaymentRepository("src/main/resources/reminders.dat");
         paymentService = new PaymentService(paymentRepository, fileHandler);
     }
     private void createTestFile(String fileName) {
