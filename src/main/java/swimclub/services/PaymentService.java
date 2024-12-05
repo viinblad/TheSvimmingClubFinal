@@ -6,9 +6,7 @@ import swimclub.models.Payment;
 import swimclub.models.PaymentStatus;
 import swimclub.repositories.MemberRepository;
 import swimclub.repositories.PaymentRepository;
-import swimclub.Utilities.FileHandler;
-
-import java.io.*;
+import swimclub.utilities.FileHandler;
 
 
 import java.time.LocalDate;

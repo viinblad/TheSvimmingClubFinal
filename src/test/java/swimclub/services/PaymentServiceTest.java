@@ -18,6 +18,7 @@ class PaymentServiceTest {
     private static final String TEST_REMINDER_FILE = "src/test/java/testResources/testReminders.txt";
     private static final String TEST_PAYMENTRATES_FILE = "src/main/ressources/paymentRates.dat";
     private static final String TEST_TEAMS_FILE = "src/main/ressources/teams.dat";
+    private static final String TEST_STAFF_FILE = "src/main/ressources/teams.dat";
 
     private FileHandler fileHandler;
     private MemberRepository memberRepository;
@@ -29,10 +30,11 @@ class PaymentServiceTest {
         createTestFile(TEST_MEMBER_FILE);
         createTestFile(TEST_PAYMENT_FILE);
         createTestFile(TEST_REMINDER_FILE);
+        createTestFile(TEST_STAFF_FILE);
 
-        fileHandler = new FileHandler(TEST_MEMBER_FILE, TEST_PAYMENT_FILE, TEST_REMINDER_FILE, TEST_PAYMENTRATES_FILE, TEST_TEAMS_FILE);
+        fileHandler = new FileHandler(TEST_MEMBER_FILE, TEST_PAYMENT_FILE, TEST_REMINDER_FILE, TEST_PAYMENTRATES_FILE, TEST_TEAMS_FILE, TEST_STAFF_FILE);
         memberRepository = new MemberRepository(fileHandler);
-        paymentRepository = new PaymentRepository();
+        paymentRepository = new PaymentRepository("src/main/resources/reminders.dat");
         paymentService = new PaymentService(paymentRepository, fileHandler);
     }
     private void createTestFile(String fileName) {

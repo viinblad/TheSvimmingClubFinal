@@ -1,5 +1,6 @@
 package swimclub.services;
 
+import swimclub.models.Coach;
 import swimclub.models.Member;
 import swimclub.models.Team;
 import swimclub.models.TeamType;
@@ -51,7 +52,8 @@ public class TeamService {
             throw new IllegalArgumentException("Team not found.");
         }
         team.addMember(member);
-        member.setTeam(team); // Set the member's team
+        member.setTeam(team);
+        teamRepository.saveTeams(); // Save changes to the file
     }
 
     /**
@@ -63,15 +65,32 @@ public class TeamService {
     public void removeMemberFromTeam(String teamName, Member member) {
         Team team = teamRepository.findTeamByName(teamName);
         if (team != null) {
-            // Ensure the member exists in the team
             if (!team.getMembers().contains(member)) {
                 throw new IllegalArgumentException("Member is not part of the team.");
             }
-            team.removeMember(member);  // Remove member from the team
-            member.setTeam(null); // Set the team reference in the member to null
+            team.removeMember(member);
+            member.setTeam(null);
+            teamRepository.saveTeams(); // Save changes to the file
         } else {
             throw new IllegalArgumentException("Team not found.");
         }
+    }
+
+    public boolean printAllTeams() {
+        List<Team> teams = teamRepository.getAllTeams();
+        if (teams.isEmpty()) {
+            return false;
+        } else {
+            System.out.println("List of all Teams:");
+            for (Team team : teams) {
+                System.out.println("Team Name: " + team.getTeamName() +
+                        ", Team Type: " + team.getTeamType().getDisplayName() +
+                        ", Coach: " + (team.getTeamCoach() != null ? team.getTeamCoach().getName() : "None") +
+                        ", Members Count: " + team.getMembers().size());
+                return true;
+            }
+        }
+        return true;
     }
 
     /**
@@ -84,27 +103,32 @@ public class TeamService {
         if (team == null) {
             throw new IllegalArgumentException("Team not found.");
         }
-        teamRepository.removeTeam(teamName); // Remove the team from the repository
+        teamRepository.removeTeam(teamName);
+        teamRepository.saveTeams(); // Save changes to the file
     }
 
     /**
      * Assigns a member as the team leader.
      *
      * @param teamName The name of the team.
-     * @param member   The member to assign as team leader.
+     * @param coach   The member to assign as team leader.
      */
-    public void assignTeamLeader(String teamName, Member member) {
+    public void assignTeamCoach(String teamName, Coach coach) {
         Team team = teamRepository.findTeamByName(teamName);
         if (team == null) {
             throw new IllegalArgumentException("Team not found.");
         }
+        team.setTeamCoach(coach); // Set the team coach
+        teamRepository.saveTeams();
+    }
 
-        // Ensure the member is part of the team before assigning as a leader
-        if (!team.getMembers().contains(member)) {
-            throw new IllegalArgumentException("Member is not part of the team.");
+    public void removeTeamCoach(String teamName) {
+        Team team = teamRepository.findTeamByName(teamName);
+        if (team == null) {
+            throw new IllegalArgumentException("Team not found.");
         }
-
-        team.setTeamLeader(member); // Set the team leader
+        team.setTeamCoach(null); // Set the team leader
+        teamRepository.saveTeams();
     }
 
     /**
@@ -114,5 +138,9 @@ public class TeamService {
      */
     public List<Team> getAllTeams() {
         return teamRepository.getAllTeams();
+    }
+
+    public Team findTeamByName(String name) {
+        return teamRepository.findTeamByName(name);
     }
 }

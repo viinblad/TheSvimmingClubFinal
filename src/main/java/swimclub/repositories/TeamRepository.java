@@ -1,7 +1,7 @@
 package swimclub.repositories;
 
 import swimclub.models.Team;
-import swimclub.Utilities.FileHandler;
+import swimclub.utilities.FileHandler;
 import swimclub.models.Member;
 
 import java.util.ArrayList;
@@ -22,7 +22,6 @@ public class TeamRepository {
     public TeamRepository(FileHandler fileHandler) {
         this.fileHandler = fileHandler;
         this.teams = new ArrayList<>();
-        loadTeams();  // Load teams from the file on initialization
     }
 
     /**
@@ -56,6 +55,7 @@ public class TeamRepository {
         return new ArrayList<>(teams); // Return a copy to prevent modification
     }
 
+
     /**
      * Removes a team by its name.
      *
@@ -73,15 +73,12 @@ public class TeamRepository {
     /**
      * Loads teams from the file using the FileHandler.
      */
-    public void loadTeams() {
-        List<Member> allMembers = new ArrayList<>(); // This should be your actual list of members
-        // For this, you would typically call a method to load the members, like:
-        // allMembers = memberRepository.findAll(); // Or whatever method you use to get all members
-
-        List<Team> loadedTeams = fileHandler.loadTeams(allMembers);  // Pass members to load teams
+    public void loadTeams(MemberRepository memberRepository, StaffRepository staffRepository) {
+        List<Member> allMembers = memberRepository.findAll();
+        List<Team> loadedTeams = fileHandler.loadTeams(allMembers, staffRepository);
         if (loadedTeams != null) {
             this.teams.clear();
-            this.teams.addAll(loadedTeams);  // Add loaded teams to the repository
+            this.teams.addAll(loadedTeams);
         }
     }
 
