@@ -1,26 +1,39 @@
 package swimclub.services;
 
+import swimclub.models.ActivityType;
 import swimclub.models.CompetitionResults;
 import swimclub.models.Member;
+import swimclub.models.MembershipLevel;
 import swimclub.repositories.CompetitionResultRepository;
 
-import java.time.LocalDate;
 import java.util.List;
 
 public class CompetitionResultService {
-    private final CompetitionResultRepository resultRepository;
+    private final CompetitionResultRepository resultsRepository;
 
-    public CompetitionResultService(CompetitionResultRepository resultRepository) {
-        this.resultRepository = resultRepository;
+    public CompetitionResultService(CompetitionResultRepository resultsRepository) {
+        this.resultsRepository = resultsRepository;
     }
 
-    public void addResult(Member member, String event, int placement, double time) {
-        if (member == null || event == null || event.isEmpty()) {
-            throw new IllegalArgumentException("Member and event must not be null or empty.");
+    public void addResult(Member member, String event, ActivityType activityType, int placement, double time, String date, MembershipLevel level) {
+        if (event == null || event.isEmpty()) {
+            throw new IllegalArgumentException("Event must not be empty.");
         }
-        CompetitionResults result = new CompetitionResults(member, event, placement, time);
-        resultRepository.addResult(result);
+        if (activityType == null) {
+            throw new IllegalArgumentException("Activity type must not be null.");
+        }
+        if (placement <= 0) {
+            throw new IllegalArgumentException("Placement must be greater than 0.");
+        }
+        if (time <= 0) {
+            throw new IllegalArgumentException("Time must be positive.");
+        }
+        if (date == null || date.isEmpty()) {
+            throw new IllegalArgumentException("Date must not be empty.");
+        }
 
+        CompetitionResults result = new CompetitionResults(member, level, event, placement, time, date, activityType);
+        resultsRepository.addResult(result);
 
     }
 
@@ -28,10 +41,11 @@ public class CompetitionResultService {
         if (member == null) {
             throw new IllegalArgumentException("Member must not be null.");
         }
-        return resultRepository.getResultsByMember(member);
+        return resultsRepository.getResultsByMember(member);
     }
 
     public List<CompetitionResults> getAllResults() {
-        return resultRepository.getAllResults();
+        return resultsRepository.getAllResults();
     }
 }
+

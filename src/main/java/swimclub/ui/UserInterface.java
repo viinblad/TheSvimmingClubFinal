@@ -934,19 +934,60 @@ private static String correctEmailInput(Scanner scanner, String prompt) {
         if (member == null) {
             System.out.println("No member found with the given ID.");
             return;
-    }
+        }
 
-        System.out.println("Enter event name: ");
-        String eventName = scanner.nextLine();
+        String eventName;
+        while (true) {
+            System.out.println("Enter event name (cannot be empty): ");
+            eventName = scanner.nextLine().trim();
+            if (!eventName.isEmpty()) {
+                break;
+            } else {
+                System.out.println("Invalid event name. Please enter a non-empty value.");
+            }
+        }
 
-        System.out.println("Enter placement: ");
-        int placement = Integer.parseInt(scanner.nextLine());
+        ActivityType activityType;
+        while (true) {
+            System.out.println("Enter activity type (Crawl, Butterfly, Breaststroke, Backcrawl): ");
+            String activityTypeInput = scanner.nextLine().trim().toUpperCase();
+            try {
+                activityType = ActivityType.valueOf(activityTypeInput);
+                break;
+            } catch (IllegalArgumentException e) {
+                System.out.println("Invalid activity type. Please enter one of the valid options.");
+            }
+        }
 
-        System.out.println("Enter time (in seconds): ");
-        double time = Double.parseDouble(scanner.nextLine());
+        int placement;
+        while (true) {
+            System.out.println("Enter placement (must be greater than 0): ");
+            placement = Integer.parseInt(scanner.nextLine());
+            if (placement > 0) {
+                break;
+            } else {
+                System.out.println("Invalid placement. Please enter a value greater than 0.");
+            }
+        }
+
+        double time;
+        while (true) {
+            System.out.println("Enter time (in seconds, must be greater than 0): ");
+            time = Double.parseDouble(scanner.nextLine());
+            if (time > 0) {
+                break;
+            } else {
+                System.out.println("Invalid time. Please enter a value greater than 0.");
+            }
+        }
+
+        System.out.println("Enter date (YYYY-MM-DD): ");
+        String date = scanner.nextLine().trim();
+
+        MembershipLevel level = member.getAge() < 18 ? MembershipLevel.JUNIOR : MembershipLevel.SENIOR;
 
         try {
-            competitionResultController.addResult(member, eventName, placement, time);
+            competitionResultController.addCompetitionResult(member, eventName, placement, time, date, level, activityType);
             System.out.println("Competition result added successfully.");
         } catch (Exception e) {
             System.out.println("Error adding competition result: " + e.getMessage());
@@ -957,7 +998,7 @@ private static String correctEmailInput(Scanner scanner, String prompt) {
         System.out.println("--- All Competition Results ---");
 
         List<CompetitionResults> results = competitionResultController.getAllResults();
-        if(results.isEmpty()) {
+        if (results.isEmpty()) {
             System.out.println("No competition results found.");
         } else {
             for (CompetitionResults result : results) {
@@ -988,9 +1029,6 @@ private static String correctEmailInput(Scanner scanner, String prompt) {
         }
     }
 
-
-
-
     private void manageCompetitions() {
         int competitionOption;
         do {
@@ -1015,33 +1053,6 @@ private static String correctEmailInput(Scanner scanner, String prompt) {
                 competitionOption = -1; // Ensure loop continues on invalid input
             }
         } while (competitionOption != 4); // Exit loop when option 4 is selected
-    }
-
-    private void manageTrainingResults(){
-        int trainingResultsOption;
-        do {
-            System.out.println("\n ---Training results---");
-            System.out.println("1. Add training results");
-            System.out.println("2. View training results for member");
-            System.out.println("3. View all training results");
-            System.out.println("4. Back to Main Menu");
-            System.out.print("Please choose an option (1-3): ");
-
-            try {
-                trainingResultsOption = Integer.parseInt(scanner.nextLine());
-                switch (trainingResultsOption){
-                    case 1 -> addTrainingResults(); //Add trainingResults to member
-                    case 2 -> viewMemberTrainingResults(); // View results for specific member
-                    case 3 -> viewAllTrainingResults(); // View every training result
-                    case 4 -> System.out.println("Returning to Main Menu..."); // Exit submenu
-                    default -> System.out.println("Invalid option. Please choose a number between 1 and 4.");
-                }
-            } catch (NumberFormatException e){
-                System.out.println("Invalid input. Please enter a number between 1 and 3.");
-                trainingResultsOption = -1;
-            }
-        } while (trainingResultsOption != 3); // Exit loop when option 4 is selected
-
     }
 
     private void viewMemberTrainingResults() {

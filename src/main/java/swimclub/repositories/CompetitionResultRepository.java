@@ -1,9 +1,9 @@
 package swimclub.repositories;
 
-import swimclub.utilities.FileHandler;
-import swimclub.utilities.Validator;
 import swimclub.models.CompetitionResults;
 import swimclub.models.Member;
+import swimclub.utilities.FileHandler;
+import swimclub.utilities.Validator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +12,6 @@ public class CompetitionResultRepository {
     private final List<CompetitionResults> results;
     private final FileHandler fileHandler;
     private final String competitionResultsFilePath;
-
 
     public CompetitionResultRepository(FileHandler fileHandler, String competitionResultsFilePath) {
         this.results = new ArrayList<>();
@@ -23,15 +22,8 @@ public class CompetitionResultRepository {
     public void addResult(CompetitionResults result) {
         Validator.validateCompetitionResult(result);
         results.add(result);
-        fileHandler.saveCompetitionResults(results, competitionResultsFilePath); // Save to file
-
-
+        fileHandler.saveCompetitionResults(results, competitionResultsFilePath);
     }
-
-    public List<CompetitionResults> getAllResults() {
-        return new ArrayList<>(results);
-    }
-
 
     public List<CompetitionResults> getResultsByMember(Member member) {
         List<CompetitionResults> memberResults = new ArrayList<>();
@@ -57,11 +49,12 @@ public class CompetitionResultRepository {
         fileHandler.saveCompetitionResults(results, competitionResultsFilePath);
     }
 
-
     public void loadResults(MemberRepository memberRepository) {
-        results.clear(); // Clear existing in-memory data
+        results.clear();
         results.addAll(fileHandler.loadCompetitionResults(competitionResultsFilePath, memberRepository));
     }
+
+    public List<CompetitionResults> getAllResults() {
+        return new ArrayList<>(results);
+    }
 }
-
-

@@ -1,30 +1,29 @@
 package swimclub.controllers;
 
+import swimclub.models.ActivityType;
 import swimclub.models.CompetitionResults;
 import swimclub.models.Member;
+import swimclub.models.MembershipLevel;
 import swimclub.services.CompetitionResultService;
 
 import java.util.List;
 
 public class CompetitionResultController {
-    private final CompetitionResultService resultService;
+    private final CompetitionResultService competitionService;
 
-    public CompetitionResultController(CompetitionResultService resultService) {
-        this.resultService = resultService;
+    public CompetitionResultController(CompetitionResultService competitionService) {
+        this.competitionService = competitionService;
     }
 
-    // Add a result using a Member object
-    public void addResult(Member member, String event, int placement, double time) {
-        resultService.addResult(member, event, placement, time);
+    public void addCompetitionResult(Member member, String event, int placement, double time, String date, MembershipLevel level, ActivityType activityType) {
+        competitionService.addResult(member, event, activityType, placement, time, date, level);
     }
 
-    // Get all competition results
-    public List<CompetitionResults> getAllResults() {
-        return resultService.getAllResults();
-    }
-
-    // Get results for a specific member
     public List<CompetitionResults> getResultsByMember(Member member) {
-        return resultService.getResultsByMember(member);
+        return competitionService.getResultsByMember(member);
+    }
+
+    public List<CompetitionResults> getAllResults() {
+        return competitionService.getAllResults();
     }
 }
