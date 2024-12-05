@@ -31,7 +31,7 @@ public class FileHandler {
      */
     public FileHandler(String memberFilePath, String paymentFilePath, String reminderFilePath,
                        String paymentRatesFilePath, String teamFilePath, String competitionResultsFilePath, String staffFilePath) {
-                       {
+
         this.memberFilePath = memberFilePath;
         this.paymentFilePath = paymentFilePath;
         this.reminderFilePath = reminderFilePath;

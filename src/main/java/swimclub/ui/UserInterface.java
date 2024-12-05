@@ -32,8 +32,8 @@ public class UserInterface {
      * @param paymentController The controller that handles the logic for payment actions.
      * @param teamController    The controller that handles the logic for team actions.
      */
-    public userinterface(MemberController memberController, PaymentController paymentController, TeamController teamController, StaffController staffController, CompetitionResultController competitionResultController) {
-    {
+    public UserInterface(MemberController memberController, PaymentController paymentController, TeamController teamController, CompetitionResultController competitionResultController, StaffController staffController) {
+
         this.memberController = memberController;
         this.paymentController = paymentController;
         this.teamController = teamController;
@@ -914,15 +914,9 @@ private static String correctEmailInput(Scanner scanner, String prompt) {
         }
     }
 }
-            if (email.contains("@") && email.contains(".")) {
-                return email;
-            } else {
-                System.out.println("Invalid input. Email must contain '@' and '.' - Try again.");
-            }
-        }
 
 
-    }
+
 
     private void addCompetitionResult() {
         System.out.println("\n--- Add Competition Result ---");
@@ -988,9 +982,6 @@ private static String correctEmailInput(Scanner scanner, String prompt) {
         }
     }
 
-
-
-
     private void manageCompetitions() {
         int competitionOption;
         do {
@@ -1016,4 +1007,7 @@ private static String correctEmailInput(Scanner scanner, String prompt) {
             }
         } while (competitionOption != 4); // Exit loop when option 4 is selected
     }
-}
+
+    }
+
+
