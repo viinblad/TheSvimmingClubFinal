@@ -1,27 +1,10 @@
 package swimclub;
 
-import swimclub.controllers.CompetitionResultController;
-import swimclub.controllers.MemberController;
-import swimclub.controllers.PaymentController;
-import swimclub.controllers.StaffController;
-import swimclub.controllers.TeamController;
-import swimclub.repositories.MemberRepository;
-import swimclub.repositories.PaymentRepository;
-import swimclub.repositories.StaffRepository;
-import swimclub.repositories.TeamRepository;  // Import TeamRepository
-import swimclub.services.MemberService;
-import swimclub.services.PaymentService;
-import swimclub.services.StaffService;
-import swimclub.services.TeamService;  // Import TeamService
-import swimclub.ui.*;
 import swimclub.utilities.FileHandler;
-import swimclub.repositories.CompetitionResultRepository;
-import swimclub.services.CompetitionResultService;
 import swimclub.controllers.*;
 import swimclub.repositories.*;
 import swimclub.services.*;
 import swimclub.ui.UserInterface;
-import swimclub.utilities.FileHandler;
 
 public class Main {
     /**
