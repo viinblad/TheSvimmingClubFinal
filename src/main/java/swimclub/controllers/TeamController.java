@@ -2,6 +2,7 @@ package swimclub.controllers;
 
 import swimclub.models.Member;
 import swimclub.models.Team;
+import swimclub.models.Coach;
 import swimclub.services.TeamService;
 
 import java.util.List;
@@ -64,12 +65,19 @@ public class TeamController {
      * Assigns a team leader to a team.
      *
      * @param teamName The name of the team.
-     * @param member   The member to assign as the team leader.
+     * @param coach   The member to assign as the team leader.
      */
-    public void assignTeamLeader(String teamName, Member member) {
-        teamService.assignTeamLeader(teamName, member); // Delegate to service to handle team leader assignment
+    public void assignTeamCoach(String teamName, Coach coach) {
+        teamService.assignTeamCoach(teamName, coach); // Delegate to service to handle team leader assignment
     }
 
+    public void removeTeamCoach(String teamName) {
+        teamService.removeTeamCoach(teamName); // Delegate to service to handle team leader assignment
+    }
+
+    public Team findTeamByName (String name) {
+        return teamService.findTeamByName(name);
+    }
 
     /**
      * Retrieves all teams.
@@ -78,5 +86,9 @@ public class TeamController {
      */
     public List<Team> getAllTeams() {
         return teamService.getAllTeams();
+    }
+
+    public boolean printAllTeams() {
+        return teamService.printAllTeams();
     }
 }

@@ -21,8 +21,7 @@ class MemberControllerTest {
     private static final String TEST_REMINDER_FILE = "src/test/java/testResources/testReminders.dat";
     private static final String TEST_PAYMENTRATES_FILE = "src/main/ressources/paymentRates.dat";
     private static final String TEST_TEAM_FILE = "src/main/ressources/teams.dat";
-    private static final String TEST_COMPETETION_FILE = "src/main/ressources/competitionResults.dat";
-    private static final String TEST_TRAINING_FILE = "src/main/ressources/trainingResults.dat";
+    private static final String TEST_STAFF_FILE = "src/main/ressources/teams.dat";
 
     private MemberService memberService;
     private MemberRepository memberRepository;
@@ -36,9 +35,10 @@ class MemberControllerTest {
         createTestFile(TEST_PAYMENT_FILE);
         createTestFile(TEST_REMINDER_FILE);
         createTestFile(TEST_PAYMENTRATES_FILE);
+        createTestFile(TEST_STAFF_FILE);
 
         // Initialize the FileHandler with the file paths
-        fileHandler = new FileHandler(TEST_MEMBER_FILE, TEST_PAYMENT_FILE, TEST_REMINDER_FILE, TEST_PAYMENTRATES_FILE,TEST_TEAM_FILE,TEST_COMPETETION_FILE,TEST_TRAINING_FILE);
+        fileHandler = new FileHandler(TEST_MEMBER_FILE, TEST_PAYMENT_FILE, TEST_REMINDER_FILE, TEST_PAYMENTRATES_FILE,TEST_TEAM_FILE, TEST_STAFF_FILE);
 
         // Initialize MemberRepository with the FileHandler instance
         memberRepository = new MemberRepository(fileHandler);
