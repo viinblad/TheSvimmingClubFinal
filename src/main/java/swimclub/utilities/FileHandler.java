@@ -30,7 +30,8 @@ public class FileHandler {
      * @param teamFilePath         Path to the file for saving/loading team data.
      */
     public FileHandler(String memberFilePath, String paymentFilePath, String reminderFilePath,
-                       String paymentRatesFilePath, String teamFilePath, String staffFilePath) {
+                       String paymentRatesFilePath, String teamFilePath, String competitionResultsFilePath, String staffFilePath) {
+
         this.memberFilePath = memberFilePath;
         this.paymentFilePath = paymentFilePath;
         this.reminderFilePath = reminderFilePath;
@@ -603,4 +604,42 @@ public class FileHandler {
         return coachDeleted; // Return true if coach was deleted, false if not
     }
 
+
+    public void saveCompetitionResults(List<CompetitionResults> results, String filePath) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+            for (CompetitionResults result : results) {
+                writer.write(result.getMember().getMemberId() + ";" +
+                            result.getEvent() + ";" +
+                            result.getPlacement() + ";" +
+                            result.getTime());
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            System.err.println("Error saving competition results: " + e.getMessage());
+        }
+    }
+
+    public List<CompetitionResults> loadCompetitionResults(String filePath, MemberRepository memberRepository) {
+        List<CompetitionResults> results = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(";");
+                String memberIdStr = parts[0];
+                String event = parts[1];
+                int placement = Integer.parseInt(parts[2]);
+                double time = Double.parseDouble(parts[3]);
+
+                // Resolve the member from MemberRepository
+                Member member = memberRepository.findById(Integer.parseInt(memberIdStr));
+                if (member != null) {
+                    results.add(new CompetitionResults(member, event, placement, time));
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Error loading competition results: " + e.getMessage());
+        }
+        return results;
+    }
 }
+

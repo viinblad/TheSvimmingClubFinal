@@ -1,5 +1,6 @@
 package swimclub.ui;
 
+import swimclub.controllers.CompetitionResultController;
 import swimclub.controllers.MemberController;
 import swimclub.controllers.PaymentController;
 import swimclub.controllers.StaffController;
@@ -8,7 +9,6 @@ import swimclub.models.*;
 
 import java.util.InputMismatchException;
 import java.util.List;
-import java.util.Locale;
 import java.util.Scanner;
 import java.text.DecimalFormat;
 
@@ -21,7 +21,9 @@ public class UserInterface {
     private final PaymentController paymentController;  // Controller to handle payment actions
     private final TeamController teamController;  // Controller to handle team actions
     private final StaffController staffController;
+    private final CompetitionResultController competitionResultController;
     private final Scanner scanner; // Scanner to read user input
+
 
     /**
      * Constructor to initialize the UserInterface with the member controller and payment controller.
@@ -30,10 +32,12 @@ public class UserInterface {
      * @param paymentController The controller that handles the logic for payment actions.
      * @param teamController    The controller that handles the logic for team actions.
      */
-    public UserInterface(MemberController memberController, PaymentController paymentController, TeamController teamController, StaffController staffController) {
+    public UserInterface(MemberController memberController, PaymentController paymentController, TeamController teamController, CompetitionResultController competitionResultController, StaffController staffController) {
+
         this.memberController = memberController;
         this.paymentController = paymentController;
         this.teamController = teamController;
+        this.competitionResultController = competitionResultController;
         this.staffController = staffController;
         this.scanner = new Scanner(System.in);
 
@@ -48,7 +52,7 @@ public class UserInterface {
             printMenu();  // Display the main menu
             option = getUserInput();  // Get user's input option
             handleOption(option);  // Handle the option selected by the user
-        } while (option != 8); // Exit when the user selects option 8
+        } while (option != 9); // Exit when the user selects option 8
     }
 
     /**
@@ -63,8 +67,9 @@ public class UserInterface {
         System.out.println("5. Delete Member");
         System.out.println("6. Payment Management");
         System.out.println("7. Team Management");
-        System.out.println("8. Exit");
-        System.out.print("Please choose an option (1-8): ");
+        System.out.println("8. Competition Management");
+        System.out.println("9. Exit");
+        System.out.print("Please choose an option (1-9): ");
     }
 
     /**
@@ -112,7 +117,10 @@ public class UserInterface {
             case 7:
                 manageTeams();  // Handle payments (new option)
                 break;
-            case 8:
+            case 8 :
+                manageCompetitions();
+                break;
+            case 9:
                 exitProgram(); // Exit the program
                 break;
             default:
@@ -906,4 +914,100 @@ private static String correctEmailInput(Scanner scanner, String prompt) {
         }
     }
 }
-}
+
+
+
+
+    private void addCompetitionResult() {
+        System.out.println("\n--- Add Competition Result ---");
+
+        System.out.print("Enter Member ID: ");
+        int memberId = Integer.parseInt(scanner.nextLine());
+        Member member = memberController.findMemberById(memberId);
+
+        if (member == null) {
+            System.out.println("No member found with the given ID.");
+            return;
+    }
+
+        System.out.println("Enter event name: ");
+        String eventName = scanner.nextLine();
+
+        System.out.println("Enter placement: ");
+        int placement = Integer.parseInt(scanner.nextLine());
+
+        System.out.println("Enter time (in seconds): ");
+        double time = Double.parseDouble(scanner.nextLine());
+
+        try {
+            competitionResultController.addResult(member, eventName, placement, time);
+            System.out.println("Competition result added successfully.");
+        } catch (Exception e) {
+            System.out.println("Error adding competition result: " + e.getMessage());
+        }
+    }
+
+    private void viewAllCompetitionResults() {
+        System.out.println("--- All Competition Results ---");
+
+        List<CompetitionResults> results = competitionResultController.getAllResults();
+        if(results.isEmpty()) {
+            System.out.println("No competition results found.");
+        } else {
+            for (CompetitionResults result : results) {
+                System.out.println(result);
+            }
+        }
+    }
+
+    private void viewMemberCompetitionResults() {
+        System.out.println("\n--- View Results for a Member ---");
+
+        System.out.print("Enter Member ID: ");
+        int memberId = Integer.parseInt(scanner.nextLine());
+        Member member = memberController.findMemberById(memberId);
+
+        if (member == null) {
+            System.out.println("No member found with the given ID.");
+            return;
+        }
+
+        List<CompetitionResults> results = competitionResultController.getResultsByMember(member);
+        if (results.isEmpty()) {
+            System.out.println("No results found for the member.");
+        } else {
+            for (CompetitionResults result : results) {
+                System.out.println(result);
+            }
+        }
+    }
+
+    private void manageCompetitions() {
+        int competitionOption;
+        do {
+            System.out.println("\n--- Manage Competitions ---");
+            System.out.println("1. Add competition result");
+            System.out.println("2. View all competition results");
+            System.out.println("3. View results for a member");
+            System.out.println("4. Back to Main Menu");
+            System.out.print("Please choose an option (1-4): ");
+
+            try {
+                competitionOption = Integer.parseInt(scanner.nextLine());
+                switch (competitionOption) {
+                    case 1 -> addCompetitionResult(); // Add competition result
+                    case 2 -> viewAllCompetitionResults(); // View all competition results
+                    case 3 -> viewMemberCompetitionResults(); // View results for a specific member
+                    case 4 -> System.out.println("Returning to Main Menu..."); // Exit submenu
+                    default -> System.out.println("Invalid option. Please choose a number between 1 and 4.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a number between 1 and 4.");
+                competitionOption = -1; // Ensure loop continues on invalid input
+            }
+        } while (competitionOption != 4); // Exit loop when option 4 is selected
+    }
+
+    }
+
+
