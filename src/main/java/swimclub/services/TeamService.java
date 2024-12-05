@@ -118,7 +118,8 @@ public class TeamService {
         if (team == null) {
             throw new IllegalArgumentException("Team not found.");
         }
-        team.setTeamCoach(coach); // Set the team leader
+        team.setTeamCoach(coach); // Set the team coach
+        teamRepository.saveTeams();
     }
 
     public void removeTeamCoach(String teamName) {
@@ -127,6 +128,7 @@ public class TeamService {
             throw new IllegalArgumentException("Team not found.");
         }
         team.setTeamCoach(null); // Set the team leader
+        teamRepository.saveTeams();
     }
 
     /**

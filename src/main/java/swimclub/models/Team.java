@@ -119,7 +119,7 @@ public class Team {
     public String toString() {
         return "Team: " + teamName +
                 " (" + teamType.getDisplayName() + ")" +
-                ", Leader: " + (coach != null ? coach.getName() : "None") +
+                ", Coach: " + (coach != null ? coach.getName() : "None") +
                 ", Members: " + members.size();
     }
 }

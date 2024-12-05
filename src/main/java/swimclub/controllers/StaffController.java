@@ -26,13 +26,17 @@ public class StaffController {
 
     public Coach registerCoach(String teamName, String name, String email, String city, String street, String region,
                                int zipcode, int age, int phoneNumber) {
-        Coach newCoach = null;
+
+        // Get the next coach ID before creating the new coach object
+        int coachId = staffRepository.getNextCoachId();
+
+        // Create a new Coach object with the necessary details
+        Coach newCoach = new Coach(coachId, teamName, name, email, city, street, region, zipcode, age, phoneNumber);
+
+        // Add the new coach to the staff repository
         staffRepository.addCoach(newCoach);
 
-        newCoach = new Coach(staffRepository.getNextCoachId(), teamName, name, email, city, street, region,
-                zipcode, age, phoneNumber);
-
-
+        // Return the newly created coach object
         return newCoach;
     }
 
@@ -49,6 +53,7 @@ public class StaffController {
             System.out.println("List of all Coaches:");
             for (Coach coach : coachList) {
                 System.out.println("Coach Name: " + coach.getName() +
+                        ", Coach Id: " + coach.getCoachId() +
                         ", Team: " + coach.getTeamName() +
                         ", Age: " + coach.getAge() +
                         ", Phone Number: " + coach.getPhoneNumber());

@@ -9,7 +9,7 @@ public class Coach extends Staff {
      * Initializes the coach's ID, team, and the common attributes from the Staff class.
      *
      * @param coachId     Unique identifier for the coach (e.g., "C123")
-     * @param teamName        The team that this coach manages or is assigned to
+     * @param teamName    The team that this coach manages or is assigned to
      * @param name        The name of the coach
      * @param email       The email address of the coach
      * @param city        The city where the coach resides
@@ -120,7 +120,7 @@ public class Coach extends Staff {
         return super.getPhoneNumber();
     }
 
-    public void setCoachId (int newCoachId) {
+    public void setCoachId(int newCoachId) {
         this.coachId = newCoachId;
     }
 
@@ -131,6 +131,7 @@ public class Coach extends Staff {
     @Override
     public String toString() {
         return "Coach: " + getName() + ", " +  // Coach's name
+                "Id: " + getCoachId() + ", " +  // Coach ID
                 "Team: " + (getTeamName() != null ? getTeamName() : "No team") + ", " +  // Coach's team name or "No team"
                 "Age: " + getAge() + ", " +  // Coach's age
                 "Phone Number: " + getPhoneNumber();  // Coach's phone number

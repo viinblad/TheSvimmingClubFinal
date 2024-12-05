@@ -6,6 +6,7 @@ import swimclub.models.Staff;
 import swimclub.services.StaffService;
 import swimclub.services.TeamService;
 import swimclub.utilities.FileHandler;
+import java.util.ArrayList;
 
 import java.util.List;
 import java.util.Optional;
@@ -43,27 +44,36 @@ public class StaffRepository {
     }
 
     public int getNextCoachId() {
-        // If there are no members, return 1 as the first member ID
-        if (coachList.isEmpty()) {
-            return 1; // If no members, the first ID is 1
+        // Check if coachList is null or empty
+        if (coachList == null) {
+            coachList = new ArrayList<>();  // Initialize the list if it's null
         }
 
-        // Find the highest member ID
-        int maxId = coachList.stream()
-                .mapToInt(Coach::getCoachId)
-                .max()
-                .orElse(0); // Find the highest ID, default to 0 if no members
+        if (coachList.isEmpty()) {
+            return 1; // If no coaches, return 1 as the next coach ID
+        }
 
-        return maxId + 1; // Return the next ID
+        // Find the maximum coach ID from the existing list
+        int maxId = 0;
+        for (Coach coach : coachList) {
+            if (coach.getCoachId() > maxId) {
+                maxId = coach.getCoachId(); // Update maxId if the current coach ID is greater
+            }
+        }
+
+        // Return the next ID, which is one more than the max ID
+        return maxId + 1;
     }
 
-    public boolean deleteCoach(Coach coach) {
 
+    public boolean deleteCoach(Coach coach) {
+coachList.remove(coach);
         fileHandler.deleteCoach(coach); // Delete the member using the file handler
         return true; // Assume successful deletion
     }
 
     public void addCoach (Coach coach) {
         coachList.add(coach);
+        fileHandler.saveCoaches(coachList);
     }
 }
