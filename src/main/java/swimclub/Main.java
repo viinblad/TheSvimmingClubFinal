@@ -45,7 +45,7 @@ public class Main {
 
 
         // Initialize the FileHandler for members, payments, reminders, and teams
-        FileHandler fileHandler = new FileHandler(memberFilePath, paymentFilePath, reminderFilePath, paymentRatesFilePath, teamsFilePath, competitionResultsFilePath, staffFilePath);
+        FileHandler fileHandler = new FileHandler(memberFilePath, paymentFilePath, reminderFilePath, paymentRatesFilePath, teamsFilePath, competitionResultsFilePath, staffFilePath,trainingResultsFilePath);
 
         // Initialize the repositories, passing the respective FileHandlers
         MemberRepository memberRepository = new MemberRepository(fileHandler);
@@ -95,7 +95,7 @@ public class Main {
         TrainingResultsController trainingResultsController = new TrainingResultsController(trainingResultsService);
 
         // Instantiate the UserInterface, passing all controllers (including teamController)
-        UserInterface userInterface = new UserInterface(memberController, paymentController, teamController, competitionResultController, staffController);
+        UserInterface userInterface = new UserInterface(memberController, paymentController, teamController, competitionResultController, staffController,trainingResultsController);
 
 
         // Start the User Interface to handle interactions

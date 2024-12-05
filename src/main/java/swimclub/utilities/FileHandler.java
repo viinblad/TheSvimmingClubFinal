@@ -32,7 +32,7 @@ public class FileHandler {
      * @param teamFilePath         Path to the file for saving/loading team data.
      */
     public FileHandler(String memberFilePath, String paymentFilePath, String reminderFilePath,
-                       String paymentRatesFilePath, String teamFilePath, String competitionResultsFilePath, String staffFilePath) {
+                       String paymentRatesFilePath, String teamFilePath, String competitionResultsFilePath, String staffFilePath, String trainingResultsFilePath) {
 
         this.memberFilePath = memberFilePath;
         this.paymentFilePath = paymentFilePath;

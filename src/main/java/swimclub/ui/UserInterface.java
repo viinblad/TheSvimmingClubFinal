@@ -34,7 +34,7 @@ public class UserInterface {
      * @param paymentController The controller that handles the logic for payment actions.
      * @param teamController    The controller that handles the logic for team actions.
      */
-    public UserInterface(MemberController memberController, PaymentController paymentController, TeamController teamController, CompetitionResultController competitionResultController, StaffController staffController) {
+    public UserInterface(MemberController memberController, PaymentController paymentController, TeamController teamController, CompetitionResultController competitionResultController, StaffController staffController, TrainingResultsController trainingResultsController) {
 
         this.memberController = memberController;
         this.paymentController = paymentController;
