@@ -1,4 +1,4 @@
-package swimclub.Utilities;
+package swimclub.utilities;
 
 import swimclub.models.*;
 import swimclub.repositories.MemberRepository;
@@ -17,6 +17,8 @@ public class FileHandler {
     private String reminderFilePath;
     private String paymentRatesFilePath;
     private String teamsFilePath;
+    private String competitionResultsFilePath;
+    private String trainingResultsFilePath;
 
     /**
      * Constructor for FileHandler.
@@ -28,12 +30,14 @@ public class FileHandler {
      * @param teamFilePath     Path to the file for saving/loading team data.
      */
     public FileHandler(String memberFilePath, String paymentFilePath, String reminderFilePath,
-                       String paymentRatesFilePath, String teamFilePath, String competitionResultsFilePath) {
+                       String paymentRatesFilePath, String teamFilePath, String competitionResultsFilePath,String trainingResultsFilePath) {
         this.memberFilePath = memberFilePath;
         this.paymentFilePath = paymentFilePath;
         this.reminderFilePath = reminderFilePath;
         this.paymentRatesFilePath = paymentRatesFilePath;
         this.teamsFilePath = teamFilePath;
+        this.competitionResultsFilePath = competitionResultsFilePath;
+        this.trainingResultsFilePath = trainingResultsFilePath;
     }
 
     // ---------------------------
@@ -260,7 +264,7 @@ public class FileHandler {
             PaymentStatus paymentStatus = PaymentStatus.valueOf(parts[12].toUpperCase());
 
             // Validate the data
-            Validator.validateMemberData(name, age, membershipDescription, email, city, street, region, zipcode,
+            swimclub.utilities.Validator.validateMemberData(name, age, membershipDescription, email, city, street, region, zipcode,
                     phoneNumber, membershipStatus, activityType.toString(), paymentStatus);
 
             // Create the correct subclass of Member based on age (Junior or Senior)
@@ -501,5 +505,50 @@ public class FileHandler {
         }
         return results;
     }
+
+    public void saveTrainingResults(List<TrainingResults> results, String filePath){
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+            for (TrainingResults result : results) {
+                writer.write(result.getMember().getMemberId() + ";" +
+                        result.getLevel() + ";" +
+                        result.getActivityType() + ";" +
+                        result.getLength() + ";" +
+                        result.getTime() + ";" +
+                        result.getDate());
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            System.err.println("Error saving training results: " + e.getMessage());
+        }
+    }
+
+    public List<TrainingResults> loadTrainingResults(String filePath, MemberRepository memberRepository){
+        List<TrainingResults> results = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(";");
+                String memberIdStr = parts[0];
+                MembershipLevel level = MembershipLevel.valueOf(parts[1]);
+                ActivityType activityType = ActivityType.valueOf(parts[2]);
+                int length = Integer.parseInt(parts[3]);
+                double time = Double.parseDouble(parts[4]);
+                String date = parts[5];
+
+                // Resolve the member from MemberRepository
+                Member member = memberRepository.findById(Integer.parseInt(memberIdStr));
+                if (member != null) {
+                    results.add(new TrainingResults(member, level, activityType,length, time, date));
+                }
+            }
+
+        } catch (IOException e){
+            System.err.println("Error saving training results: " + e.getMessage());
+        }
+        return results;
+    }
+
+
+
 }
 

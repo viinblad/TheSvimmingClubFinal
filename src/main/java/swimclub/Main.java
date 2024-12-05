@@ -1,19 +1,10 @@
 package swimclub;
 
-import swimclub.controllers.CompetitionResultController;
-import swimclub.controllers.MemberController;
-import swimclub.controllers.PaymentController;
-import swimclub.controllers.TeamController;
-import swimclub.repositories.MemberRepository;
-import swimclub.repositories.PaymentRepository;
-import swimclub.repositories.TeamRepository;  // Import TeamRepository
-import swimclub.services.MemberService;
-import swimclub.services.PaymentService;
-import swimclub.services.TeamService;  // Import TeamService
+import swimclub.controllers.*;
+import swimclub.repositories.*;
+import swimclub.services.*;
 import swimclub.ui.UserInterface;
-import swimclub.Utilities.FileHandler;
-import swimclub.repositories.CompetitionResultRepository;
-import swimclub.services.CompetitionResultService;
+import swimclub.utilities.FileHandler;
 
 public class Main {
     /**
@@ -32,21 +23,23 @@ public class Main {
         String paymentRatesFilePath = "src/main/resources/paymentRates.dat";
         String teamsFilePath = "src/main/resources/teams.dat"; // Path for teams data
         String competitionResultsFilePath = "src/main/resources/competitionResults.dat";
+        String trainingResultsFilePath = "src/main/resources/trainingResults.dat";
 
 
         // Initialize the FileHandler for members, payments, reminders, and teams
-        FileHandler fileHandler = new FileHandler(memberFilePath, paymentFilePath, reminderFilePath, paymentRatesFilePath, teamsFilePath, competitionResultsFilePath);
+        FileHandler fileHandler = new FileHandler(memberFilePath, paymentFilePath, reminderFilePath, paymentRatesFilePath, teamsFilePath, competitionResultsFilePath, trainingResultsFilePath);
 
         // Initialize the repositories, passing the respective FileHandlers
         MemberRepository memberRepository = new MemberRepository(fileHandler);
         PaymentRepository paymentRepository = new PaymentRepository(reminderFilePath); // Pass the reminder file path
         CompetitionResultRepository competitionResultRepository = new CompetitionResultRepository(fileHandler, competitionResultsFilePath);
-
+        TrainingResultsRepository trainingResultsRepository = new TrainingResultsRepository(fileHandler,trainingResultsFilePath);
         // Load members, payments, and teams from the file
         memberRepository.reloadMembers(); // Load member data
         paymentRepository.loadPayments(paymentFilePath, memberRepository); // Load payment data
 
         competitionResultRepository.loadResults(memberRepository); // Load competition results
+        trainingResultsRepository.loadResults(memberRepository);
 
 
 
@@ -55,7 +48,7 @@ public class Main {
         MemberService memberService = new MemberService(memberRepository);
         PaymentService paymentService = new PaymentService(paymentRepository, fileHandler);
         CompetitionResultService competitionResultService = new CompetitionResultService(competitionResultRepository);
-
+        TrainingResultsService trainingResultsService = new TrainingResultsService(trainingResultsRepository);
         // Initialize TeamRepository
         TeamRepository teamRepository = new TeamRepository(fileHandler);  // Pass FileHandler to TeamRepository
 
@@ -74,9 +67,10 @@ public class Main {
         );
 
         CompetitionResultController competitionResultController = new CompetitionResultController(competitionResultService);
+        TrainingResultsController trainingResultsController = new TrainingResultsController(trainingResultsService);
 
         // Instantiate the UserInterface, passing all controllers (including teamController)
-        UserInterface userInterface = new UserInterface(memberController, paymentController, teamController, competitionResultController);
+        UserInterface userInterface = new UserInterface(memberController, paymentController, teamController, competitionResultController, trainingResultsController);
 
         // Start the User Interface to handle interactions
         userInterface.start();

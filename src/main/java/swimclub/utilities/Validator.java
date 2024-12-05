@@ -1,7 +1,8 @@
-package swimclub.Utilities;
+package swimclub.utilities;
 
 import swimclub.models.*;
-
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 /**
  * Utility class for validating data in the swim club application.
  */
@@ -219,6 +220,27 @@ public class Validator {
     public static void validateTime(double time) {
         if (time < 0) {
             throw new IllegalArgumentException("Invalid time: Time must be greater than 0.");
+        }
+    }
+    public static void validateDate(String date){
+        LocalDateTime now = LocalDateTime.now();
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
+        try {
+            LocalDateTime inputDate = LocalDateTime.parse(date,formatter);
+
+            if (inputDate.isAfter(now)){
+                System.out.println("Has to be present time.");
+            }
+        } catch (Exception e){
+            System.out.println("Invalid date format. Please enter 'yyyy-mm-dd'");
+        }
+    }
+
+    public static void validateTrainingResult(TrainingResults result) {
+        if (result == null) {
+            throw new IllegalArgumentException("Invalid competition result: Result cannot be null.");
         }
     }
 }

@@ -3,7 +3,7 @@ package swimclub.controllers;
 import swimclub.models.*;
 import swimclub.repositories.MemberRepository;
 import swimclub.services.MemberService;
-import swimclub.Utilities.Validator;
+import swimclub.utilities.Validator;
 
 import java.util.List;
 

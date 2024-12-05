@@ -1,9 +1,6 @@
 package swimclub.ui;
 
-import swimclub.controllers.CompetitionResultController;
-import swimclub.controllers.MemberController;
-import swimclub.controllers.PaymentController;
-import swimclub.controllers.TeamController;
+import swimclub.controllers.*;
 import swimclub.models.*;
 
 import java.util.InputMismatchException;
@@ -20,6 +17,7 @@ public class UserInterface {
     private final PaymentController paymentController;  // Controller to handle payment actions
     private final TeamController teamController;  // Controller to handle team actions
     private final CompetitionResultController competitionResultController;
+    private final TrainingResultsController trainingResultsController;
     private final Scanner scanner; // Scanner to read user input
 
 
@@ -30,11 +28,12 @@ public class UserInterface {
      * @param paymentController The controller that handles the logic for payment actions.
      * @param teamController    The controller that handles the logic for team actions.
      */
-    public UserInterface(MemberController memberController, PaymentController paymentController, TeamController teamController, CompetitionResultController competitionResultController) {
+    public UserInterface(MemberController memberController, PaymentController paymentController, TeamController teamController, CompetitionResultController competitionResultController, TrainingResultsController trainingResultsController) {
         this.memberController = memberController;
         this.paymentController = paymentController;
         this.teamController = teamController;
         this.competitionResultController = competitionResultController;
+        this.trainingResultsController = trainingResultsController;
         this.scanner = new Scanner(System.in);
     }
 
@@ -63,8 +62,9 @@ public class UserInterface {
         System.out.println("6. Payment Management");
         System.out.println("7. Team Management");
         System.out.println("8. Competition Management");
-        System.out.println("9. Exit");
-        System.out.print("Please choose an option (1-9): ");
+        System.out.println("9. Register training results");
+        System.out.println("10. Exit");
+        System.out.print("Please choose an option (1-10): ");
     }
 
     /**
@@ -77,7 +77,7 @@ public class UserInterface {
         try {
             option = Integer.parseInt(scanner.nextLine());  // Parse the input as integer
         } catch (NumberFormatException e) {
-            System.out.println("Invalid input. Please enter a number between 1 and 8.");
+            System.out.println("Invalid input. Please enter a number between 1 and 10.");
         }
         return option;
     }
@@ -116,6 +116,9 @@ public class UserInterface {
                 manageCompetitions();
                 break;
             case 9:
+                manageTrainingResults();
+                break;
+            case 10:
                 exitProgram(); // Exit the program
                 break;
             default:
@@ -130,6 +133,7 @@ public class UserInterface {
         System.out.println("Exiting the program. Goodbye!");  // Print a goodbye message
         System.exit(0);  // Exit the program
     }
+
 
     /**
      * Registers a new member by collecting their details and passing them to the controller.
@@ -841,5 +845,104 @@ public class UserInterface {
                 competitionOption = -1; // Ensure loop continues on invalid input
             }
         } while (competitionOption != 4); // Exit loop when option 4 is selected
+    }
+
+    private void manageTrainingResults(){
+        int trainingResultsOption;
+        do {
+            System.out.println("\n ---Training results---");
+            System.out.println("1. Add training results");
+            System.out.println("2. View training results for member");
+            System.out.println("3. View all training results");
+            System.out.println("4. Back to Main Menu");
+            System.out.print("Please choose an option (1-3): ");
+
+            try {
+                trainingResultsOption = Integer.parseInt(scanner.nextLine());
+                switch (trainingResultsOption){
+                    case 1 -> addTrainingResults(); //Add trainingResults to member
+                    case 2 -> viewMemberTrainingResults(); // View results for specific member
+                    case 3 -> viewAllTrainingResults(); // View every training result
+                    case 4 -> System.out.println("Returning to Main Menu..."); // Exit submenu
+                    default -> System.out.println("Invalid option. Please choose a number between 1 and 4.");
+                }
+            } catch (NumberFormatException e){
+                System.out.println("Invalid input. Please enter a number between 1 and 3.");
+                trainingResultsOption = -1;
+            }
+        } while (trainingResultsOption != 3); // Exit loop when option 4 is selected
+
+    }
+
+    private void viewMemberTrainingResults() {
+        System.out.println("---View Members training results---");
+        System.out.print("Enter memberID:");
+        int memberid = Integer.parseInt(scanner.nextLine());
+        Member member = memberController.findMemberById(memberid);
+
+        if (member == null) {
+            System.out.println("No member found with the given ID.");
+            return;
+        }
+        List<TrainingResults> results = trainingResultsController.getResultsByMember(member);
+        if (results.isEmpty()){
+            System.out.println("No results found for the member.");
+        } else {
+            for (TrainingResults result : results){
+                System.out.println(result);
+            }
+        }
+
+
+    }
+
+    private void addTrainingResults(){
+        System.out.println("\n---Add training results---");
+        System.out.print("Enter memberId:");
+        int memberId = Integer.parseInt(scanner.nextLine());
+        Member member = memberController.findMemberById(memberId);
+
+        MembershipLevel level = null;
+
+        if(member == null){
+            System.out.println("No member found wtih given ID.");
+            return;
+        }
+
+        System.out.print("Enter discipline (Breaststroke, Crawl, Backcrawl or Butterfly):");
+        String activityType = scanner.nextLine();
+
+        System.out.print("Enter the total length swum during this training session (In meters):");
+        int length = scanner.nextInt();
+        //Consume line
+        scanner.nextLine();
+
+        System.out.print("Enter time:");
+        double time = scanner.nextDouble();
+
+        //Consume next line
+        scanner.nextLine();
+
+        System.out.print("Enter date of training (dd-MM-yyyy):");
+        String date = scanner.nextLine();
+
+        try {
+            trainingResultsController.addTrainingResults(member, activityType, length, time, date, level);
+            System.out.println("Training results succesfully added.");
+        } catch (Exception e) {
+            System.out.println("Error adding training result." + e.getMessage());
+        }
+    }
+
+    public void viewAllTrainingResults(){
+        List<TrainingResults> results = trainingResultsController.getAllResults();
+
+        if (results.isEmpty()){
+            System.out.println("No training results found.");
+        } else {
+            for (TrainingResults result : results){
+                System.out.println(result);
+            }
+        }
     }
 }

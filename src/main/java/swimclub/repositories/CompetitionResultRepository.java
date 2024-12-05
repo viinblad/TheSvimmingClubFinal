@@ -1,7 +1,7 @@
 package swimclub.repositories;
 
-import swimclub.Utilities.FileHandler;
-import swimclub.Utilities.Validator;
+import swimclub.utilities.FileHandler;
+import swimclub.utilities.Validator;
 import swimclub.models.CompetitionResults;
 import swimclub.models.Member;
 
