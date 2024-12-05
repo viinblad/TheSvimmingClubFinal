@@ -8,8 +8,6 @@ import swimclub.repositories.MemberRepository;
 import swimclub.repositories.PaymentRepository;
 import swimclub.utilities.FileHandler;
 
-import java.io.*;
-
 
 import java.time.LocalDate;
 import java.util.ArrayList;
