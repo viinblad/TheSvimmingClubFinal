@@ -16,6 +16,10 @@ public class PaymentRepository {
     private final List<String> reminders; // List to store reminders
     private final String reminderFilePath; // Path to the reminders file
 
+    // ===========================
+    // Constructor and Initialization
+    // ===========================
+
     /**
      * Constructor for PaymentRepository.
      *
@@ -29,6 +33,10 @@ public class PaymentRepository {
         // Load reminders at initialization
         loadReminders();
     }
+
+    // ===========================
+    // Reminder Management Methods
+    // ===========================
 
     /**
      * Saves a payment reminder.
@@ -76,6 +84,10 @@ public class PaymentRepository {
         LOGGER.info("All reminders cleared.");
     }
 
+    // ===========================
+    // File Handling for Reminders
+    // ===========================
+
     /**
      * Saves all reminders to the file.
      */
@@ -106,6 +118,10 @@ public class PaymentRepository {
         }
     }
 
+    // ===========================
+    // Payment Management Methods
+    // ===========================
+
     /**
      * Saves a payment to the repository.
      *
@@ -117,6 +133,7 @@ public class PaymentRepository {
             throw new IllegalArgumentException("Payment cannot be null.");
         }
 
+        // Check for duplicate payment ID
         if (payments.stream().anyMatch(p -> p.getPaymentId() == payment.getPaymentId())) {
             LOGGER.warning("Duplicate payment attempt for Payment ID: " + payment.getPaymentId());
             return;
@@ -146,7 +163,7 @@ public class PaymentRepository {
                 }
             }
         } catch (IOException e) {
-            System.err.println("Error loading payments: " + e.getMessage());
+            LOGGER.severe("Error loading payments: " + e.getMessage());
         }
     }
 
@@ -173,10 +190,14 @@ public class PaymentRepository {
 
             return new Payment(paymentId, status, member, paymentDate, amount);
         } catch (Exception e) {
-            System.err.println("Error parsing payment: " + line + " - " + e.getMessage());
+            LOGGER.severe("Error parsing payment: " + line + " - " + e.getMessage());
             return null;
         }
     }
+
+    // ===========================
+    // Payment Retrieval Methods
+    // ===========================
 
     /**
      * Fetches all payments for a specific member ID.
