@@ -34,15 +34,14 @@ public class Main {
         MemberRepository memberRepository = new MemberRepository(fileHandler);
         PaymentRepository paymentRepository = new PaymentRepository(reminderFilePath); // Pass the reminder file path
         CompetitionResultRepository competitionResultRepository = new CompetitionResultRepository(fileHandler, competitionResultsFilePath);
-
         StaffRepository staffRepository = new StaffRepository(fileHandler);
         TrainingResultsRepository trainingResultsRepository = new TrainingResultsRepository(fileHandler,trainingResultsFilePath);
+
         // Load members, payments, and teams from the file
         memberRepository.reloadMembers(); // Load member data
         paymentRepository.loadPayments(paymentFilePath, memberRepository); // Load payment data
-
         competitionResultRepository.loadResults(memberRepository); // Load competition results
-        trainingResultsRepository.loadResults(memberRepository);
+        trainingResultsRepository.loadResults(memberRepository); // Load training result
 
 
 
@@ -52,6 +51,7 @@ public class Main {
         PaymentService paymentService = new PaymentService(paymentRepository, fileHandler);
         CompetitionResultService competitionResultService = new CompetitionResultService(competitionResultRepository);
         TrainingResultsService trainingResultsService = new TrainingResultsService(trainingResultsRepository);
+
         // Initialize TeamRepository
         TeamRepository teamRepository = new TeamRepository(fileHandler);
         teamRepository.loadTeams(memberRepository, staffRepository);  // Pass MemberRepository til loadTeams
@@ -59,7 +59,7 @@ public class Main {
         // Initialize TeamService with TeamRepository
         TeamService teamService = new TeamService(teamRepository);
 
-        //intialize staffservice.
+        //initialize staff service.
         StaffService staffService = new StaffService(staffRepository);
 
         // Instantiate the controllers

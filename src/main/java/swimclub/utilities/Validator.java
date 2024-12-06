@@ -100,6 +100,16 @@ public class Validator {
         return phoneNumberString.length() == 8;
     }
 
+    // --- Role Validation ---
+    public static void validateRole(Role currentRole, Role... allowedRoles) {
+        for (Role allowedRole : allowedRoles) {
+            if (currentRole == allowedRole) {
+                return; // Authorized
+            }
+        }
+        throw new IllegalArgumentException("Access denied: Your role does not have permission for this action.");
+    }
+
     /**
      * Validates the data of a member.
      * This method checks the validity of all the member's attributes and throws an exception if any are invalid.
@@ -119,6 +129,7 @@ public class Validator {
      * @throws IllegalArgumentException if any validation fails.
      *
      */
+
 
     public static void validateMemberData(String name, int age, String membershipType,
                                           String email, String city, String street, String region, int zipcode, int phoneNumber,

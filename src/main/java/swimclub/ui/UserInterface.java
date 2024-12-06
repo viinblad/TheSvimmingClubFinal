@@ -24,6 +24,7 @@ public class UserInterface {
     private final StaffController staffController;
     private final CompetitionResultController competitionResultController;
     private final TrainingResultsController trainingResultsController;
+    private final Role currentRole;
     private final Scanner scanner; // Scanner to read user input
 
 
@@ -42,6 +43,7 @@ public class UserInterface {
         this.competitionResultController = competitionResultController;
         this.staffController = staffController;
         this.trainingResultsController = trainingResultsController;
+        this.currentRole =
         this.scanner = new Scanner(System.in);
     }
 

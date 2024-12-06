@@ -1,6 +1,9 @@
 package swimclub.models;
 
+import javax.management.relation.Role;
+
 public abstract class Staff {
+    private int id;              // Staff ID
     private String name;         // Name of the staff member
     private String email;        // Email address of the staff member
     private String city;         // City where the staff member resides
@@ -9,6 +12,7 @@ public abstract class Staff {
     private int zipcode;         // Zip code for the staff member's address
     private int age;             // Age of the staff member
     private int phoneNumber;     // Phone number of the staff member
+    private Role role;           // Roles for the staff
 
     /**
      * Constructor to initialize the details of a Staff member.
@@ -22,8 +26,10 @@ public abstract class Staff {
      * @param zipcode     The zip code of the staff member's address
      * @param age         The age of the staff member
      * @param phoneNumber The phone number of the staff member
+     * @param role        The admin role access for the staff
      */
-    public Staff(String name, String email, String city, String street, String region, int zipcode, int age, int phoneNumber) {
+    public Staff(int id, String name, String email, String city, String street, String region, int zipcode, int age, int phoneNumber, Role role) {
+        this.id = id;
         this.name = name;
         this.email = email;
         this.city = city;
@@ -32,6 +38,26 @@ public abstract class Staff {
         this.zipcode = zipcode;
         this.age = age;
         this.phoneNumber = phoneNumber;
+        this.role = role;
+    }
+
+    // Getters
+
+    /**
+     * Gets the ID of the staff member.
+     *
+     * @return The ID of the staff member
+     */
+    public Role getId() {
+        return role;
+    }
+    /**
+     * Gets the name of the staff member.
+     *
+     * @return The role of the staff member
+     */
+    public Role getRole() {
+        return role;
     }
 
     /**
@@ -104,5 +130,15 @@ public abstract class Staff {
      */
     public int getPhoneNumber() {
         return this.phoneNumber;
+    }
+
+    // Setters
+    /**
+     * Sets the role of the staff member.
+     *
+     * @param role The role of the staff member
+     */
+    public void setRole(Role role) {
+        this.role = role;
     }
 }
