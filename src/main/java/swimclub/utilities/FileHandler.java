@@ -613,8 +613,10 @@ public class FileHandler {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
             for (CompetitionResults result : results) {
                 writer.write(result.getMember().getMemberId() + ";" +
+                            result.getActivityType() + ";" +
                             result.getEvent() + ";" +
                             result.getPlacement() + ";" +
+                            result.getDate() + ";" +
                             result.getTime());
                 writer.newLine();
             }

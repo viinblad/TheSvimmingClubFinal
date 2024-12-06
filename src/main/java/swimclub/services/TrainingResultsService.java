@@ -6,7 +6,7 @@ import swimclub.models.MembershipLevel;
 import swimclub.models.TrainingResults;
 import swimclub.repositories.TrainingResultsRepository;
 
-import java.lang.reflect.AccessFlag;
+
 import java.util.List;
 
 public class TrainingResultsService {
