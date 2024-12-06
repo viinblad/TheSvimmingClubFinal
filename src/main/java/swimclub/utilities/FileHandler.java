@@ -314,7 +314,6 @@ public class FileHandler {
 
 
     /**
-     *
      * @return a double arrayList which can be used in paymentService to load juniorRate and seniorRate.
      */
     public double[] loadPaymentRates() {
@@ -365,6 +364,7 @@ public class FileHandler {
 
     /**
      * This method saves the juniorRate and seniorRate from paymentService class to paymentRates.dat document.
+     *
      * @param juniorRate - the price for how much a junior member has to pay.
      * @param seniorRate - the price for how much a senior member has to pay.
      */
@@ -395,15 +395,26 @@ public class FileHandler {
                 StringBuilder sb = new StringBuilder();
                 sb.append(team.getTeamName()).append(";") // Team name
                         .append(team.getTeamType().name()).append(";"); // Team type
+
+                // Append coach ID (or "null" if no coach)
                 if (team.getTeamCoach() != null) {
-                    sb.append(team.getTeamCoach().getCoachId()); // Coach ID
+                    sb.append(team.getTeamCoach().getCoachId());
                 } else {
-                    sb.append("null"); // No leader
+                    sb.append("null");
                 }
-                sb.append(";"); // Separator
+                sb.append(";");
+
+                // Append member IDs as a comma-separated string
                 for (Member member : team.getMembers()) {
-                    sb.append(member.getMemberId()).append(","); // Member IDs
+                    sb.append(member.getMemberId()).append(",");
                 }
+
+                // Remove trailing comma after last member (if any)
+                if (team.getMembers().size() > 0) {
+                    sb.deleteCharAt(sb.length() - 1);
+                }
+
+                // Write the team data to the file
                 writer.write(sb.toString());
                 writer.newLine();
             }
@@ -424,21 +435,30 @@ public class FileHandler {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split(";");
-                if (parts.length < 3) continue;
+                if (parts.length < 3) continue; // Skip lines with insufficient data
 
+                // Extract team data
                 String teamName = parts[0];
-                TeamType teamType = TeamType.valueOf(parts[1].toUpperCase());
-                String coachId = parts[2];
+                TeamType teamType = TeamType.valueOf(parts[1].toUpperCase()); // Assumes TeamType enum
+
+                // Parse the coach ID safely
+                int coachId = parseInteger(parts[2]); // Parsing coachId from parts[2]
+                Coach coach = null;
+                if (coachId != -1) {
+                    // Retrieve the coach object using the parsed coachId if valid
+                    coach = staffRepository.findCoachById(coachId);
+                    if (coach == null) {
+                        System.err.println("Coach with ID " + coachId + " not found for team " + teamName);
+                    }
+                } else {
+                    System.out.println("No valid coach ID found for team " + teamName + ", assigning null coach.");
+                }
+
+                // Parse member IDs if any exist
                 String[] memberIds = parts.length > 3 ? parts[3].split(",") : new String[0];
 
-                Team team = new Team(teamName, teamType);
-
-                // Set team leader if specified from the staffrepository, if the coach matches.
-                for (Coach coach : staffRepository.getCoachList()) {
-                    if (coach.getName().equals(teamName)) {
-                        team.setTeamCoach(coach);
-                    }
-                }
+                // Create a new Team object with or without a coach
+                Team team = new Team(teamName, teamType, coach);
 
                 // Add members to the team
                 for (String memberId : memberIds) {
@@ -450,12 +470,26 @@ public class FileHandler {
                     }
                 }
 
+                // Add the team to the list
                 teams.add(team);
             }
         } catch (IOException e) {
             System.err.println("Error loading teams: " + e.getMessage());
         }
-        return teams;
+        return teams; // Return the loaded list of teams
+    }
+
+    private int parseInteger(String value) {
+        try {
+            // If the value is "null" or empty, return -1 to signify invalid input
+            if (value == null || value.trim().isEmpty() || value.equals("null")) {
+                return -1;
+            }
+            return Integer.parseInt(value); // Parse the string to an integer
+        } catch (NumberFormatException e) {
+            System.err.println("Invalid integer value: " + value); // Log the invalid value
+            return -1; // Return -1 if parsing fails
+        }
     }
 
     /**
@@ -531,16 +565,17 @@ public class FileHandler {
      * @return A formatted string containing the coach's details, separated by semicolons.
      */
     private String formatCoach(Coach coach) {
-        return coach.getCoachId() + ";" +                                  // Coach's ID (Unique identifier for the coach)
-                coach.getTeamName() + ";" +                        // Team name (assuming 'getTeamName()' method in Team class)
-                coach.getName() + ";" +                                      // Coach's name (from Staff class)
-                coach.getEmail() + ";" +                                     // Coach's email (from Staff class)
-                coach.getCity() + ";" +                                      // Coach's city (from Staff class)
-                coach.getStreet() + ";" +                                    // Coach's street address (from Staff class)
-                coach.getRegion() + ";" +                                    // Coach's region (from Staff class)
-                coach.getZipcode() + ";" +                                   // Coach's zipcode (from Staff class)
-                coach.getAge() + ";" +                                        // Coach's age (from Staff class)
-                coach.getPhoneNumber();                                       // Coach's phone number (from Staff class)
+        //save all necessary information in a single line, separated by semicolons
+        return coach.getCoachId() + ";" +
+                coach.getTeamName() + ";" +
+                coach.getName() + ";" +
+                coach.getEmail() + ";" +
+                coach.getCity() + ";" +
+                coach.getStreet() + ";" +
+                coach.getRegion() + ";" +
+                coach.getZipcode() + ";" +
+                coach.getAge() + ";" +
+                coach.getPhoneNumber();
     }
 
     /**
@@ -564,9 +599,8 @@ public class FileHandler {
 
             // Assuming Team is an object, you need to find the team by name or ID
             String teamName = parts[1];                                       // Team name associated with the coach
-
-            String email = parts[2];                                          // Coach's email address
-            String name = parts[3];                                           // Coach's name
+            String name = parts[2];                                        // Coach's name
+            String email = parts[3];                                          // Coach's email address
             String city = parts[4];                                           // Coach's city
             String street = parts[5];                                         // Coach's street address
             String region = parts[6];                                         // Coach's region
@@ -613,9 +647,9 @@ public class FileHandler {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
             for (CompetitionResults result : results) {
                 writer.write(result.getMember().getMemberId() + ";" +
-                            result.getEvent() + ";" +
-                            result.getPlacement() + ";" +
-                            result.getTime());
+                        result.getEvent() + ";" +
+                        result.getPlacement() + ";" +
+                        result.getTime());
                 writer.newLine();
             }
         } catch (IOException e) {
@@ -646,7 +680,7 @@ public class FileHandler {
         return results;
     }
 
-    public void saveTrainingResults(List<TrainingResults> results, String filePath){
+    public void saveTrainingResults(List<TrainingResults> results, String filePath) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
             for (TrainingResults result : results) {
                 writer.write(result.getMember().getMemberId() + ";" +
@@ -662,7 +696,7 @@ public class FileHandler {
         }
     }
 
-    public List<TrainingResults> loadTrainingResults(String filePath, MemberRepository memberRepository){
+    public List<TrainingResults> loadTrainingResults(String filePath, MemberRepository memberRepository) {
         List<TrainingResults> results = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;
@@ -678,16 +712,15 @@ public class FileHandler {
                 // Resolve the member from MemberRepository
                 Member member = memberRepository.findById(Integer.parseInt(memberIdStr));
                 if (member != null) {
-                    results.add(new TrainingResults(member, level, activityType,length, time, date));
+                    results.add(new TrainingResults(member, level, activityType, length, time, date));
                 }
             }
 
-        } catch (IOException e){
+        } catch (IOException e) {
             System.err.println("Error saving training results: " + e.getMessage());
         }
         return results;
     }
-
 
 
 }

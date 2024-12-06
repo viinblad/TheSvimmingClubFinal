@@ -30,13 +30,14 @@ public class TeamService {
      * @param teamTypeString The type of the team (e.g., Junior Competitive or Senior Competitive).
      * @return The created Team object.
      */
-    public Team createTeam(String teamName, String teamTypeString) {
+    public Team createTeam(String teamName, String teamTypeString, Coach coach) {
         TeamType teamType = TeamType.fromString(teamTypeString);
         if (teamRepository.findTeamByName(teamName) != null) {
             throw new IllegalArgumentException("Team with this name already exists.");
         }
-        Team newTeam = new Team(teamName, teamType);
+        Team newTeam = new Team(teamName, teamType, coach);
         teamRepository.addTeam(newTeam);
+        saveTeam();
         return newTeam;
     }
 
@@ -87,7 +88,6 @@ public class TeamService {
                         ", Team Type: " + team.getTeamType().getDisplayName() +
                         ", Coach: " + (team.getTeamCoach() != null ? team.getTeamCoach().getName() : "None") +
                         ", Members Count: " + team.getMembers().size());
-                return true;
             }
         }
         return true;
@@ -142,5 +142,9 @@ public class TeamService {
 
     public Team findTeamByName(String name) {
         return teamRepository.findTeamByName(name);
+    }
+
+    public void saveTeam () {
+        teamRepository.saveTeams();
     }
 }

@@ -61,4 +61,9 @@ public class StaffController {
             return true;
         }
     }
+
+    public void saveCoachList () {
+        staffRepository.saveCoachList();
+    }
+
 }

@@ -361,14 +361,12 @@ private void removeTeamCoach() {
         // Find the team by name
         Team team = teamController.findTeamByName(teamName);
         if (team == null) {
-            // If no team is found by name, throw an exception
             throw new IllegalArgumentException("Team not found.");
         }
 
         // Check if the team has a coach
         Coach teamCoach = team.getTeamCoach();
         if (teamCoach == null) {
-            // If the team has no coach, throw an exception
             throw new IllegalArgumentException("No coach assigned to the team '" + teamName + "'.");
         }
 
@@ -379,14 +377,13 @@ private void removeTeamCoach() {
         teamController.removeTeamCoach(teamName);
 
         // Set the team name of the coach to null as they are no longer assigned to the team
-        staffController.findCoachByTeamName(teamName).setTeamName(null);
+        staffController.findCoachById(teamCoach.getCoachId()).setTeamName(null);
 
     } catch (IllegalArgumentException e) {
         // Handle any error in the process, such as no team found or no coach assigned
         System.out.println("Error removing team coach: " + e.getMessage());
     }
 }
-
 
 /**
  * Creates a new team by collecting the team name and type from the user.
@@ -405,7 +402,7 @@ private void createTeam() {
     }
 
     try {
-        teamController.createTeam(teamName, teamTypeStr);
+        teamController.createTeam(teamName, teamTypeStr, null);
         System.out.println("Team '" + teamName + "' created successfully.");
     } catch (IllegalArgumentException e) {
         System.out.println("Error creating team: " + e.getMessage());
@@ -496,11 +493,17 @@ private void assignTeamCoach() {
         return;  // Exit if the team is not found
     }
 
+    // Check if the team already has a coach
+    if (team.getTeamCoach() != null) {
+        System.out.println("This team already has a coach: '" + team.getTeamCoach().getName() + "'. Cannot assign a new coach.");
+        return; // Exit if the team already has a coach
+    }
+
     // Now that we know the team exists, check if there are any coaches available
     boolean foundCoaches = staffController.getCoachList();
     if (!foundCoaches) {
         // If no coaches are found, display a message and exit the method
-        System.out.println("No coaches found on the coachList.");
+        System.out.println("No coaches found on the coach list.");
         return;  // Exit if no coaches are available
     }
 
@@ -525,7 +528,8 @@ private void assignTeamCoach() {
     // Attempt to assign the coach to the team
     try {
         teamController.assignTeamCoach(teamName, coach); // assigning coach to team.
-        coach.setTeamName(teamName); // assigning teamname to coach.
+        coach.setTeamName(teamName); // assigning team name to coach.
+        staffController.saveCoachList(); // Save updated coach data
         System.out.println("Coach '" + coach.getName() + "' assigned as coach of team '" + teamName + "'.");
     } catch (IllegalArgumentException e) {
         System.out.println("Error assigning team coach: " + e.getMessage());

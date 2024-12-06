@@ -76,4 +76,9 @@ coachList.remove(coach);
         coachList.add(coach);
         fileHandler.saveCoaches(coachList);
     }
+
+
+    public void saveCoachList () {
+        fileHandler.saveCoaches(coachList);
+    }
 }

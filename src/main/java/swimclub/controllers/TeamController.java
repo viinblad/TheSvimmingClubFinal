@@ -28,8 +28,9 @@ public class TeamController {
      * @param teamName The name of the team.
      * @return The created Team object.
      */
-    public Team createTeam(String teamName, String teamTypeString) {
-        return teamService.createTeam(teamName, teamTypeString);
+    public Team createTeam(String teamName, String teamTypeString, Coach coach) {
+        return teamService.createTeam(teamName, teamTypeString, coach);
+
     }
 
     /**
@@ -69,6 +70,7 @@ public class TeamController {
      */
     public void assignTeamCoach(String teamName, Coach coach) {
         teamService.assignTeamCoach(teamName, coach); // Delegate to service to handle team leader assignment
+
     }
 
     public void removeTeamCoach(String teamName) {
@@ -91,4 +93,5 @@ public class TeamController {
     public boolean printAllTeams() {
         return teamService.printAllTeams();
     }
+
 }
