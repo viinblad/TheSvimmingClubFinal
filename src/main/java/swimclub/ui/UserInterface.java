@@ -1,16 +1,11 @@
 package swimclub.ui;
 
-import swimclub.controllers.CompetitionResultController;
-import swimclub.controllers.MemberController;
-import swimclub.controllers.PaymentController;
-import swimclub.controllers.StaffController;
-import swimclub.controllers.TeamController;
 import swimclub.controllers.*;
 import swimclub.models.*;
+import swimclub.utilities.PasswordUtils;
 
 import java.util.InputMismatchException;
 import java.util.List;
-import java.util.Locale;
 import java.util.Scanner;
 import java.text.DecimalFormat;
 /**
@@ -24,7 +19,7 @@ public class UserInterface {
     private final StaffController staffController;
     private final CompetitionResultController competitionResultController;
     private final TrainingResultsController trainingResultsController;
-    private final Role currentRole;
+    private final AdminController adminController;
     private final Scanner scanner; // Scanner to read user input
 
 
@@ -34,8 +29,9 @@ public class UserInterface {
      * @param memberController  The controller that handles the logic for member actions.
      * @param paymentController The controller that handles the logic for payment actions.
      * @param teamController    The controller that handles the logic for team actions.
+     * @param adminController
      */
-    public UserInterface(MemberController memberController, PaymentController paymentController, TeamController teamController, CompetitionResultController competitionResultController, StaffController staffController, TrainingResultsController trainingResultsController) {
+    public UserInterface(MemberController memberController, PaymentController paymentController, TeamController teamController, CompetitionResultController competitionResultController, StaffController staffController, TrainingResultsController trainingResultsController, AdminController adminController) {
 
         this.memberController = memberController;
         this.paymentController = paymentController;
@@ -43,20 +39,24 @@ public class UserInterface {
         this.competitionResultController = competitionResultController;
         this.staffController = staffController;
         this.trainingResultsController = trainingResultsController;
-        this.currentRole =
+        this.adminController = adminController;
         this.scanner = new Scanner(System.in);
     }
 
     /**
-     * Starts the user interface, displaying the menu and handling user input.
+     * Starts the user interface, displaying the login prompt (adminMenu) and handling user input.
      */
     public void start() {
+        // First, display the admin login menu
+        adminMenu();  // This will handle login for admins
+
+        // Once logged in, proceed with the regular menu
         int option;
         do {
             printMenu();  // Display the main menu
             option = getUserInput();  // Get user's input option
             handleOption(option);  // Handle the option selected by the user
-        } while (option != 9); // Exit when the user selects option 8
+        } while (option != 10); // Exit when the user selects option 10 (Exit)
     }
 
     /**
@@ -90,6 +90,186 @@ public class UserInterface {
             System.out.println("Invalid input. Please enter a number between 1 and 10.");
         }
         return option;
+    }
+
+    public void adminMenu() {
+        System.out.print("Enter username: ");
+        String username = scanner.nextLine();
+        System.out.print("Enter password: ");
+        String password = scanner.nextLine();
+
+        try {
+            User user = adminController.login(username, password);
+            System.out.println("Welcome, " + user.getUsername() + " (" + user.getRole() + ")!");
+
+            // Admin-specific functionality: Show menu based on the role
+            if (user.getRole() == Role.ADMIN) {
+                showAdminMenu(); // Show the Admin menu if the user is an Admin
+            } else if (user.getRole() == Role.CHAIRMAN) {
+                showChairmanMenu(); // Show Chairman menu if the user is a Chairman
+            } else if (user.getRole() == Role.TREASURER) {
+                showTreasurerMenu(); // Show Treasurer menu if the user is a Treasurer
+            } else if (user.getRole() == Role.COACH) {
+                showCoachMenu(); // Show Coach menu if the user is a Coach
+            } else {
+                System.out.println("Role not authorized.");
+            }
+
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    // Admin menu for creating new users and managing all areas
+    private void showAdminMenu() {
+        System.out.println("\n--- Admin Functions ---");
+        System.out.println("1. Create New Admin User");
+        System.out.println("2. Manage Users");
+        System.out.println("3. Manage Members");
+        System.out.println("4. Manage Teams");
+        System.out.println("5. Manage Payments");
+        System.out.println("6. Manage Competitions");
+        System.out.println("7. Manage Training Results");
+        System.out.println("8. Exit");
+        System.out.print("Please choose an option (1-8): ");
+
+        int option = Integer.parseInt(scanner.nextLine());
+        handleAdminOptions(option);
+    }
+
+    // Handling admin options, including creating new users and accessing features
+    private void handleAdminOptions(int option) {
+        switch (option) {
+            case 1:
+                createNewAdminUser();  // Admin can create new admin users
+                break;
+            case 2:
+                manageUsers();  // Admin can manage existing users (list, remove, etc.)
+                break;
+            case 3:
+                manageMembers(option);  // Manage members (available for Chairman)
+                break;
+            case 4:
+                manageTeams();  // Manage teams (available for Chairman, Coach)
+                break;
+            case 5:
+                handlePayments();  // Handle payments (available for Chairman, Treasurer)
+                break;
+            case 6:
+                manageCompetitions();  // Manage competitions (available for Chairman)
+                break;
+            case 7:
+                manageTrainingResults();  // Manage training results (available for Chairman, Coach)
+                break;
+            case 8:
+                exitProgram();  // Exit the program
+                break;
+            default:
+                System.out.println("Invalid option. Please choose a valid number.");
+        }
+    }
+
+
+    // Function to create a new admin user (Admin can create new users with different roles)
+    private void createNewAdminUser() {
+        System.out.print("Enter username for new user: ");
+        String username = scanner.nextLine();
+
+        System.out.print("Enter password for new user: ");
+        String password = scanner.nextLine();
+
+        // Validate password length and security
+        while (password.length() < 6) {
+            System.out.println("Password must be at least 6 characters long.");
+            System.out.print("Enter password for new user: ");
+            password = scanner.nextLine();
+        }
+
+        // Hash the password and generate a salt
+        String salt = PasswordUtils.generateSalt();  // Generate salt for password hashing
+        String hashedPassword = PasswordUtils.hashPassword(password, salt);  // Hash the password
+
+        // Ask for the role of the new user
+        System.out.println("Select role for the new user:");
+        System.out.println("1. CHAIRMAN");
+        System.out.println("2. TREASURER");
+        System.out.println("3. COACH");
+        System.out.println("4. ADMIN");
+        System.out.print("Enter the number for the role: ");
+        int roleOption = Integer.parseInt(scanner.nextLine());
+
+        // Map input to the corresponding role
+        Role role = null;
+        switch (roleOption) {
+            case 1:
+                role = Role.CHAIRMAN;
+                break;
+            case 2:
+                role = Role.TREASURER;
+                break;
+            case 3:
+                role = Role.COACH;
+                break;
+            case 4:
+                role = Role.ADMIN;
+                break;
+            default:
+                System.out.println("Invalid role selected. Defaulting to COACH.");
+                role = Role.COACH;  // Default to COACH if invalid input
+        }
+
+        // Create the new user with the selected role
+        User newUser = new User(username, hashedPassword, salt, role);
+
+        // Add the new user to the repository
+        adminController.register(username, password, role);  // Using AdminController to register the new user
+        System.out.println("User created successfully with role: " + role);
+    }
+
+    // Manage Users (List, delete, etc. for Admin)
+    private void manageUsers() {
+        // Implement functionality to manage users (view, remove, update, etc.)
+        System.out.println("\n--- Manage Users ---");
+        // Display list of users, delete, or update
+    }
+
+    /**
+     * Displays the menu for Chairman-specific functionality and redirects to handleOption() based on the selected option.
+     */
+    private void showChairmanMenu() {
+        // Display the Chairman-specific menu options
+        System.out.println("\n--- Chairman Functions ---");
+        System.out.println("1. Register New Member");
+        System.out.println("2. Search Members");
+        System.out.println("3. Update Member");
+        System.out.println("4. View All Members");
+        System.out.println("5. Delete Member");
+        System.out.println("6. Handle Payments");
+        System.out.println("7. Manage Teams");
+        System.out.println("8. Manage Competitions");
+        System.out.println("9. Manage Training Results");
+        System.out.println("10. Exit");
+        System.out.print("Please choose an option (1-10): ");
+
+        // Read user's option input and call handleOption() directly
+        int option = Integer.parseInt(scanner.nextLine());
+        handleOption(option);  // This will redirect based on the option selected by the chairman
+    }
+
+    /**
+     * Displays the menu for Treasurer-specific functionality and redirects to handlePayments() directly.
+     */
+    private void showTreasurerMenu() {
+        // Directly call  handlePayments when the user logs in as a treasurer
+        handlePayments();
+    }
+
+    /**
+     * Displays the menu for Coach-specific functionality and redirects to manageTeams() directly.
+     */
+    private void showCoachMenu() {
+        // Directly call manageTeams when the user logs in as a coach
+        manageTeams();
     }
 
     /**
@@ -133,6 +313,32 @@ public class UserInterface {
                 break;
             default:
                 System.out.println("Invalid option. Please choose a number between 1 and 7.");
+        }
+    }
+
+    private void manageMembers(int option) {
+
+        switch (option) {
+            case 1:
+                registerMember();  // Register a new member
+                break;
+            case 2:
+                searchMembers();  // Search members
+                break;
+            case 3:
+                updateMember();  // Update member details
+                break;
+            case 4:
+                memberController.viewAllMembers();  // View all members
+                break;
+            case 5:
+                deleteMember();  // Delete a member
+                break;
+            case 6:
+                exitProgram(); // Exit the program
+                break;
+            default:
+                System.out.println("Invalid option. Please choose a number between 1 and 6.");
         }
     }
 
@@ -288,8 +494,11 @@ public class UserInterface {
         String phoneNumberString = correctPHInput(scanner, "Enter phone number (8 digits):"); // Validate phone number input
         int phoneNumber = Integer.parseInt(phoneNumberString); // Convert phone number to int
 
+        // Set the default role for a coach
+        Role coachRole = Role.COACH;
+
         // Call the controller to register the new coach
-        Coach newCoach = staffController.registerCoach(null, name, email, city, street, region, zipcode, age, phoneNumber);
+        Coach newCoach = staffController.registerCoach(null, name, email, city, street, region, zipcode, age, phoneNumber, coachRole);
 
         if (newCoach != null) {
             // Ask user if they want to assign the coach to a team
@@ -336,6 +545,7 @@ public class UserInterface {
             System.out.println("Failed to register the coach.");
         }
     }
+
 
 
 /**

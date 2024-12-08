@@ -100,15 +100,7 @@ public class Validator {
         return phoneNumberString.length() == 8;
     }
 
-    // --- Role Validation ---
-    public static void validateRole(Role currentRole, Role... allowedRoles) {
-        for (Role allowedRole : allowedRoles) {
-            if (currentRole == allowedRole) {
-                return; // Authorized
-            }
-        }
-        throw new IllegalArgumentException("Access denied: Your role does not have permission for this action.");
-    }
+
 
     /**
      * Validates the data of a member.
@@ -254,4 +246,31 @@ public class Validator {
             throw new IllegalArgumentException("Invalid competition result: Result cannot be null.");
         }
     }
+    public static void validateUsername(String username) {
+        // Check if username is already taken (this can be done by checking the AuthRepository)
+        if (username == null || username.trim().isEmpty()) {
+            throw new IllegalArgumentException("Invalid username: Username cannot be empty.");
+        }
+    }
+
+    /**
+     * Validates the password (you can add strength checks here).
+     */
+    public static void validatePassword(String password) {
+        // Simple password validation: at least 6 characters
+        if (password == null || password.length() < 6) {
+            throw new IllegalArgumentException("Invalid password: Password must be at least 6 characters.");
+        }
+    }
+
+    /**
+     * Validates the role of the user.
+     */
+    public static void validateRole(Role role) {
+        if (role == null) {
+            throw new IllegalArgumentException("Invalid role: Role cannot be null.");
+        }
+    }
+
 }
+

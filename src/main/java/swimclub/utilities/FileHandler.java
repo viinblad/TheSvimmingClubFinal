@@ -552,31 +552,30 @@ public class FileHandler {
     private Coach parseCoach(String line) {
         String[] parts = line.split(";");
 
-        // Ensure the expected number of fields (10 fields: coachId, teamName, email, name, city, street, region, zipcode, age, phoneNumber)
-        if (parts.length < 10) {
+        // Ensure the expected number of fields (11 fields: coachId, teamName, email, name, city, street, region, zipcode, age, phoneNumber, role)
+        if (parts.length < 11) {
             System.err.println("Skipping invalid coach data: " + line);
             return null;  // Return null if the line doesn't have the expected number of fields
         }
 
         try {
             // Parse basic coach details
-            int coachId = Integer.parseInt(parts[0]);                        // Coach's unique ID
+            int coachId = Integer.parseInt(parts[0]);       // Coach's unique ID
+            String teamName = parts[1];                    // Team name associated with the coach
+            String email = parts[2];                       // Coach's email address
+            String name = parts[3];                        // Coach's name
+            String city = parts[4];                        // Coach's city
+            String street = parts[5];                      // Coach's street address
+            String region = parts[6];                      // Coach's region
+            int zipcode = Integer.parseInt(parts[7]);      // Coach's zipcode
+            int age = Integer.parseInt(parts[8]);          // Coach's age
+            int phoneNumber = Integer.parseInt(parts[9]);  // Coach's phone number
 
-            // Assuming Team is an object, you need to find the team by name or ID
-            String teamName = parts[1];                                       // Team name associated with the coach
-
-            String email = parts[2];                                          // Coach's email address
-            String name = parts[3];                                           // Coach's name
-            String city = parts[4];                                           // Coach's city
-            String street = parts[5];                                         // Coach's street address
-            String region = parts[6];                                         // Coach's region
-            int zipcode = Integer.parseInt(parts[7]);                         // Coach's zipcode
-            int age = Integer.parseInt(parts[8]);                             // Coach's age
-            int phoneNumber = Integer.parseInt(parts[9]);                     // Coach's phone number
+            // Parse the role
+            Role role = Role.valueOf(parts[10].toUpperCase());  // Convert role string to enum
 
             // Create a new Coach object with the parsed data
-            Coach coach = new Coach(coachId, teamName, name, email, city, street, region, zipcode, age, phoneNumber);
-            return coach;                                                     // Return the Coach object
+            return new Coach(coachId, teamName, name, email, city, street, region, zipcode, age, phoneNumber, role);
         } catch (Exception e) {
             System.err.println("Error parsing coach: " + line + " - " + e.getMessage());
             return null;  // Return null if any error occurs during parsing

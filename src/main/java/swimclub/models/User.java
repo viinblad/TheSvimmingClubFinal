@@ -1,33 +1,31 @@
 package swimclub.models;
 
-
-import javax.management.relation.Role;
-
-
 public class User {
     private final String username;
-    private final String password;
-    private final Staff staff; // Association with Staff
+    private final String hashedPassword;
+    private final String salt;
+    private final Role role;
 
-    public User(String username, String password, Staff staff) {
+    public User(String username, String hashedPassword, String salt, Role role) {
         this.username = username;
-        this.password = password;
-        this.staff = staff;
+        this.hashedPassword = hashedPassword;
+        this.salt = salt;
+        this.role = role;
     }
 
     public String getUsername() {
         return username;
     }
 
-    public String getPassword() {
-        return password;
+    public String getHashedPassword() {
+        return hashedPassword;
     }
 
-    public Staff getStaff() {
-        return staff;
+    public String getSalt() {
+        return salt;
     }
 
     public Role getRole() {
-        return staff.getRole(); // Delegate role to associated Staff object
+        return role;
     }
 }

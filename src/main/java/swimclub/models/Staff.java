@@ -1,7 +1,8 @@
 package swimclub.models;
 
-import javax.management.relation.Role;
-
+/**
+ * Abstract base class for staff members in the swim club.
+ */
 public abstract class Staff {
     private int id;              // Staff ID
     private String name;         // Name of the staff member
@@ -12,12 +13,12 @@ public abstract class Staff {
     private int zipcode;         // Zip code for the staff member's address
     private int age;             // Age of the staff member
     private int phoneNumber;     // Phone number of the staff member
-    private Role role;           // Roles for the staff
+    private Role role;           // Role for the staff
 
     /**
      * Constructor to initialize the details of a Staff member.
-     * This constructor initializes all attributes of the Staff class.
      *
+     * @param id          Unique ID of the staff member
      * @param name        The name of the staff member
      * @param email       The email address of the staff member
      * @param city        The city where the staff member resides
@@ -26,7 +27,7 @@ public abstract class Staff {
      * @param zipcode     The zip code of the staff member's address
      * @param age         The age of the staff member
      * @param phoneNumber The phone number of the staff member
-     * @param role        The admin role access for the staff
+     * @param role        The role of the staff member
      */
     public Staff(int id, String name, String email, String city, String street, String region, int zipcode, int age, int phoneNumber, Role role) {
         this.id = id;
@@ -48,16 +49,8 @@ public abstract class Staff {
      *
      * @return The ID of the staff member
      */
-    public Role getId() {
-        return role;
-    }
-    /**
-     * Gets the name of the staff member.
-     *
-     * @return The role of the staff member
-     */
-    public Role getRole() {
-        return role;
+    public int getId() {
+        return id;
     }
 
     /**
@@ -66,7 +59,7 @@ public abstract class Staff {
      * @return The name of the staff member
      */
     public String getName() {
-        return this.name;
+        return name;
     }
 
     /**
@@ -75,7 +68,7 @@ public abstract class Staff {
      * @return The email address of the staff member
      */
     public String getEmail() {
-        return this.email;
+        return email;
     }
 
     /**
@@ -84,7 +77,7 @@ public abstract class Staff {
      * @return The city where the staff member resides
      */
     public String getCity() {
-        return this.city;
+        return city;
     }
 
     /**
@@ -93,16 +86,16 @@ public abstract class Staff {
      * @return The street address of the staff member
      */
     public String getStreet() {
-        return this.street;
+        return street;
     }
 
     /**
      * Gets the region or state of the staff member's address.
      *
-     * @return The region or state of the staff member
+     * @return The region or state of the staff member's address
      */
     public String getRegion() {
-        return this.region;
+        return region;
     }
 
     /**
@@ -111,7 +104,7 @@ public abstract class Staff {
      * @return The zip code of the staff member's address
      */
     public int getZipcode() {
-        return this.zipcode;
+        return zipcode;
     }
 
     /**
@@ -120,7 +113,7 @@ public abstract class Staff {
      * @return The age of the staff member
      */
     public int getAge() {
-        return this.age;
+        return age;
     }
 
     /**
@@ -129,10 +122,29 @@ public abstract class Staff {
      * @return The phone number of the staff member
      */
     public int getPhoneNumber() {
-        return this.phoneNumber;
+        return phoneNumber;
+    }
+
+    /**
+     * Gets the role of the staff member.
+     *
+     * @return The role of the staff member
+     */
+    public Role getRole() {
+        return role;
     }
 
     // Setters
+
+    /**
+     * Sets the ID of the staff member.
+     *
+     * @param id The unique ID of the staff member
+     */
+    public void setId(int id) {
+        this.id = id;
+    }
+
     /**
      * Sets the role of the staff member.
      *
@@ -140,5 +152,21 @@ public abstract class Staff {
      */
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    @Override
+    public String toString() {
+        return "Staff{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", email='" + email + '\'' +
+                ", city='" + city + '\'' +
+                ", street='" + street + '\'' +
+                ", region='" + region + '\'' +
+                ", zipcode=" + zipcode +
+                ", age=" + age +
+                ", phoneNumber=" + phoneNumber +
+                ", role=" + role +
+                '}';
     }
 }

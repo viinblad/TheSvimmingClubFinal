@@ -16,19 +16,27 @@ public class Main {
      *             but in this specific implementation, it is not used in the code.
      */
     public static void main(String[] args) {
-        // File paths for member data, payment data, reminder data, and teams data
+        // File paths for member data, payment data, reminder data, teams data and user authentication data
         String memberFilePath = "src/main/resources/members.dat";
         String paymentFilePath = "src/main/resources/payments.dat";
         String reminderFilePath = "src/main/resources/reminders.dat";
         String paymentRatesFilePath = "src/main/resources/paymentRates.dat";
-        String teamsFilePath = "src/main/resources/teams.dat"; // Path for teams data
+        String teamsFilePath = "src/main/resources/teams.dat";
         String competitionResultsFilePath = "src/main/resources/competitionResults.dat";
         String staffFilePath = "src/main/resources/staff.dat";
         String trainingResultsFilePath = "src/main/resources/trainingResults.dat";
+        String authFilePath = "src/main/resources/users.dat";
 
 
         // Initialize the FileHandler for members, payments, reminders, and teams
-        FileHandler fileHandler = new FileHandler(memberFilePath, paymentFilePath, reminderFilePath, paymentRatesFilePath, teamsFilePath, competitionResultsFilePath, staffFilePath,trainingResultsFilePath);
+        FileHandler fileHandler = new FileHandler(memberFilePath,
+                paymentFilePath,
+                reminderFilePath,
+                paymentRatesFilePath,
+                teamsFilePath,
+                competitionResultsFilePath,
+                staffFilePath,
+                trainingResultsFilePath);
 
         // Initialize the repositories, passing the respective FileHandlers
         MemberRepository memberRepository = new MemberRepository(fileHandler);
@@ -36,6 +44,7 @@ public class Main {
         CompetitionResultRepository competitionResultRepository = new CompetitionResultRepository(fileHandler, competitionResultsFilePath);
         StaffRepository staffRepository = new StaffRepository(fileHandler);
         TrainingResultsRepository trainingResultsRepository = new TrainingResultsRepository(fileHandler,trainingResultsFilePath);
+        AuthRepository authRepository = new AuthRepository(authFilePath);
 
         // Load members, payments, and teams from the file
         memberRepository.reloadMembers(); // Load member data
@@ -44,41 +53,37 @@ public class Main {
         trainingResultsRepository.loadResults(memberRepository); // Load training result
 
 
-
-
-        // Initialize services for member, payment and competition results
+        // Initialize services
         MemberService memberService = new MemberService(memberRepository);
         PaymentService paymentService = new PaymentService(paymentRepository, fileHandler);
         CompetitionResultService competitionResultService = new CompetitionResultService(competitionResultRepository);
         TrainingResultsService trainingResultsService = new TrainingResultsService(trainingResultsRepository);
-
-        // Initialize TeamRepository
         TeamRepository teamRepository = new TeamRepository(fileHandler);
-        teamRepository.loadTeams(memberRepository, staffRepository);  // Pass MemberRepository til loadTeams
-
-        // Initialize TeamService with TeamRepository
+        teamRepository.loadTeams(memberRepository, staffRepository);
         TeamService teamService = new TeamService(teamRepository);
-
-        //initialize staff service.
         StaffService staffService = new StaffService(staffRepository);
+        AuthService authService = new AuthService(authRepository);
+
 
         // Instantiate the controllers
         MemberController memberController = new MemberController(memberService, memberRepository);
         TeamController teamController = new TeamController(teamService);  // Pass TeamService to TeamController
         StaffController staffController = new StaffController(staffService, staffRepository);
+        CompetitionResultController competitionResultController = new CompetitionResultController(competitionResultService);
+        TrainingResultsController trainingResultsController = new TrainingResultsController(trainingResultsService);
+        AdminController adminController = new AdminController(authService);
         PaymentController paymentController = new PaymentController(
                 paymentService,
                 memberRepository,
                 fileHandler,
                 paymentFilePath,
-                paymentRatesFilePath
+                paymentRatesFilePath,
+                adminController
         );
 
-        CompetitionResultController competitionResultController = new CompetitionResultController(competitionResultService);
-        TrainingResultsController trainingResultsController = new TrainingResultsController(trainingResultsService);
 
         // Instantiate the UserInterface, passing all controllers (including teamController)
-        UserInterface userInterface = new UserInterface(memberController, paymentController, teamController, competitionResultController, staffController,trainingResultsController);
+        UserInterface userInterface = new UserInterface(memberController, paymentController, teamController, competitionResultController, staffController,trainingResultsController, adminController);
 
 
         // Start the User Interface to handle interactions

@@ -1,30 +1,62 @@
 package swimclub.services;
 
-import swimclub.models.Staff;
+import swimclub.models.Role;
+import swimclub.models.User;
+import swimclub.repositories.AuthRepository;
+import swimclub.utilities.PasswordUtils;
 
-import javax.management.relation.Role;
-
+/**
+ * Service class for handling authentication and user management.
+ */
 public class AuthService {
-    private Staff loggedInUser; // Den bruger, der er logget ind
+    private final AuthRepository authRepository;
 
-    // Simpel login-metode
-    public boolean login(Staff staff) {
-        if (staff != null) {
-            this.loggedInUser = staff;
-            return true;
-        }
-        return false;
+    /**
+     * Constructor to initialize the AuthService.
+     *
+     * @param authRepository The repository for managing users.
+     */
+    public AuthService(AuthRepository authRepository) {
+        this.authRepository = authRepository;
     }
 
-    // Tjek adgangsrettigheder
-    public boolean hasAccess(Role requiredRole) {
-        if (loggedInUser == null) {
-            return false;
+    /**
+     * Authenticates a user based on username and password.
+     *
+     * @param username The username of the user.
+     * @param password The password of the user.
+     * @return The authenticated User object.
+     * @throws IllegalArgumentException if authentication fails.
+     */
+    public User authenticate(String username, String password) {
+        User user = authRepository.authenticate(username, password);
+        if (user == null) {
+            throw new IllegalArgumentException("Invalid username or password.");
         }
-        return loggedInUser.getRole() == requiredRole;
+        return user;
     }
 
-    public Staff getLoggedInUser() {
-        return loggedInUser;
+    /**
+     * Registers a new user.
+     *
+     * @param username The username for the new user.
+     * @param password The password for the new user.
+     * @param role     The role for the new user.
+     * @throws IllegalArgumentException if the username is already taken.
+     */
+    public void registerUser(String username, String password, Role role) {
+        if (authRepository.getUserByUsername(username) != null) {
+            throw new IllegalArgumentException("Username is already taken.");
+        }
+
+        // Generate a salt and hashed password
+        String salt = PasswordUtils.generateSalt();
+        String hashedPassword = PasswordUtils.hashPassword(password, salt);
+
+        // Pass all required arguments to the User constructor
+        User newUser = new User(username, hashedPassword, salt, role);
+
+        // Add the user to the repository
+        authRepository.addUser(newUser);
     }
 }

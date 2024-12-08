@@ -1,45 +1,47 @@
 package swimclub.controllers;
 
 import swimclub.models.Role;
+import swimclub.models.User;
+import swimclub.services.AuthService;
+import swimclub.utilities.Validator;
 
-/**
- * Controller class for handling administrative actions and role-based validation.
- */
 public class AdminController {
+    private final AuthService authService;
 
-    private Role currentRole;
-
-    /**
-     * Sets the current role for the logged-in user.
-     * This role determines the permissions for the session.
-     *
-     * @param role The role of the current user.
-     */
-    public void setRole(Role role) {
-        this.currentRole = role;
+    public AdminController(AuthService authService) {
+        this.authService = authService;
     }
 
-    /**
-     * Gets the current role for the logged-in user.
-     *
-     * @return The current role.
-     */
-    public Role getRole() {
-        return currentRole;
-    }
-
-    /**
-     * Validates if the current role is allowed to perform a specific action.
-     * Throws a SecurityException if the role is unauthorized.
-     *
-     * @param allowedRoles The roles allowed to perform the action.
-     */
-    public void validateRole(Role... allowedRoles) {
-        for (Role allowedRole : allowedRoles) {
-            if (currentRole == allowedRole) {
-                return; // Authorized
-            }
+    // Method to login
+    public User login(String username, String password) {
+        User user = authService.authenticate(username, password);
+        if (user == null) {
+            throw new IllegalArgumentException("Invalid username or password.");
         }
-        throw new SecurityException("You do not have permission to perform this action.");
+        return user;
+    }
+
+    // Register a new user
+    public void register(String username, String password, Role role) {
+        Validator.validateUsername(username); // Validate username
+        Validator.validatePassword(password); // Validate password
+        Validator.validateRole(role); // Validate role
+
+        authService.registerUser(username, password, role);
+    }
+
+    // Method to add a new user (only if logged-in user is an Admin)
+    public void addUser(String loggedInUsername, String loggedInPassword, String username, String password, Role role) {
+        User adminUser = authService.authenticate(loggedInUsername, loggedInPassword);  // Ensure admin is authenticated
+        if (adminUser == null || !adminUser.getRole().equals(Role.CHAIRMAN)) {
+            throw new IllegalArgumentException("Only an Admin can add users.");
+        }
+
+        // Admin authenticated, proceed to add user
+        Validator.validateUsername(username); // Validate username
+        Validator.validatePassword(password); // Validate password
+        Validator.validateRole(role); // Validate role
+
+        authService.registerUser(username, password, role);
     }
 }

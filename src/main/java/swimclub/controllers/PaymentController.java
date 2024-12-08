@@ -26,9 +26,10 @@ public class PaymentController {
      * @param memberRepository   The repository for accessing member data.
      * @param paymentFileHandler The file handler for payments.
      * @param paymentFilePath    Path to the payment file.
+     * @param adminController
      */
     public PaymentController(PaymentService paymentService, MemberRepository memberRepository,
-                             FileHandler paymentFileHandler, String paymentFilePath, String paymentRateFilesPath) {
+                             FileHandler paymentFileHandler, String paymentFilePath, String paymentRateFilesPath, AdminController adminController) {
         this.paymentService = paymentService;
         this.memberRepository = memberRepository;
         this.paymentFileHandler = paymentFileHandler;
