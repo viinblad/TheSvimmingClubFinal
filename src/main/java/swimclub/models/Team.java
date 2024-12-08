@@ -19,10 +19,11 @@ public class Team {
      * @param teamName The name of the team.
      * @param teamType The type of the team.
      */
-    public Team(String teamName, TeamType teamType) {
+    public Team(String teamName, TeamType teamType, Coach coach) {
         this.teamName = teamName;
         this.teamType = teamType;
         this.members = new ArrayList<>();
+        this.coach = coach;
     }
 
     /**

@@ -11,7 +11,7 @@ public class MemberController {
     private final MemberService memberService;
     private final MemberRepository memberRepository;
 
-    // Constructor to initialize the service and repository
+    // === CONSTRUCTOR ===
     /**
      * Initializes the MemberController with the provided service and repository.
      *
@@ -23,6 +23,7 @@ public class MemberController {
         this.memberRepository = memberRepository;
     }
 
+    // === MEMBER REGISTRATION ===
     /**
      * Registers a new member after validating the input.
      * This method also assigns the next available member ID, parses the membership type and activity type,
@@ -68,10 +69,10 @@ public class MemberController {
             Member newMember;
             if (age > 18) {
                 newMember = new SeniorMember(memberIdString, name, email, city, street, region, zipcode, type,
-                        membershipStatus, activity.toActivityType(), paymentStatus, age, phoneNumber);
+                        membershipStatus, activity.toActivityType(), paymentStatus, age, phoneNumber, null);
             } else {
                 newMember = new JuniorMember(memberIdString, name, email, city, street, region, zipcode, type,
-                        membershipStatus, activity.toActivityType(), paymentStatus, age, phoneNumber);
+                        membershipStatus, activity.toActivityType(), paymentStatus, age, phoneNumber, null);
             }
 
             // Save the validated member using the MemberService
@@ -88,6 +89,7 @@ public class MemberController {
         return returnMember;
     }
 
+    // === MEMBER RETRIEVAL ===
     /**
      * Finds a member by ID.
      *
@@ -98,6 +100,7 @@ public class MemberController {
         return memberRepository.findById(memberId); // Use repository to find the member by ID
     }
 
+    // === MEMBER UPDATE ===
     /**
      * Updates an existing member after validating the input.
      * This method also parses and validates the updated member's details.
@@ -164,7 +167,7 @@ public class MemberController {
         }
     }
 
-
+    // === MEMBER DELETION ===
     /**
      * Deletes a member by ID.
      * This method removes the member from both the repository and the service.
@@ -189,25 +192,48 @@ public class MemberController {
         return true;
     }
 
+    // === VIEW MEMBERS ===
     /**
      * View all members stored in the repository.
      * This method prints the details of all registered members.
      */
     public void viewAllMembers() {
+        // Retrieve all members from the memberRepository
         List<Member> allMembers = memberRepository.findAll();
+
+        // Check if the list of members is empty
         if (allMembers.isEmpty()) {
+            // Print a message if no members are registered
             System.out.println("\n--- NO REGISTERED MEMBERS YET ---");
         } else {
+            // Print a header for the list of all members
             System.out.println("\n--- All Registered Members ---");
-            allMembers.forEach(member ->
-                    System.out.println("ID: " + member.getMemberId() + ", Name: " + member.getName() +
-                            ", Membership: " + member.getMembershipDescription() +
-                            ", Status: " + member.getMembershipStatus() +
-                            ", Activity: " + member.getActivityType() +
-                            ", Payment: " + member.getPaymentStatus()));
+            System.out.println("---------------------------------------------------------------");
+
+            // Iterate over all members and print their details
+            for (Member member : allMembers) {
+                // Retrieve team name
+                String teamName = member.getTeamName();
+
+                // If teamName is null or empty string, set it to "No team"
+                if (teamName == null || teamName.trim().isEmpty()) {
+                    teamName = "No team";  // If null or empty, set to "No team"
+                }
+
+                // Print the member's details
+                System.out.println("ID: " + member.getMemberId());
+                System.out.println("Name: " + member.getName());
+                System.out.println("Membership: " + member.getMembershipDescription());
+                System.out.println("Status: " + member.getMembershipStatus());
+                System.out.println("Activity: " + member.getActivityType());
+                System.out.println("Payment: " + member.getPaymentStatus());
+                System.out.println("Team: " + teamName);  // This will print "No team" if there's no team
+                System.out.println("---------------------------------------------------------------");
+            }
         }
     }
 
+    // === MEMBER SEARCH ===
     /**
      * Searches for members by ID, name, or phone number.
      * This method delegates the search functionality to the service layer.
@@ -218,6 +244,8 @@ public class MemberController {
     public List<Member> searchMembers(String query) {
         return memberService.searchMembers(query);
     }
+
+    // === AGE PARSING ===
     /**
      * Safely parses the age from a string.
      *
@@ -237,4 +265,32 @@ public class MemberController {
             throw new IllegalArgumentException("Invalid age input. Please enter a valid number.");
         }
     }
-}
+
+    /**
+     * Associates a team with a member by setting the team name.
+     *
+     * @param member   The member to associate with a team.
+     * @param teamName The name of the team to assign to the member.
+     */
+    public void addTeamToMember(Member member, String teamName) {
+
+        // Set the team name for the given member
+        member.setTeamName(teamName);
+
+        // Save the updated member data to the repository
+        memberRepository.saveMembers();
+    }
+
+    /**
+     * Removes the association of a team from a member by setting the team name to null.
+     *
+     * @param member The member whose team association is to be removed.
+     */
+    public void removeTeamFromMember(Member member) {
+        // Remove the team association by setting the team name to null
+        member.setTeamName(null);
+
+        // Save the updated member data to the repository
+        memberRepository.saveMembers();
+    }
+ }

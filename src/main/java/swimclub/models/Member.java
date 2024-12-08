@@ -18,101 +18,78 @@ public abstract class Member {
     private MembershipType membershipType; // Membership type (e.g., Competitive Junior)
     private MembershipStatus membershipStatus; // Membership status (active/passive)
     private PaymentStatus paymentStatus; // Payment status
-    private ActivityType activityType;   // Members form of activity
+    private ActivityType activityType;   // Member's form of activity
     private int age;                     // Age of the member
     private int phoneNumber;             // Phone number of the member
     private List<Payment> payments = new ArrayList<>(); // List of all payments made by the member
-    private Team team; // Reference to the team this member belongs to
+    private String teamName;                   // Reference to the team this member belongs to
 
-
+    // -----------------------------------------------------------------------------------------------------
+    // Constructor
+    // -----------------------------------------------------------------------------------------------------
     /**
      * Constructor for initializing a Member object.
      */
     public Member(String memberId, String name, String email, String city, String street,
                   String region, int zipcode, MembershipType membershipType,
-                  MembershipStatus membershipStatus,ActivityType activityType, PaymentStatus paymentStatus,
-                  int age, int phoneNumber) {
+                  MembershipStatus membershipStatus, ActivityType activityType, PaymentStatus paymentStatus,
+                  int age, int phoneNumber, String teamName) {
         this.memberId = Integer.parseInt(memberId);
         this.name = name;
         this.email = email;
         this.city = city;
         this.street = street;
         this.region = region;
-        this.zipcode =  zipcode;
+        this.zipcode = zipcode;
         this.membershipType = membershipType;
         this.membershipStatus = membershipStatus;
         this.activityType = activityType;
         this.paymentStatus = paymentStatus;
         this.age = age;
         this.phoneNumber = phoneNumber;
+
+        // Initialize teamName to "no team" if not provided
+        this.teamName = (teamName != null && !teamName.trim().isEmpty()) ? teamName : "no team";
     }
 
     // -----------------------------------------------------------------------------------------------------
-    // Get Methods
+    // Getter Methods
     // -----------------------------------------------------------------------------------------------------
 
-    /**
-     * @return The unique ID of the member.
-     */
     public int getMemberId() {
-        return this.memberId;
+        return memberId;
     }
 
-
-
-    /**
-     * @return The full name of the member.
-     */
     public String getName() {
-        return this.name;
+        return name;
     }
 
-    /**
-     * @return The email address of the member.
-     */
     public String getEmail() {
-        return this.email;
+        return email;
     }
 
-    /**
-     *
-     * @return the city of the member
-     */
     public String getCity() {
-        return this.city;
+        return city;
     }
-    /**
-     *
-     * @return the street of the member
-     */
+
     public String getStreet() {
-        return this.street;
+        return street;
     }
-    /**
-     *
-     * @return the region of the member
-     */
+
     public String getRegion() {
-        return this.region;
+        return region;
     }
 
-    /**
-     * @return The zip code of the member.
-     */
     public int getZipcode() {
-        return this.zipcode;
+        return zipcode;
     }
 
-    /**
-     * @return The membership type of the member as a descriptive string.
-     */
     public MembershipType getMembershipType() {
-        return this.membershipType;
+        return membershipType;
     }
-
 
     public MembershipStatus getMembershipStatus() {
-        return this.membershipStatus;
+        return membershipStatus;
     }
 
     public ActivityType getActivityType() {
@@ -120,113 +97,63 @@ public abstract class Member {
     }
 
     public PaymentStatus getPaymentStatus() {
-        return this.paymentStatus;
+        return paymentStatus;
     }
 
-
-    /**
-     * @return The age of the member.
-     */
     public int getAge() {
-        return this.age;
+        return age;
     }
 
-    /**
-     * @return The phone number of the member.
-     */
     public int getPhoneNumber() {
-        return this.phoneNumber;
+        return phoneNumber;
     }
 
-    /**
-     * Gets the team the member belongs to.
-     *
-     * @return The team or null if not assigned.
-     */
-    public Team getTeam() {
-        return team;
+    public String getTeamName() {
+        return this.teamName;
     }
-
 
     public List<Payment> getPayments() {
-        return new ArrayList<>(this.payments); // Return a copy to avoid external modification
+        return new ArrayList<>(payments); // Return a copy to avoid external modification
     }
 
     // -----------------------------------------------------------------------------------------------------
-    // Set Methods
+    // Setter Methods
     // -----------------------------------------------------------------------------------------------------
-    /**
-     * @param memberId  The unique ID of the member.
-     */
+
     public void setMemberId(int memberId) {
         this.memberId = memberId;
     }
 
-    /**
-     * Updates the full name of the member.
-     *
-     * @param name The new name of the member.
-     */
     public void setName(String name) {
         this.name = name;
     }
 
-    /**
-     * Updates the email address of the member.
-     *
-     * @param email The new email address of the member.
-     */
     public void setEmail(String email) {
         this.email = email;
     }
-    /**
-     * Updates the street of the member.
-     *
-     * @param city The new address of the member
-     */
+
     public void setCity(String city) {
         this.city = city;
     }
 
-
-    /**
-     * Updates the street of the member.
-     *
-     * @param street The new address of the member
-     */
     public void setStreet(String street) {
         this.street = street;
     }
-    /**
-     * Updates the street of the member.
-     *
-     * @param region The new address of the member
-     */
+
     public void setRegion(String region) {
         this.region = region;
     }
 
-    /**
-     * Updates the age of the member.
-     *
-     * @param zipcode The new age of the member.
-     */
     public void setZipcode(int zipcode) {
         this.zipcode = zipcode;
     }
 
-    /**
-     * Updates the membership type of the member.
-     *
-     * @param membershipType The new membership type of the member.
-     */
     public void setMembershipType(MembershipType membershipType) {
         this.membershipType = membershipType;
     }
 
     public void setMembershipStatus(MembershipStatus membershipStatus) {
         this.membershipStatus = membershipStatus;
-
     }
 
     public void setActivityType(ActivityType activityType) {
@@ -237,32 +164,16 @@ public abstract class Member {
         this.paymentStatus = paymentStatus;
     }
 
-
-
-    /**
-     * Updates the age of the member.
-     *
-     * @param age The new age of the member.
-     */
     public void setAge(int age) {
         this.age = age;
     }
 
-    /**
-     * Updates the phone number of the member.
-     *
-     * @param phoneNumber The new phone number of the member.
-     */
     public void setPhoneNumber(int phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
-    /**
-     * Sets the team for the member.
-     *
-     * @param team The team to assign.
-     */
-    public void setTeam(Team team) {
-        this.team = team;
+
+    public void setTeamName (String teamName) {
+        this.teamName = teamName;
     }
 
     // -----------------------------------------------------------------------------------------------------
@@ -271,15 +182,15 @@ public abstract class Member {
 
     /**
      * Adds a payment to the member's payment list.
+     * Updates the payment status automatically.
      */
     public void addPayment(Payment payment) {
-        this.payments.add(payment);
-        updatePaymentStatus(); // Update the overall payment status based on the new payment
+        payments.add(payment);
+        updatePaymentStatus(); // Update the payment status based on the current payments
     }
 
     /**
      * Calculates the total amount paid by the member.
-     *
      * @return The total amount paid.
      */
     public double calculateTotalPaid() {
@@ -290,15 +201,18 @@ public abstract class Member {
     }
 
     /**
-     * Updates the overall payment status of the member based on individual payments.
+     * Updates the overall payment status of the member.
+     * If any payment is pending, the status is set to PENDING.
+     * If all payments are complete, the status is set to COMPLETE.
+     * Otherwise, the status is set to FAILED.
      */
     private void updatePaymentStatus() {
         if (payments.stream().anyMatch(payment -> payment.getPaymentStatus() == PaymentStatus.PENDING)) {
-            this.paymentStatus = PaymentStatus.PENDING;
+            paymentStatus = PaymentStatus.PENDING;
         } else if (payments.stream().allMatch(payment -> payment.getPaymentStatus() == PaymentStatus.COMPLETE)) {
-            this.paymentStatus = PaymentStatus.COMPLETE;
+            paymentStatus = PaymentStatus.COMPLETE;
         } else {
-            this.paymentStatus = PaymentStatus.FAILED;
+            paymentStatus = PaymentStatus.FAILED;
         }
     }
 
@@ -308,7 +222,6 @@ public abstract class Member {
 
     /**
      * Abstract method to be implemented by subclasses to provide specific membership descriptions.
-     *
      * @return A string describing the member's type and attributes.
      */
     public abstract String getMembershipDescription();

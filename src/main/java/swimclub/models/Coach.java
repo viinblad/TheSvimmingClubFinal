@@ -53,9 +53,7 @@ public class Coach extends Staff {
      *
      * @return The name of the coach
      */
-    public String getName() {
-        return super.getName();
-    }
+
 
     /**
      * Gets the email address of the coach.
