@@ -92,6 +92,7 @@ public class FileHandler {
         }
         return members;
     }
+
     /**
      * Deletes a member from the file based on provided memberID.
      *
@@ -676,9 +677,11 @@ public class FileHandler {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
             for (CompetitionResults result : results) {
                 writer.write(result.getMember().getMemberId() + ";" +
-                        result.getEvent() + ";" +
-                        result.getPlacement() + ";" +
-                        result.getTime());
+                            result.getActivityType() + ";" +
+                            result.getEvent() + ";" +
+                            result.getPlacement() + ";" +
+                            result.getDate() + ";" +
+                            result.getTime());
                 writer.newLine();
             }
         } catch (IOException e) {

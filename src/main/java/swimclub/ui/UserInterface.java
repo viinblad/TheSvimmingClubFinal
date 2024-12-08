@@ -9,6 +9,10 @@ import swimclub.controllers.*;
 import swimclub.models.*;
 import swimclub.utilities.Validator;
 
+import java.time.LocalDate;
+import java.time.Year;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Locale;
@@ -1036,27 +1040,38 @@ public class UserInterface {
             }
         }
 
-        String date;
+        System.out.println("Enter date (DD-MM-YYYY): ");
+        LocalDate now = LocalDate.now();
+        LocalDate competitionDate;
+
         while (true) {
-            System.out.println("Enter date (YYYY-MM-DD): ");
-            date = scanner.nextLine().trim();
+            String dateInput = scanner.nextLine().trim();
+
             try {
-                Validator.validateDate(date);
-                break;
-            } catch (IllegalArgumentException e) {
-                System.out.println(e.getMessage());
+                // Parse the input using the DateTimeFormatter
+                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+                competitionDate = LocalDate.parse(dateInput, dateTimeFormatter);
+
+                // Check if the date is not in the future
+                if (!competitionDate.isAfter(now)) {
+                    break; // Exit the loop if the date is valid and not in the future
+                } else {
+                    System.out.println("The date cannot be in the future. Please enter a valid date in DD-MM-YYYY format.");
+                }
+            } catch (DateTimeParseException e) {
+                System.out.println("Invalid date format or nonexistent date. Please enter a valid date in DD-MM-YYYY format.");
             }
         }
 
         MembershipLevel level = member.getAge() < 18 ? MembershipLevel.JUNIOR : MembershipLevel.SENIOR;
 
         try {
-            competitionResultController.addCompetitionResult(member, eventName, placement, time, date, level, activityType);
+            competitionResultController.addCompetitionResult(member, eventName, placement, time, competitionDate.toString(), level, activityType);
             System.out.println("Competition result added successfully.");
         } catch (Exception e) {
             System.out.println("Error adding competition result: " + e.getMessage());
         }
-    }
+}
 
 
 
@@ -1197,15 +1212,35 @@ public class UserInterface {
 
         //Consume next line
         scanner.nextLine();
+        System.out.println("Enter date (DD-MM-YYYY): ");
+        LocalDate now = LocalDate.now();
+        LocalDate trainingDate;
 
-        System.out.print("Enter date of training (dd-MM-yyyy):");
-        String date = scanner.nextLine();
+        while (true) {
+            String dateInput = scanner.nextLine().trim();
+
+            try {
+                // Parse the input using the DateTimeFormatter
+                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+                trainingDate = LocalDate.parse(dateInput, dateTimeFormatter);
+
+                // Check if the date is not in the future
+                if (!trainingDate.isAfter(now)) {
+                    break; // Exit the loop if the date is valid and not in the future
+                } else {
+                    System.out.println("The date cannot be in the future. Please enter a valid date in DD-MM-YYYY format.");
+                }
+            } catch (DateTimeParseException e) {
+                System.out.println("Invalid date format or nonexistent date. Please enter a valid date in DD-MM-YYYY format.");
+            }
+        }
+
 
         try {
-            trainingResultsController.addTrainingResults(member, activityType, length, time, date, level);
-            System.out.println("Training results succesfully added.");
+            trainingResultsController.addTrainingResults(member, activityType, length, time, trainingDate.toString(), level);
+            System.out.println("Training result added successfully.");
         } catch (Exception e) {
-            System.out.println("Error adding training result." + e.getMessage());
+            System.out.println("Error adding training result: " + e.getMessage());
         }
     }
 
@@ -1219,5 +1254,33 @@ public class UserInterface {
                 System.out.println(result);
             }
         }
+    }
+    /**
+     * Manages training results (add, view, etc.).
+     */
+    private void manageTrainingResults() {
+        int trainingResultsOption;
+        do {
+            System.out.println("\n--- Training Results ---");
+            System.out.println("1. Add training results");
+            System.out.println("2. View training results for member");
+            System.out.println("3. View all training results");
+            System.out.println("4. Back to Main Menu");
+            System.out.print("Please choose an option (1-4): ");
+
+            try {
+                trainingResultsOption = Integer.parseInt(scanner.nextLine());
+                switch (trainingResultsOption) {
+                    case 1 -> addTrainingResults(); // Add training results to member
+                    case 2 -> viewMemberTrainingResults(); // View results for a specific member
+                    case 3 -> viewAllTrainingResults(); // View all training results
+                    case 4 -> System.out.println("Returning to Main Menu..."); // Exit submenu
+                    default -> System.out.println("Invalid option. Please choose a number between 1 and 4.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a number between 1 and 4.");
+                trainingResultsOption = -1;
+            }
+        } while (trainingResultsOption != 4); // Exit loop when option 4 is selected
     }
 }
