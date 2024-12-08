@@ -7,6 +7,7 @@ import swimclub.controllers.StaffController;
 import swimclub.controllers.TeamController;
 import swimclub.controllers.*;
 import swimclub.models.*;
+import swimclub.utilities.Validator;
 
 import java.util.InputMismatchException;
 import java.util.List;
@@ -960,10 +961,24 @@ public class UserInterface {
     private void addCompetitionResult() {
         System.out.println("\n--- Add Competition Result ---");
 
-        System.out.print("Enter Member ID: ");
-        int memberId = Integer.parseInt(scanner.nextLine());
-        Member member = memberController.findMemberById(memberId);
+        int memberId;
+        while (true) {
+            try {
+                System.out.print("Enter Member ID: ");
+                String input = scanner.nextLine().trim();
+                if (input.isEmpty()) {
+                    throw new IllegalArgumentException("Member ID cannot be empty.");
+                }
+                memberId = Integer.parseInt(input);
+                break;
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid Member ID. Please enter a numeric value.");
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
+            }
+        }
 
+        Member member = memberController.findMemberById(memberId);
         if (member == null) {
             System.out.println("No member found with the given ID.");
             return;
@@ -973,10 +988,11 @@ public class UserInterface {
         while (true) {
             System.out.println("Enter event name (cannot be empty): ");
             eventName = scanner.nextLine().trim();
-            if (!eventName.isEmpty()) {
+            try {
+                Validator.validateEventName(eventName);
                 break;
-            } else {
-                System.out.println("Invalid event name. Please enter a non-empty value.");
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
             }
         }
 
@@ -994,28 +1010,43 @@ public class UserInterface {
 
         int placement;
         while (true) {
-            System.out.println("Enter placement (must be greater than 0): ");
-            placement = Integer.parseInt(scanner.nextLine());
-            if (placement > 0) {
+            try {
+                System.out.println("Enter placement (must be greater than 0): ");
+                placement = Integer.parseInt(scanner.nextLine().trim());
+                Validator.validatePlacement(placement);
                 break;
-            } else {
-                System.out.println("Invalid placement. Please enter a value greater than 0.");
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid placement. Please enter a numeric value.");
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
             }
         }
 
         double time;
         while (true) {
-            System.out.println("Enter time (in seconds, must be greater than 0): ");
-            time = Double.parseDouble(scanner.nextLine());
-            if (time > 0) {
+            try {
+                System.out.println("Enter time (in seconds, must be greater than 0): ");
+                time = Double.parseDouble(scanner.nextLine().trim());
+                Validator.validateTime(time);
                 break;
-            } else {
-                System.out.println("Invalid time. Please enter a value greater than 0.");
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid time. Please enter a numeric value.");
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
             }
         }
 
-        System.out.println("Enter date (YYYY-MM-DD): ");
-        String date = scanner.nextLine().trim();
+        String date;
+        while (true) {
+            System.out.println("Enter date (YYYY-MM-DD): ");
+            date = scanner.nextLine().trim();
+            try {
+                Validator.validateDate(date);
+                break;
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
+            }
+        }
 
         MembershipLevel level = member.getAge() < 18 ? MembershipLevel.JUNIOR : MembershipLevel.SENIOR;
 
@@ -1026,6 +1057,8 @@ public class UserInterface {
             System.out.println("Error adding competition result: " + e.getMessage());
         }
     }
+
+
 
     private void viewAllCompetitionResults() {
         System.out.println("--- All Competition Results ---");

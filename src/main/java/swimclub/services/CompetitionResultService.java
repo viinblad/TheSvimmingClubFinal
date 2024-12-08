@@ -5,6 +5,7 @@ import swimclub.models.CompetitionResults;
 import swimclub.models.Member;
 import swimclub.models.MembershipLevel;
 import swimclub.repositories.CompetitionResultRepository;
+import swimclub.utilities.Validator;
 
 import java.util.List;
 
@@ -36,6 +37,14 @@ public class CompetitionResultService {
      */
 
     public void addResult(Member member, String event, ActivityType activityType, int placement, double time, String date, MembershipLevel level) {
+        Validator.validateMemberNotNull(member);
+        Validator.validateEventName(event);
+        Validator.validatePlacement(placement);
+        Validator.validateTime(time);
+        Validator.validateDate(date);
+        Validator.validateActivityType(activityType);
+
+
         if (event == null || event.isEmpty()) {
             throw new IllegalArgumentException("Event must not be empty.");
         }
@@ -49,15 +58,15 @@ public class CompetitionResultService {
             throw new IllegalArgumentException("Time must be positive.");
         }
         // Add the competition result to the repository
-        resultRepository.addResult(result);
         if (date == null || date.isEmpty()) {
             throw new IllegalArgumentException("Date must not be empty.");
         }
 
 
+
         // Create a new CompetitionResults object with the provided data
         CompetitionResults result = new CompetitionResults(member, level, event, placement, time, date, activityType);
-        resultsRepository.addResult(result);
+        resultRepository.addResult(result);
 
 
 

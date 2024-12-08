@@ -20,7 +20,13 @@ public class CompetitionResultRepository {
     }
 
     public void addResult(CompetitionResults result) {
-        Validator.validateCompetitionResult(result);
+        Validator.validateMemberNotNull(result.getMember());
+        Validator.validateEventName(result.getEvent());
+        Validator.validatePlacement(result.getPlacement());
+        Validator.validateTime(result.getTime());
+        Validator.validateDate(result.getDate());
+        Validator.validateActivityType(result.getActivityType());
+
         results.add(result);
         fileHandler.saveCompetitionResults(results, competitionResultsFilePath);
     }
