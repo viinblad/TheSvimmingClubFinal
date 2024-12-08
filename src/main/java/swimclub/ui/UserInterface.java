@@ -1137,6 +1137,7 @@ public class UserInterface {
         } while (competitionOption != 4); // Exit loop when option 4 is selected
     }
 
+
     private void manageTrainingResults() {
         int trainingResultsOption;
         do {
@@ -1258,29 +1259,5 @@ public class UserInterface {
     /**
      * Manages training results (add, view, etc.).
      */
-    private void manageTrainingResults() {
-        int trainingResultsOption;
-        do {
-            System.out.println("\n--- Training Results ---");
-            System.out.println("1. Add training results");
-            System.out.println("2. View training results for member");
-            System.out.println("3. View all training results");
-            System.out.println("4. Back to Main Menu");
-            System.out.print("Please choose an option (1-4): ");
 
-            try {
-                trainingResultsOption = Integer.parseInt(scanner.nextLine());
-                switch (trainingResultsOption) {
-                    case 1 -> addTrainingResults(); // Add training results to member
-                    case 2 -> viewMemberTrainingResults(); // View results for a specific member
-                    case 3 -> viewAllTrainingResults(); // View all training results
-                    case 4 -> System.out.println("Returning to Main Menu..."); // Exit submenu
-                    default -> System.out.println("Invalid option. Please choose a number between 1 and 4.");
-                }
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid input. Please enter a number between 1 and 4.");
-                trainingResultsOption = -1;
-            }
-        } while (trainingResultsOption != 4); // Exit loop when option 4 is selected
-    }
 }
