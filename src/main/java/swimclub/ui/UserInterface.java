@@ -60,7 +60,7 @@ public class UserInterface {
             printMenu();  // Display the main menu
             option = getUserInput();  // Get user's input option
             handleOption(option);  // Handle the option selected by the user
-        } while (option != 9); // Exit when the user selects option 8
+        } while (option != 10); // Exit when the user selects option 8
     }
 
     /**
@@ -1145,8 +1145,9 @@ public class UserInterface {
             System.out.println("1. Add training results");
             System.out.println("2. View training results for member");
             System.out.println("3. View all training results");
-            System.out.println("4. Back to Main Menu");
-            System.out.print("Please choose an option (1-3): ");
+            System.out.println("4. View top 5 results for each discipline");
+            System.out.println("5. Back to Main Menu");
+            System.out.print("Please choose an option (1-5): ");
 
             try {
                 trainingResultsOption = Integer.parseInt(scanner.nextLine());
@@ -1156,13 +1157,13 @@ public class UserInterface {
                     case 3 -> viewAllTrainingResults(); // View every training result
                     case 4 -> viewTop5Results();
                     case 5 -> System.out.println("Returning to Main Menu..."); // Exit submenu
-                    default -> System.out.println("Invalid option. Please choose a number between 1 and 4.");
+                    default -> System.out.println("Invalid option. Please choose a number between 1 and 5.");
                 }
             } catch (NumberFormatException e) {
-                System.out.println("Invalid input. Please enter a number between 1 and 3.");
+                System.out.println("Invalid input. Please enter a number between 1 and 5.");
                 trainingResultsOption = -1;
             }
-        } while (trainingResultsOption != 3); // Exit loop when option 4 is selected
+        } while (trainingResultsOption != 5); // Exit loop when option 4 is selected
 
     }
 
@@ -1257,9 +1258,9 @@ public class UserInterface {
 
 
         try {
-            trainingResultsController.addTrainingResults(member, activityType, length, time, trainingDate.toString(), level);
+            trainingResultsController.addTrainingResults(member, activityType, time, trainingDate.toString(), level);
             System.out.println("Training result added successfully.");
-            trainingResultsController.addTrainingResults(member, activityType, time, date, level);
+            trainingResultsController.addTrainingResults(member, activityType, time,trainingDate.toString(), level);
             System.out.println("Training results succesfully added.");
         } catch (Exception e) {
             System.out.println("Error adding training result." + e.getMessage());

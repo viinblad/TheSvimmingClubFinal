@@ -22,6 +22,7 @@ public abstract class Member {
     private int age;                     // Age of the member
     private int phoneNumber;             // Phone number of the member
     private List<Payment> payments = new ArrayList<>(); // List of all payments made by the member
+    private String teamName;
     private Team team; // Reference to the team this member belongs to
     private double time;
     private String date;
@@ -150,7 +151,7 @@ public abstract class Member {
      *
      * @return The team or null if not assigned.
      */
-    public Team getTeamName() {
+    public String getTeamName() {
         return this.teamName;
     }
 

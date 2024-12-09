@@ -14,6 +14,7 @@ import java.util.List;
 public class TrainingResultsController {
 
     private final TrainingResultsService trainingService;
+    private final TrainingResultsRepository trainingResultsRepository;
 
     // === CONSTRUCTOR ===
     /**
