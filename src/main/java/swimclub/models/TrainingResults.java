@@ -56,6 +56,6 @@ public class TrainingResults {
     }
 
     public String toString(){
-        return "Member:" + member.getName() + " Level:" + level + " Discipline:" + activityType + " Time:" + time + " Date:" + date;
+        return "MemberID:" + member.getMemberId() + " Name:" + member.getName() + " Level:" + level + " Discipline:" + activityType + " Time:" + time + " Date:" + date;
     }
 }

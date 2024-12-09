@@ -1018,6 +1018,10 @@ public class UserInterface {
         } while (competitionOption != 4); // Exit loop when option 4 is selected
     }
 
+    /**
+     * Manages the menu and user interaction for training results.
+     * Provides options to add, view, and list training results.
+     */
     private void manageTrainingResults() {
         int trainingResultsOption;
         do {
@@ -1025,17 +1029,17 @@ public class UserInterface {
             System.out.println("1. Add training results");
             System.out.println("2. View training results for member");
             System.out.println("3. View all training results");
-            System.out.println("4. View top 5 results for each disciplin");
+            System.out.println("4. View top 5 results for each discipline");
             System.out.println("5. Back to Main Menu");
             System.out.print("Please choose an option (1-3): ");
 
             try {
                 trainingResultsOption = Integer.parseInt(scanner.nextLine());
                 switch (trainingResultsOption) {
-                    case 1 -> addTrainingResults(); //Add trainingResults to member
-                    case 2 -> viewMemberTrainingResults(); // View results for specific member
-                    case 3 -> viewAllTrainingResults(); // View every training result
-                    case 4 -> viewTop5Results();
+                    case 1 -> addTrainingResults(); // Add training results to a member's record
+                    case 2 -> viewMemberTrainingResults(); // View specific member's results
+                    case 3 -> viewAllTrainingResults(); // View all training results
+                    case 4 -> viewTop5Results(); // View top 5 results per discipline
                     case 5 -> System.out.println("Returning to Main Menu..."); // Exit submenu
                     default -> System.out.println("Invalid option. Please choose a number between 1 and 4.");
                 }
@@ -1043,28 +1047,74 @@ public class UserInterface {
                 System.out.println("Invalid input. Please enter a number between 1 and 3.");
                 trainingResultsOption = -1;
             }
-        } while (trainingResultsOption != 3); // Exit loop when option 4 is selected
-
+        } while (trainingResultsOption != 5); // Exit loop when option 5 is selected
     }
 
+    /**
+     * Prompts the user to select a discipline and displays the top 5 training results for that discipline.
+     * Handles invalid inputs gracefully.
+     */
     private void viewTop5Results() {
-        int inputOptions;
-        System.out.println("\n---Results menu---");
-        System.out.println("1. top five results in CRAWL");
-        System.out.println("2. top five results in BACKCRAWL");
-        System.out.println("3. top five results in BREATHSTROKE");
-        System.out.println("4. top five results in BUTTERFLY");
+        int inputOptions = -1;  // Start with an invalid choice
+        while (inputOptions < 1 || inputOptions > 4) {  // Loop until valid input
+            System.out.println("\n---Results menu---");
+            System.out.println("1. Top five results in CRAWL");
+            System.out.println("2. Top five results in BACKCRAWL");
+            System.out.println("3. Top five results in BREASTSTROKE");
+            System.out.println("4. Top five results in BUTTERFLY");
+            System.out.print("Please choose an option (1-4): ");
 
-        inputOptions = Integer.parseInt(scanner.nextLine());
-
-        if (inputOptions == 1) {
-            trainingResultsController.top5Crawl();
-        } else if (inputOptions == 2) {
-            trainingResultsController.top5BackCrawl();
+            // Check if input is a valid number
+            try {
+                inputOptions = Integer.parseInt(scanner.nextLine());
+                if (inputOptions < 1 || inputOptions > 4) {
+                    System.out.println("Invalid choice. Please choose a number between 1 and 4.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a valid number between 1 and 4.");
+            }
         }
 
+        // Handle the selection and display the top 5 results for the chosen discipline
+        switch (inputOptions) {
+            case 1:
+                System.out.println("\n---TOP PERFORMANCES IN CRAWL---");
+                System.out.println("SENIOR:");
+                trainingResultsController.top5Crawl();
+                System.out.println("\nJUNIOR:");
+                trainingResultsController.top5CrawlJunior();
+                break;
+            case 2:
+                System.out.println("\n---TOP PERFORMANCES IN BACKCRAWL---");
+                System.out.println("SENIOR:");
+                trainingResultsController.top5BackCrawl();
+                System.out.println("\nJUNIOR:");
+                trainingResultsController.top5BackcrawlJunior();
+                break;
+            case 3:
+                System.out.println("\n---TOP PERFORMANCES IN BREASTSTROKE---");
+                System.out.println("SENIOR:");
+                trainingResultsController.top5Breaststroke();
+                System.out.println("\nJUNIOR:");
+                trainingResultsController.top5BreaststrokeJunior();
+                break;
+            case 4:
+                System.out.println("\n---TOP PERFORMANCES IN BUTTERFLY---");
+                System.out.println("SENIOR:");
+                trainingResultsController.top5Butterfly();
+                System.out.println("\nJUNIOR:");
+                trainingResultsController.top5ButterflyJunior();
+                break;
+            default:
+                break;
+        }
     }
 
+    /**
+     * Prompts the user to enter a member ID and displays the training results for that specific member.
+     *
+     * @throws NumberFormatException If the input for member ID is not a valid number.
+     */
     private void viewMemberTrainingResults() {
         System.out.println("---View Members training results---");
         System.out.print("Enter memberID:");
@@ -1083,10 +1133,13 @@ public class UserInterface {
                 System.out.println(result);
             }
         }
-
-
     }
 
+    /**
+     * Allows the user to add training results for a specific member.
+     *
+     * @throws IllegalArgumentException If the input data is invalid or incomplete.
+     */
     private void addTrainingResults() {
         System.out.println("\n---Add training results---");
         System.out.print("Enter memberId:");
@@ -1096,18 +1149,17 @@ public class UserInterface {
         MembershipLevel level = null;
 
         if (member == null) {
-            System.out.println("No member found wtih given ID.");
+            System.out.println("No member found with given ID.");
             return;
         }
 
         System.out.print("Enter discipline (Breaststroke, Crawl, Backcrawl or Butterfly):");
         String activityType = scanner.nextLine().trim();
 
-
         System.out.print("Enter time:");
         double time = scanner.nextDouble();
 
-        //Consume next line
+        // Consume next line to prevent issues with scanner
         scanner.nextLine();
 
         System.out.print("Enter date of training (dd-MM-yyyy):");
@@ -1115,12 +1167,15 @@ public class UserInterface {
 
         try {
             trainingResultsController.addTrainingResults(member, activityType, time, date, level);
-            System.out.println("Training results succesfully added.");
+            System.out.println("Training results successfully added.");
         } catch (Exception e) {
-            System.out.println("Error adding training result." + e.getMessage());
+            System.out.println("Error adding training result. " + e.getMessage());
         }
     }
 
+    /**
+     * Displays all training results in the system.
+     */
     public void viewAllTrainingResults() {
         List<TrainingResults> results = trainingResultsController.getAllResults();
 
@@ -1132,4 +1187,5 @@ public class UserInterface {
             }
         }
     }
+
 }
