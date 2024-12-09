@@ -113,4 +113,15 @@ public class StaffController {
     public void saveCoachList() {
         staffRepository.saveCoachList();
     }
+
+    /**
+     * sets teamname for the coach.
+     * @param teamName
+     * @param coach
+     */
+
+    public void setCoachTeamName(String teamName, Coach coach) {
+        coach.setTeamName(teamName);
+        staffRepository.saveCoachList();
+    }
 }

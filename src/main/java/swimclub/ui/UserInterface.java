@@ -533,7 +533,8 @@ public class UserInterface {
 
                 // Attempt to assign the coach to the team
                 try {
-                    teamController.assignTeamCoach(teamName, newCoach); // Assigning the new coach to the team
+                    teamController.assignTeamCoach(teamName, newCoach);// Assigning the new coach to the team
+                    staffController.setCoachTeamName(teamName, newCoach);
                     System.out.println("Coach '" + newCoach.getName() + "' assigned to team '" + teamName + "'.");
                 } catch (IllegalArgumentException e) {
                     System.out.println("Error assigning team coach: " + e.getMessage());
@@ -774,7 +775,8 @@ public class UserInterface {
         // Attempt to assign the coach to the team
         try {
             teamController.assignTeamCoach(teamName, coach); // assigning coach to team.
-            coach.setTeamName(teamName); // assigning team name to coach.
+            staffController.setCoachTeamName(teamName, coach);
+                    // assigning team name to coach.
             staffController.saveCoachList(); // Save updated coach data
             System.out.println("Coach '" + coach.getName() + "' assigned as coach of team '" + teamName + "'.");
         } catch (IllegalArgumentException e) {

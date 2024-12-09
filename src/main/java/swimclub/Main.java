@@ -48,12 +48,13 @@ public class Main {
 
         StaffRepository staffRepository = new StaffRepository(fileHandler);
 
-        TrainingResultsRepository trainingResultsRepository = new TrainingResultsRepository(fileHandler,trainingResultsFilePath);
+        TrainingResultsRepository trainingResultsRepository = new TrainingResultsRepository(fileHandler,trainingResultsFilePath, memberRepository);
         AuthRepository authRepository = new AuthRepository(authFilePath);
 
         // Load members, payments, and teams from the file
         memberRepository.reloadMembers(); // Load member data
-        paymentRepository.loadPayments(paymentFilePath, memberRepository); // Load payment data
+        paymentRepository.loadPayments(paymentFilePath, memberRepository); // Load payment data4
+
 
         competitionResultRepository.loadResults(memberRepository); // Load competition results
         trainingResultsRepository.loadResults(memberRepository); // Load training results
@@ -81,7 +82,7 @@ public class Main {
         TeamController teamController = new TeamController(teamService);  // Pass TeamService to TeamController
         StaffController staffController = new StaffController(staffService, staffRepository);
         CompetitionResultController competitionResultController = new CompetitionResultController(competitionResultService);
-        TrainingResultsController trainingResultsController = new TrainingResultsController(trainingResultsService);
+        TrainingResultsController trainingResultsController = new TrainingResultsController(trainingResultsService , trainingResultsRepository);
         AdminController adminController = new AdminController(authService);
         PaymentController paymentController = new PaymentController(
                 paymentService,

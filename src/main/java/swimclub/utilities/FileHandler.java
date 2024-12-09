@@ -595,7 +595,7 @@ public class FileHandler {
      * @return A formatted string containing the coach's details, separated by semicolons.
      */
     private String formatCoach(Coach coach) {
-        //save all necessary information in a single line, separated by semicolons
+        // Save all necessary information in a single line, separated by semicolons, including the role
         return coach.getCoachId() + ";" +
                 coach.getTeamName() + ";" +
                 coach.getName() + ";" +
@@ -605,7 +605,8 @@ public class FileHandler {
                 coach.getRegion() + ";" +
                 coach.getZipcode() + ";" +
                 coach.getAge() + ";" +
-                coach.getPhoneNumber();
+                coach.getPhoneNumber() + ";" +
+                coach.getRole(); // Append the role
     }
 
     /**
@@ -627,8 +628,8 @@ public class FileHandler {
             // Parse basic coach details
             int coachId = Integer.parseInt(parts[0]);       // Coach's unique ID
             String teamName = parts[1];                    // Team name associated with the coach
-            String email = parts[2];                       // Coach's email address
-            String name = parts[3];                        // Coach's name
+            String email = parts[3];                       // Coach's email address
+            String name = parts[2];                        // Coach's name
             String city = parts[4];                        // Coach's city
             String street = parts[5];                      // Coach's street address
             String region = parts[6];                      // Coach's region
@@ -724,7 +725,6 @@ public class FileHandler {
                 writer.write(result.getMember().getMemberId() + ";" +
                         result.getLevel() + ";" +
                         result.getActivityType() + ";" +
-                        result.getLength() + ";" +
                         result.getTime() + ";" +
                         result.getDate());
                 writer.newLine();
