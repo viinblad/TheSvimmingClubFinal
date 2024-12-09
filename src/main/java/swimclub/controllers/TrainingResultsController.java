@@ -8,16 +8,33 @@ import swimclub.utilities.CrawlComparator;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Controller class responsible for managing training results.
+ */
 public class TrainingResultsController {
+
     private final TrainingResultsService trainingService;
-    private final TrainingResultsRepository trainingResultsRepository;
 
-
+    // === CONSTRUCTOR ===
+    /**
+     * Constructor to initialize the TrainingResultsController with the necessary service.
+     *
+     * @param trainingService The service responsible for managing training results.
+     */
     public TrainingResultsController(TrainingResultsService trainingService, TrainingResultsRepository trainingResultsRepository) {
         this.trainingService = trainingService;
         this.trainingResultsRepository = trainingResultsRepository;
     }
-
+    // === ADD TRAINING RESULTS ===
+    /**
+     * Adds the training results for a member.
+     *
+     * @param member The member for whom the results are being added.
+     * @param activityType The type of activity the member completed.
+     * @param time The time it took for the activity (in seconds).
+     * @param date The date the activity took place.
+     * @param level The membership level of the member (Junior or Senior).
+     */
     public void addTrainingResults(Member member, String activityType, double time, String date, MembershipLevel level) {
         ActivityTypeData activity = ActivityTypeData.fromString(activityType);
 
@@ -48,11 +65,22 @@ public class TrainingResultsController {
         member.setTime(time);
         member.setDate(date);
     }
-
+    // === GET RESULTS BY MEMBER ===
+    /**
+     * Retrieves the training results for a specific member.
+     *
+     * @param member The member whose results are being fetched.
+     * @return A list of training results for the given member.
+     */
     public List<TrainingResults> getResultsByMember(Member member) {
         return trainingService.getResultsByMember(member);
     }
-
+    // === GET ALL TRAINING RESULTS ===
+    /**
+     * Retrieves all training results for all members.
+     *
+     * @return A list of all training results.
+     */
     public List<TrainingResults> getAllResults() {
         return trainingService.getAllResults();
     }

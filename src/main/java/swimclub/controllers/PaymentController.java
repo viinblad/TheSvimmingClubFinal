@@ -19,6 +19,7 @@ public class PaymentController {
     private final FileHandler paymentFileHandler; // FileHandler for payments
     private final String paymentFilePath; // Path to the payment file
 
+    // === CONSTRUCTOR ===
     /**
      * Constructor to initialize the PaymentController.
      *
@@ -35,6 +36,7 @@ public class PaymentController {
         this.paymentFilePath = paymentFilePath;
     }
 
+    // === PAYMENT CALCULATION ===
     /**
      * Calculates the membership fee for a specific member by ID.
      *
@@ -50,6 +52,7 @@ public class PaymentController {
         return paymentService.calculateMembershipFee(member);
     }
 
+    // === PAYMENT REGISTRATION ===
     /**
      * Registers a new payment for a member by entering member ID and payment amount.
      *
@@ -82,6 +85,7 @@ public class PaymentController {
         System.out.println("Payment of " + amount + " registered for Member ID: " + memberId);
     }
 
+    // === VIEW PAYMENTS ===
     /**
      * Displays all payments made by a specific member.
      *
@@ -98,6 +102,7 @@ public class PaymentController {
         paymentService.viewPaymentsForMember(memberId);
     }
 
+    // === GET PAID MEMBERS ===
     /**
      * Retrieves all members who have completed their payment.
      *
@@ -108,6 +113,7 @@ public class PaymentController {
         return paymentService.getMembersPaidList(members);
     }
 
+    // === GET MEMBERS BY PAYMENT STATUS ===
     /**
      * Retrieves a list of members whose payment status is either COMPLETE or PENDING.
      *
@@ -126,6 +132,7 @@ public class PaymentController {
         }
     }
 
+    // === VIEW PAYMENT SUMMARY ===
     /**
      * Retrieves and displays the payment summary.
      */
@@ -136,6 +143,7 @@ public class PaymentController {
         System.out.println(summary);  // Display the summary
     }
 
+    // === PAYMENT REMINDERS ===
     /**
      * Set a payment reminder for a member.
      *
@@ -179,7 +187,9 @@ public class PaymentController {
         System.out.println("All reminders cleared.");
     }
 
+    // === PAYMENT RATE SETTINGS ===
     /**
+     * Set the payment rates for junior and senior members.
      *
      * @param juniorRate - from the paymentService class
      * @param seniorRate - from the paymentService class
@@ -187,13 +197,14 @@ public class PaymentController {
     public void setPaymentRates(double juniorRate, double seniorRate) {
         paymentService.setJuniorRate(juniorRate);
         paymentService.setSeniorRate(seniorRate);
-}
+    }
 
     /**
+     * Get the current payment rates for junior and senior members.
      *
-     * @return paymentRates from payment service in a double array.
+     * @return Payment rates from the payment service in a double array.
      */
     public double[] getPaymentRates() {
         return paymentService.getPaymentRates();
-}
+    }
 }

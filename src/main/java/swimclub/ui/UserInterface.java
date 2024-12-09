@@ -414,29 +414,58 @@ public class UserInterface {
      * Adds a member to an existing team.
      */
     private void addMemberToTeam() {
+        // Display the list of teams and allow the user to pick a team
+        viewTeams();
         System.out.print("Enter Team Name: ");
-        String teamName = scanner.nextLine().trim();
+        String teamName = scanner.nextLine().trim();  // User input for team name
 
+        // Display the list of all members
+        memberController.viewAllMembers();
         System.out.print("Enter Member ID to Add: ");
+
+        // Initialize memberId and handle potential NumberFormatException
         int memberId;
         try {
-            memberId = Integer.parseInt(scanner.nextLine());
+            memberId = Integer.parseInt(scanner.nextLine());  // Parse the entered member ID
         } catch (NumberFormatException e) {
             System.out.println("Invalid Member ID. Please enter a valid number.");
             return;
         }
 
+        // Retrieve the member by ID from the memberController
         Member member = memberController.findMemberById(memberId);
         if (member == null) {
             System.out.println("Member not found.");
-            return;
+            return;  // If member is not found, exit the method
         }
 
-        try {
-            teamController.addMemberToTeam(teamName, member);
-            System.out.println("Member '" + member.getName() + "' added to team '" + teamName + "'.");
-        } catch (IllegalArgumentException e) {
-            System.out.println("Error adding member to team: " + e.getMessage());
+        // Debugging output: Check the current team name
+        System.out.println("Current team name of member " + member.getName() + ": " + member.getTeamName());
+
+        // Check if the member is already part of a team
+        // If the member's team is "no team" or null, they are unassigned
+        String memberTeamName = member.getTeamName();
+        if (memberTeamName == null || memberTeamName.trim().equalsIgnoreCase("no team")) {
+            // Proceed with adding the member to the team
+            Team team = teamController.findTeamByName(teamName);
+            if (team == null) {
+                System.out.println("Team '" + teamName + "' not found.");
+                return;  // If team doesn't exist, exit the method
+            }
+
+            try {
+                // Add member to the team
+                teamController.addMemberToTeam(teamName, member); // Team logic
+                memberController.addTeamToMember(member, teamName); // Member logic
+
+                // Debugging output: Check if the team was updated for the member
+                System.out.println("Member '" + member.getName() + "' has been assigned to team '" + teamName + "'.");
+            } catch (IllegalArgumentException e) {
+                System.out.println("Error adding member to team: " + e.getMessage());
+            }
+        } else {
+            // If the member is already part of a team, show the error message
+            System.out.println("Error: Member is already part of a team. Current team: " + member.getTeamName());
         }
     }
 
@@ -464,6 +493,7 @@ public class UserInterface {
 
         try {
             teamController.removeMemberFromTeam(teamName, member);
+            memberController.removeTeamFromMember(member);
             System.out.println("Member '" + member.getName() + "' removed from team '" + teamName + "'.");
         } catch (IllegalArgumentException e) {
             System.out.println("Error removing member from team: " + e.getMessage());
@@ -700,7 +730,7 @@ public class UserInterface {
                 // updates the payment rates.
                 paymentController.setPaymentRates(newJuniorPrice, newSeniorPrice);
 
-                // print outs the new updated payment rates.
+                // print-outs the new updated payment rates.
                 System.out.println("You have now updated the prices. The updated payment rates:");
                 System.out.println("Yearly junior-membership price: " + df.format(paymentController.getPaymentRates()[0]) + " DKK");
                 System.out.println("Yearly senior-membership price: " + df.format(paymentController.getPaymentRates()[1]) + " DKK");
@@ -927,6 +957,8 @@ public class UserInterface {
     }
 
 
+
+
     private void addCompetitionResult() {
         System.out.println("\n--- Add Competition Result ---");
 
@@ -992,6 +1024,8 @@ public class UserInterface {
     }
 
 
+
+
     private void manageCompetitions() {
         int competitionOption;
         do {
@@ -1025,13 +1059,12 @@ public class UserInterface {
             System.out.println("1. Add training results");
             System.out.println("2. View training results for member");
             System.out.println("3. View all training results");
-            System.out.println("4. View top 5 results for each disciplin");
-            System.out.println("5. Back to Main Menu");
+            System.out.println("4. Back to Main Menu");
             System.out.print("Please choose an option (1-3): ");
 
             try {
                 trainingResultsOption = Integer.parseInt(scanner.nextLine());
-                switch (trainingResultsOption) {
+                switch (trainingResultsOption){
                     case 1 -> addTrainingResults(); //Add trainingResults to member
                     case 2 -> viewMemberTrainingResults(); // View results for specific member
                     case 3 -> viewAllTrainingResults(); // View every training result
@@ -1103,6 +1136,10 @@ public class UserInterface {
         System.out.print("Enter discipline (Breaststroke, Crawl, Backcrawl or Butterfly):");
         String activityType = scanner.nextLine().trim();
 
+        System.out.print("Enter the total length swum during this training session (In meters):");
+        int length = scanner.nextInt();
+        //Consume line
+        scanner.nextLine();
 
         System.out.print("Enter time:");
         double time = scanner.nextDouble();
