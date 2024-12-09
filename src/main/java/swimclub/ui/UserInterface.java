@@ -7,7 +7,12 @@ import swimclub.controllers.StaffController;
 import swimclub.controllers.TeamController;
 import swimclub.controllers.*;
 import swimclub.models.*;
+import swimclub.utilities.Validator;
 
+import java.time.LocalDate;
+import java.time.Year;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Locale;
@@ -730,7 +735,7 @@ public class UserInterface {
                 // updates the payment rates.
                 paymentController.setPaymentRates(newJuniorPrice, newSeniorPrice);
 
-                // print-outs the new updated payment rates.
+                // print outs the new updated payment rates.
                 System.out.println("You have now updated the prices. The updated payment rates:");
                 System.out.println("Yearly junior-membership price: " + df.format(paymentController.getPaymentRates()[0]) + " DKK");
                 System.out.println("Yearly senior-membership price: " + df.format(paymentController.getPaymentRates()[1]) + " DKK");
@@ -957,13 +962,26 @@ public class UserInterface {
     }
 
 
-
-
     private void addCompetitionResult() {
         System.out.println("\n--- Add Competition Result ---");
 
-        System.out.print("Enter Member ID: ");
-        int memberId = Integer.parseInt(scanner.nextLine());
+        int memberId;
+        while (true) {
+            try {
+                System.out.print("Enter Member ID: ");
+                String input = scanner.nextLine().trim();
+                if (input.isEmpty()) {
+                    throw new IllegalArgumentException("Member ID cannot be empty.");
+                }
+                memberId = Integer.parseInt(input);
+                break;
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid Member ID. Please enter a numeric value.");
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+
         Member member = memberController.findMemberById(memberId);
 
         if (member == null) {
@@ -971,22 +989,92 @@ public class UserInterface {
             return;
         }
 
-        System.out.println("Enter event name: ");
-        String eventName = scanner.nextLine();
+        String eventName;
+        while (true) {
+            System.out.println("Enter event name (cannot be empty): ");
+            eventName = scanner.nextLine().trim();
+            try {
+                Validator.validateEventName(eventName);
+                break;
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
+            }
+        }
 
-        System.out.println("Enter placement: ");
-        int placement = Integer.parseInt(scanner.nextLine());
+        ActivityType activityType;
+        while (true) {
+            System.out.println("Enter activity type (Crawl, Butterfly, Breaststroke, Backcrawl): ");
+            String activityTypeInput = scanner.nextLine().trim().toUpperCase();
+            try {
+                activityType = ActivityType.valueOf(activityTypeInput);
+                break;
+            } catch (IllegalArgumentException e) {
+                System.out.println("Invalid activity type. Please enter one of the valid options.");
+            }
+        }
 
-        System.out.println("Enter time (in seconds): ");
-        double time = Double.parseDouble(scanner.nextLine());
+        int placement;
+        while (true) {
+            try {
+                System.out.println("Enter placement (must be greater than 0): ");
+                placement = Integer.parseInt(scanner.nextLine().trim());
+                Validator.validatePlacement(placement);
+                break;
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid placement. Please enter a numeric value.");
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+
+        double time;
+        while (true) {
+            try {
+                System.out.println("Enter time (in seconds, must be greater than 0): ");
+                time = Double.parseDouble(scanner.nextLine().trim());
+                Validator.validateTime(time);
+                break;
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid time. Please enter a numeric value.");
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+
+        System.out.println("Enter date (DD-MM-YYYY): ");
+        LocalDate now = LocalDate.now();
+        LocalDate competitionDate;
+
+        while (true) {
+            String dateInput = scanner.nextLine().trim();
+
+            try {
+                // Parse the input using the DateTimeFormatter
+                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+                competitionDate = LocalDate.parse(dateInput, dateTimeFormatter);
+
+                // Check if the date is not in the future
+                if (!competitionDate.isAfter(now)) {
+                    break; // Exit the loop if the date is valid and not in the future
+                } else {
+                    System.out.println("The date cannot be in the future. Please enter a valid date in DD-MM-YYYY format.");
+                }
+            } catch (DateTimeParseException e) {
+                System.out.println("Invalid date format or nonexistent date. Please enter a valid date in DD-MM-YYYY format.");
+            }
+        }
+
+        MembershipLevel level = member.getAge() < 18 ? MembershipLevel.JUNIOR : MembershipLevel.SENIOR;
 
         try {
-            competitionResultController.addResult(member, eventName, placement, time);
+            competitionResultController.addCompetitionResult(member, eventName, placement, time, competitionDate.toString(), level, activityType);
             System.out.println("Competition result added successfully.");
         } catch (Exception e) {
             System.out.println("Error adding competition result: " + e.getMessage());
         }
-    }
+}
+
+
 
     private void viewAllCompetitionResults() {
         System.out.println("--- All Competition Results ---");
@@ -1022,8 +1110,6 @@ public class UserInterface {
             }
         }
     }
-
-
 
 
     private void manageCompetitions() {
@@ -1146,11 +1232,33 @@ public class UserInterface {
 
         //Consume next line
         scanner.nextLine();
+        System.out.println("Enter date (DD-MM-YYYY): ");
+        LocalDate now = LocalDate.now();
+        LocalDate trainingDate;
 
-        System.out.print("Enter date of training (dd-MM-yyyy):");
-        String date = scanner.nextLine().trim();
+        while (true) {
+            String dateInput = scanner.nextLine().trim();
+
+            try {
+                // Parse the input using the DateTimeFormatter
+                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+                trainingDate = LocalDate.parse(dateInput, dateTimeFormatter);
+
+                // Check if the date is not in the future
+                if (!trainingDate.isAfter(now)) {
+                    break; // Exit the loop if the date is valid and not in the future
+                } else {
+                    System.out.println("The date cannot be in the future. Please enter a valid date in DD-MM-YYYY format.");
+                }
+            } catch (DateTimeParseException e) {
+                System.out.println("Invalid date format or nonexistent date. Please enter a valid date in DD-MM-YYYY format.");
+            }
+        }
+
 
         try {
+            trainingResultsController.addTrainingResults(member, activityType, length, time, trainingDate.toString(), level);
+            System.out.println("Training result added successfully.");
             trainingResultsController.addTrainingResults(member, activityType, time, date, level);
             System.out.println("Training results succesfully added.");
         } catch (Exception e) {

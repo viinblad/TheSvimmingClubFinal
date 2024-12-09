@@ -1,10 +1,12 @@
 package swimclub.services;
 
+import swimclub.models.ActivityType;
 import swimclub.models.CompetitionResults;
 import swimclub.models.Member;
+import swimclub.models.MembershipLevel;
 import swimclub.repositories.CompetitionResultRepository;
+import swimclub.utilities.Validator;
 
-import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -33,17 +35,42 @@ public class CompetitionResultService {
      * @param time     The time taken by the member to complete the event.
      * @throws IllegalArgumentException If member or event is null or empty.
      */
-    public void addResult(Member member, String event, int placement, double time) {
-        // Validate input parameters to ensure they are not null or empty
-        if (member == null || event == null || event.isEmpty()) {
-            throw new IllegalArgumentException("Member and event must not be null or empty.");
+
+    public void addResult(Member member, String event, ActivityType activityType, int placement, double time, String date, MembershipLevel level) {
+        Validator.validateMemberNotNull(member);
+        Validator.validateEventName(event);
+        Validator.validatePlacement(placement);
+        Validator.validateTime(time);
+        Validator.validateDate(date);
+        Validator.validateActivityType(activityType);
+
+
+        if (event == null || event.isEmpty()) {
+            throw new IllegalArgumentException("Event must not be empty.");
+        }
+        if (activityType == null) {
+            throw new IllegalArgumentException("Activity type must not be null.");
+        }
+        if (placement <= 0) {
+            throw new IllegalArgumentException("Placement must be greater than 0.");
+        }
+        if (time <= 0) {
+            throw new IllegalArgumentException("Time must be positive.");
+        }
+        // Add the competition result to the repository
+        if (date == null || date.isEmpty()) {
+            throw new IllegalArgumentException("Date must not be empty.");
         }
 
-        // Create a new CompetitionResults object with the provided data
-        CompetitionResults result = new CompetitionResults(member, event, placement, time);
 
-        // Add the competition result to the repository
+
+        // Create a new CompetitionResults object with the provided data
+        CompetitionResults result = new CompetitionResults(member, level, event, placement, time, date, activityType);
         resultRepository.addResult(result);
+
+
+
+
     }
 
     /**

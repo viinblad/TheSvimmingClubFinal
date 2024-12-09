@@ -92,6 +92,7 @@ public class FileHandler {
         }
         return members;
     }
+
     /**
      * Deletes a member from the file based on provided memberID.
      *
@@ -676,9 +677,11 @@ public class FileHandler {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
             for (CompetitionResults result : results) {
                 writer.write(result.getMember().getMemberId() + ";" +
-                        result.getEvent() + ";" +
-                        result.getPlacement() + ";" +
-                        result.getTime());
+                            result.getActivityType() + ";" +
+                            result.getEvent() + ";" +
+                            result.getPlacement() + ";" +
+                            result.getDate() + ";" +
+                            result.getTime());
                 writer.newLine();
             }
         } catch (IOException e) {
@@ -692,18 +695,24 @@ public class FileHandler {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split(";");
-                String memberIdStr = parts[0];
+
+                // Parse required data
+                int memberId = Integer.parseInt(parts[0]);
                 String event = parts[1];
-                int placement = Integer.parseInt(parts[2]);
-                double time = Double.parseDouble(parts[3]);
+                ActivityType activityType = ActivityType.valueOf(parts[2].toUpperCase()); // Assuming activity type is stored as a string
+                int placement = Integer.parseInt(parts[3]);
+                double time = Double.parseDouble(parts[4]);
+                String date = parts[5];
+                MembershipLevel level = MembershipLevel.valueOf(parts[6].toUpperCase()); // Assuming level is stored as a string
 
                 // Resolve the member from MemberRepository
-                Member member = memberRepository.findById(Integer.parseInt(memberIdStr));
+                Member member = memberRepository.findById(memberId);
                 if (member != null) {
-                    results.add(new CompetitionResults(member, event, placement, time));
+                    // Add competition result to the list
+                    results.add(new CompetitionResults(member, level, event, placement, time, date, activityType));
                 }
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             System.err.println("Error loading competition results: " + e.getMessage());
         }
         return results;
