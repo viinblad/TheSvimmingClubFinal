@@ -1172,7 +1172,7 @@ public class UserInterface {
         System.out.println("\n---Results menu---");
         System.out.println("1. top five results in CRAWL");
         System.out.println("2. top five results in BACKCRAWL");
-        System.out.println("3. top five results in BREATHSTROKE");
+        System.out.println("3. top five results in BREASTSTROKE");
         System.out.println("4. top five results in BUTTERFLY");
 
         inputOptions = Integer.parseInt(scanner.nextLine());
