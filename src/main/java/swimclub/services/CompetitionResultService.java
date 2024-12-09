@@ -45,22 +45,6 @@ public class CompetitionResultService {
         Validator.validateActivityType(activityType);
 
 
-        if (event == null || event.isEmpty()) {
-            throw new IllegalArgumentException("Event must not be empty.");
-        }
-        if (activityType == null) {
-            throw new IllegalArgumentException("Activity type must not be null.");
-        }
-        if (placement <= 0) {
-            throw new IllegalArgumentException("Placement must be greater than 0.");
-        }
-        if (time <= 0) {
-            throw new IllegalArgumentException("Time must be positive.");
-        }
-        // Add the competition result to the repository
-        if (date == null || date.isEmpty()) {
-            throw new IllegalArgumentException("Date must not be empty.");
-        }
 
 
 
