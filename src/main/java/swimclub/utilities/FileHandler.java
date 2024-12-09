@@ -1,8 +1,10 @@
 package swimclub.utilities;
 
+import swimclub.controllers.TeamController;
 import swimclub.models.*;
 import swimclub.repositories.MemberRepository;
 import swimclub.repositories.StaffRepository;
+import swimclub.repositories.TeamRepository;
 
 import java.io.*;
 import java.time.LocalDate;
@@ -77,6 +79,10 @@ public class FileHandler {
                 if (!line.trim().isEmpty()) {
                     Member member = parseMember(line);
                     if (member != null) {
+                        // Ensure the team name is not null or empty
+                        if (member.getTeamName() == null || member.getTeamName().isEmpty()) {
+                            member.setTeamName("No team");  // Set "No team" if it's missing
+                        }
                         members.add(member);
                     }
                 }
@@ -219,6 +225,10 @@ public class FileHandler {
     // ---------------------------
 
     private String formatMember(Member member) {
+        String teamName = (member.getTeamName() != null && !member.getTeamName().isEmpty())
+                ? member.getTeamName()
+                : "No team";  // If teamName is null or empty, use "No team"
+
         return member.getMemberId() + ";" +
                 member.getName() + ";" +
                 member.getEmail() + ";" +
@@ -231,13 +241,23 @@ public class FileHandler {
                 member.getMembershipType().getLevel() + " " +
                 member.getMembershipType().getCategory() + ";" +
                 member.getMembershipStatus() + ";" +
-                member.getActivityType() + ";" +  // Added ActivityType
-                member.getPaymentStatus();
+                member.getActivityType() + ";" +
+                member.getPaymentStatus() + ";" +
+                teamName;  // Use the teamName or "No team" if null/empty
     }
-
+   // String teamName, TeamType teamType, Coach coach
+    /**
+     * Parses a line of text into a Member object (Junior or Senior).
+     *
+     * @param line A semicolon-separated string representing member details.
+     * @return A Member object if parsing is successful; otherwise, null.
+     */
     private Member parseMember(String line) {
+        // Split the line into parts using semicolon as a delimiter
         String[] parts = line.split(";");
-        if (parts.length < 13) {  // Ensure the expected number of fields
+
+        // Validate that the line has at least 13 fields (excluding optional team name)
+        if (parts.length < 13) {
             System.err.println("Skipping invalid member data: " + line);
             return null;
         }
@@ -257,30 +277,40 @@ public class FileHandler {
             // Parse membership type (e.g., "SENIOR COMPETITIVE")
             String membershipDescription = parts[9];
             String[] membershipParts = membershipDescription.split(" ");
+
+            // Construct MembershipType from parsed values
             MembershipType membershipType = new MembershipType(
-                    MembershipCategory.valueOf(membershipParts[1].toUpperCase()),
-                    MembershipLevel.valueOf(membershipParts[0].toUpperCase())
+                    MembershipCategory.valueOf(membershipParts[1].toUpperCase()), // COMPETITIVE/RECREATIONAL
+                    MembershipLevel.valueOf(membershipParts[0].toUpperCase())    // JUNIOR/SENIOR
             );
 
-            // Parse membership status (e.g., ACTIVE)
+            // Parse membership status (ACTIVE/INACTIVE), activity type, and payment status
             MembershipStatus membershipStatus = MembershipStatus.valueOf(parts[10].toUpperCase());
             ActivityType activityType = ActivityType.valueOf(parts[11].toUpperCase());
             PaymentStatus paymentStatus = PaymentStatus.valueOf(parts[12].toUpperCase());
 
-            // Validate the data
+            // Extract team name, which can be null or empty
+            String teamName = (parts.length > 13 && !parts[13].trim().isEmpty()) ? parts[13].trim() : "No team";
+
+            // Validate the parsed data using a Validator utility
             Validator.validateMemberData(name, age, membershipDescription, email, city, street, region, zipcode,
                     phoneNumber, membershipStatus, activityType.toString(), paymentStatus);
 
-            // Create the correct subclass of Member based on age (Junior or Senior)
+            // Create the appropriate subclass of Member based on membership level (Junior/Senior)
             if (membershipType.getLevel() == MembershipLevel.JUNIOR) {
-                return new JuniorMember(String.valueOf(id), name, email, city, street, region, zipcode, membershipType,
-                        membershipStatus, activityType, paymentStatus, age, phoneNumber);
+                return new JuniorMember(
+                        String.valueOf(id), name, email, city, street, region, zipcode, membershipType,
+                        membershipStatus, activityType, paymentStatus, age, phoneNumber, teamName
+                );
             } else {
-                return new SeniorMember(String.valueOf(id), name, email, city, street, region, zipcode, membershipType,
-                        membershipStatus, activityType, paymentStatus, age, phoneNumber);
+                return new SeniorMember(
+                        String.valueOf(id), name, email, city, street, region, zipcode, membershipType,
+                        membershipStatus, activityType, paymentStatus, age, phoneNumber, teamName
+                );
             }
 
         } catch (Exception e) {
+            // Log an error if parsing fails and return null
             System.err.println("Error parsing member: " + line + " - " + e.getMessage());
             return null;
         }
@@ -314,7 +344,6 @@ public class FileHandler {
 
 
     /**
-     *
      * @return a double arrayList which can be used in paymentService to load juniorRate and seniorRate.
      */
     public double[] loadPaymentRates() {
@@ -365,6 +394,7 @@ public class FileHandler {
 
     /**
      * This method saves the juniorRate and seniorRate from paymentService class to paymentRates.dat document.
+     *
      * @param juniorRate - the price for how much a junior member has to pay.
      * @param seniorRate - the price for how much a senior member has to pay.
      */
@@ -395,15 +425,26 @@ public class FileHandler {
                 StringBuilder sb = new StringBuilder();
                 sb.append(team.getTeamName()).append(";") // Team name
                         .append(team.getTeamType().name()).append(";"); // Team type
+
+                // Append coach ID (or "null" if no coach)
                 if (team.getTeamCoach() != null) {
-                    sb.append(team.getTeamCoach().getCoachId()); // Coach ID
+                    sb.append(team.getTeamCoach().getCoachId());
                 } else {
-                    sb.append("null"); // No leader
+                    sb.append("null");
                 }
-                sb.append(";"); // Separator
+                sb.append(";");
+
+                // Append member IDs as a comma-separated string
                 for (Member member : team.getMembers()) {
-                    sb.append(member.getMemberId()).append(","); // Member IDs
+                    sb.append(member.getMemberId()).append(",");
                 }
+
+                // Remove trailing comma after last member (if any)
+                if (team.getMembers().size() > 0) {
+                    sb.deleteCharAt(sb.length() - 1);
+                }
+
+                // Write the team data to the file
                 writer.write(sb.toString());
                 writer.newLine();
             }
@@ -424,21 +465,30 @@ public class FileHandler {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split(";");
-                if (parts.length < 3) continue;
+                if (parts.length < 3) continue; // Skip lines with insufficient data
 
+                // Extract team data
                 String teamName = parts[0];
-                TeamType teamType = TeamType.valueOf(parts[1].toUpperCase());
-                String coachId = parts[2];
+                TeamType teamType = TeamType.valueOf(parts[1].toUpperCase()); // Assumes TeamType enum
+
+                // Parse the coach ID safely
+                int coachId = parseInteger(parts[2]); // Parsing coachId from parts[2]
+                Coach coach = null;
+                if (coachId != -1) {
+                    // Retrieve the coach object using the parsed coachId if valid
+                    coach = staffRepository.findCoachById(coachId);
+                    if (coach == null) {
+                        System.err.println("Coach with ID " + coachId + " not found for team " + teamName);
+                    }
+                } else {
+                    System.out.println("No valid coach ID found for team " + teamName + ", assigning null coach.");
+                }
+
+                // Parse member IDs if any exist
                 String[] memberIds = parts.length > 3 ? parts[3].split(",") : new String[0];
 
-                Team team = new Team(teamName, teamType);
-
-                // Set team leader if specified from the staffrepository, if the coach matches.
-                for (Coach coach : staffRepository.getCoachList()) {
-                    if (coach.getName().equals(teamName)) {
-                        team.setTeamCoach(coach);
-                    }
-                }
+                // Create a new Team object with or without a coach
+                Team team = new Team(teamName, teamType, coach);
 
                 // Add members to the team
                 for (String memberId : memberIds) {
@@ -450,12 +500,26 @@ public class FileHandler {
                     }
                 }
 
+                // Add the team to the list
                 teams.add(team);
             }
         } catch (IOException e) {
             System.err.println("Error loading teams: " + e.getMessage());
         }
-        return teams;
+        return teams; // Return the loaded list of teams
+    }
+
+    private int parseInteger(String value) {
+        try {
+            // If the value is "null" or empty, return -1 to signify invalid input
+            if (value == null || value.trim().isEmpty() || value.equals("null")) {
+                return -1;
+            }
+            return Integer.parseInt(value); // Parse the string to an integer
+        } catch (NumberFormatException e) {
+            System.err.println("Invalid integer value: " + value); // Log the invalid value
+            return -1; // Return -1 if parsing fails
+        }
     }
 
     /**
@@ -531,16 +595,17 @@ public class FileHandler {
      * @return A formatted string containing the coach's details, separated by semicolons.
      */
     private String formatCoach(Coach coach) {
-        return coach.getCoachId() + ";" +                                  // Coach's ID (Unique identifier for the coach)
-                coach.getTeamName() + ";" +                        // Team name (assuming 'getTeamName()' method in Team class)
-                coach.getName() + ";" +                                      // Coach's name (from Staff class)
-                coach.getEmail() + ";" +                                     // Coach's email (from Staff class)
-                coach.getCity() + ";" +                                      // Coach's city (from Staff class)
-                coach.getStreet() + ";" +                                    // Coach's street address (from Staff class)
-                coach.getRegion() + ";" +                                    // Coach's region (from Staff class)
-                coach.getZipcode() + ";" +                                   // Coach's zipcode (from Staff class)
-                coach.getAge() + ";" +                                        // Coach's age (from Staff class)
-                coach.getPhoneNumber();                                       // Coach's phone number (from Staff class)
+        //save all necessary information in a single line, separated by semicolons
+        return coach.getCoachId() + ";" +
+                coach.getTeamName() + ";" +
+                coach.getName() + ";" +
+                coach.getEmail() + ";" +
+                coach.getCity() + ";" +
+                coach.getStreet() + ";" +
+                coach.getRegion() + ";" +
+                coach.getZipcode() + ";" +
+                coach.getAge() + ";" +
+                coach.getPhoneNumber();
     }
 
     /**
@@ -612,8 +677,10 @@ public class FileHandler {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
             for (CompetitionResults result : results) {
                 writer.write(result.getMember().getMemberId() + ";" +
+                            result.getActivityType() + ";" +
                             result.getEvent() + ";" +
                             result.getPlacement() + ";" +
+                            result.getDate() + ";" +
                             result.getTime());
                 writer.newLine();
             }
@@ -628,25 +695,31 @@ public class FileHandler {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split(";");
-                String memberIdStr = parts[0];
+
+                // Parse required data
+                int memberId = Integer.parseInt(parts[0]);
                 String event = parts[1];
-                int placement = Integer.parseInt(parts[2]);
-                double time = Double.parseDouble(parts[3]);
+                ActivityType activityType = ActivityType.valueOf(parts[2].toUpperCase()); // Assuming activity type is stored as a string
+                int placement = Integer.parseInt(parts[3]);
+                double time = Double.parseDouble(parts[4]);
+                String date = parts[5];
+                MembershipLevel level = MembershipLevel.valueOf(parts[6].toUpperCase()); // Assuming level is stored as a string
 
                 // Resolve the member from MemberRepository
-                Member member = memberRepository.findById(Integer.parseInt(memberIdStr));
+                Member member = memberRepository.findById(memberId);
                 if (member != null) {
-                    results.add(new CompetitionResults(member, event, placement, time));
+                    // Add competition result to the list
+                    results.add(new CompetitionResults(member, level, event, placement, time, date, activityType));
                 }
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             System.err.println("Error loading competition results: " + e.getMessage());
         }
         return results;
     }
 
-    public void saveTrainingResults(List<TrainingResults> results, String filePath){
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+    public void saveTrainingResults(List<TrainingResults> results) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(trainingResultsFilePath))) {
             for (TrainingResults result : results) {
                 writer.write(result.getMember().getMemberId() + ";" +
                         result.getLevel() + ";" +
@@ -661,7 +734,7 @@ public class FileHandler {
         }
     }
 
-    public List<TrainingResults> loadTrainingResults(String filePath, MemberRepository memberRepository){
+    public List<TrainingResults> loadTrainingResults(String filePath, MemberRepository memberRepository) {
         List<TrainingResults> results = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;
@@ -670,23 +743,21 @@ public class FileHandler {
                 String memberIdStr = parts[0];
                 MembershipLevel level = MembershipLevel.valueOf(parts[1]);
                 ActivityType activityType = ActivityType.valueOf(parts[2]);
-                int length = Integer.parseInt(parts[3]);
-                double time = Double.parseDouble(parts[4]);
-                String date = parts[5];
+                double time = Double.parseDouble(parts[3]);
+                String date = parts[4];
 
                 // Resolve the member from MemberRepository
                 Member member = memberRepository.findById(Integer.parseInt(memberIdStr));
                 if (member != null) {
-                    results.add(new TrainingResults(member, level, activityType,length, time, date));
+                    results.add(new TrainingResults(member, level, activityType, time, date));
                 }
             }
 
-        } catch (IOException e){
+        } catch (IOException e) {
             System.err.println("Error saving training results: " + e.getMessage());
         }
         return results;
     }
-
 
 
 }

@@ -27,40 +27,51 @@ public class Main {
         String trainingResultsFilePath = "src/main/resources/trainingResults.dat";
         String authFilePath = "src/main/resources/users.dat";
 
-
-        // Initialize the FileHandler for members, payments, reminders, and teams
-        FileHandler fileHandler = new FileHandler(memberFilePath,
+        // Initialize FileHandler for managing file operations across various data sets
+        FileHandler fileHandler = new FileHandler(
+                memberFilePath,
                 paymentFilePath,
                 reminderFilePath,
                 paymentRatesFilePath,
                 teamsFilePath,
                 competitionResultsFilePath,
                 staffFilePath,
-                trainingResultsFilePath);
+                trainingResultsFilePath
+        );
+
+
 
         // Initialize the repositories, passing the respective FileHandlers
         MemberRepository memberRepository = new MemberRepository(fileHandler);
         PaymentRepository paymentRepository = new PaymentRepository(reminderFilePath); // Pass the reminder file path
         CompetitionResultRepository competitionResultRepository = new CompetitionResultRepository(fileHandler, competitionResultsFilePath);
+
         StaffRepository staffRepository = new StaffRepository(fileHandler);
+
         TrainingResultsRepository trainingResultsRepository = new TrainingResultsRepository(fileHandler,trainingResultsFilePath);
         AuthRepository authRepository = new AuthRepository(authFilePath);
 
         // Load members, payments, and teams from the file
         memberRepository.reloadMembers(); // Load member data
         paymentRepository.loadPayments(paymentFilePath, memberRepository); // Load payment data
+
         competitionResultRepository.loadResults(memberRepository); // Load competition results
-        trainingResultsRepository.loadResults(memberRepository); // Load training result
+        trainingResultsRepository.loadResults(memberRepository); // Load training results
 
-
-        // Initialize services
+        // Initialize services for handling member, payment, competition result, and training result logic
         MemberService memberService = new MemberService(memberRepository);
         PaymentService paymentService = new PaymentService(paymentRepository, fileHandler);
         CompetitionResultService competitionResultService = new CompetitionResultService(competitionResultRepository);
         TrainingResultsService trainingResultsService = new TrainingResultsService(trainingResultsRepository);
+
+        // Initialize TeamRepository and load teams from file
         TeamRepository teamRepository = new TeamRepository(fileHandler);
-        teamRepository.loadTeams(memberRepository, staffRepository);
+        teamRepository.loadTeams(memberRepository, staffRepository);  // Pass MemberRepository to loadTeams
+
+        // Initialize TeamService with the TeamRepository
         TeamService teamService = new TeamService(teamRepository);
+
+        // Initialize StaffService for managing staff members
         StaffService staffService = new StaffService(staffRepository);
         AuthService authService = new AuthService(authRepository);
 
@@ -82,18 +93,25 @@ public class Main {
         );
 
 
-        // Instantiate the UserInterface, passing all controllers (including teamController)
-        UserInterface userInterface = new UserInterface(memberController, paymentController, teamController, competitionResultController, staffController,trainingResultsController, adminController);
 
+        // Instantiate the UserInterface and pass all controllers to it
+        UserInterface userInterface = new UserInterface(
+                memberController,
+                paymentController,
+                teamController,
+                competitionResultController,
+                staffController,
+                trainingResultsController,
+                adminController
+        );
 
-        // Start the User Interface to handle interactions
+        // Start the User Interface to handle interactions with the user
         userInterface.start();
 
-        // After user interaction, save any changes to file
+        // After user interaction, save any changes back to the respective files
         fileHandler.saveMembers(memberRepository.findAll()); // Save updated members
         fileHandler.savePayments(paymentRepository.findAll(), paymentFilePath); // Save updated payments
         // Reminder data is managed by PaymentRepository, so no need to handle it here
-        // Save the teams after user interaction
         fileHandler.saveTeams(teamController.getAllTeams()); // Save teams to the file
         fileHandler.saveCompetitionResults(competitionResultRepository.getAllResults(), competitionResultsFilePath); // Save competition results to the file
     }

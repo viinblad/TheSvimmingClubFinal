@@ -6,7 +6,7 @@ import swimclub.models.MembershipLevel;
 import swimclub.models.TrainingResults;
 import swimclub.repositories.TrainingResultsRepository;
 
-import java.lang.reflect.AccessFlag;
+
 import java.util.List;
 
 public class TrainingResultsService {
@@ -15,7 +15,7 @@ public class TrainingResultsService {
     public TrainingResultsService(TrainingResultsRepository resultsRepository){
         this.resultsRepository = resultsRepository;
     }
-    public void addResult(Member member, ActivityType activityType, int length, double time, String date, MembershipLevel level){
+    public void addResult(Member member, ActivityType activityType, double time, String date, MembershipLevel level){
         if (activityType == null){
             throw new IllegalArgumentException("Fill in disciplne.");
         }
@@ -25,10 +25,7 @@ public class TrainingResultsService {
         if(date == null){
             throw new IllegalArgumentException("Fill in date.");
         }
-        if (length < 0){
-            throw new IllegalArgumentException("length must be positive");
-        }
-        TrainingResults results = new TrainingResults(member,level, activityType,length, time, date);
+        TrainingResults results = new TrainingResults(member,level, activityType, time, date);
         resultsRepository.addResults(results);
     }
 

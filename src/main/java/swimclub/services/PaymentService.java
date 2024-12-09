@@ -8,9 +8,6 @@ import swimclub.repositories.MemberRepository;
 import swimclub.repositories.PaymentRepository;
 import swimclub.utilities.FileHandler;
 
-import java.io.*;
-
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,51 +16,58 @@ import java.util.List;
  * Service class for handling payment-related operations.
  */
 public class PaymentService {
-    private final PaymentRepository paymentRepository; // Payment repository reference
-    private double juniorRate;
-    private double seniorRate;
-    private FileHandler fileHandler;
+    private final PaymentRepository paymentRepository; // Repository for payment data
+    private double juniorRate; // Rate for junior members
+    private double seniorRate; // Rate for senior members
+    private final FileHandler fileHandler; // File handler to read/write payment rates
 
-    // Constructor accepts a PaymentRepository to interact with payment data
+    /**
+     * Constructs a PaymentService instance with the provided PaymentRepository and FileHandler.
+     * Initializes the payment rates by loading from the paymentRates.dat file.
+     *
+     * @param paymentRepository Repository for handling payment data
+     * @param fileHandler       Utility to handle file operations
+     */
     public PaymentService(PaymentRepository paymentRepository, FileHandler fileHandler) {
         this.paymentRepository = paymentRepository;
         this.fileHandler = fileHandler;
-        //this ensures that every time the program runs, the paymentRates will be set according to the paymentRates.dat document.
-        updatePaymentRatesFromFile();
+        updatePaymentRatesFromFile(); // Initialize payment rates from the file
     }
 
     /**
-     * Calculates the annual membership fee based on the member's status and age and is determined by the chair master.
+     * Calculates the annual membership fee based on the member's status and age.
+     * The fee is determined by the member's status (Active or Passive) and their age.
      *
-     * @param member The member whose membership fee is being calculated.
-     * @return The calculated membership fee.
+     * @param member The member whose membership fee is being calculated
+     * @return The calculated membership fee
      */
     public double calculateMembershipFee(Member member) {
         if (member.getMembershipStatus() == MembershipStatus.PASSIVE) {
-            return 500; // Passive members pay a fixed fee of 500.
+            return 500; // Passive members pay a fixed fee of 500
         }
 
         if (member.getMembershipStatus() == MembershipStatus.ACTIVE) {
             if (member.getAge() < 18) {
-                return juniorRate; // Active members under 18
+                return juniorRate; // Active members under 18 pay the junior rate
             } else if (member.getAge() < 60) {
-                return seniorRate; // Active members aged 18-59
+                return seniorRate; // Active members aged 18-59 pay the senior rate
             } else {
-                return seniorRate * 0.75; // Active members 60+ receive a 25% discount on seniorRate
+                return seniorRate * 0.75; // Active members 60+ receive a 25% discount on senior rate
             }
         }
 
-        return 0; // Default case (unlikely to occur if member status is valid).
+        return 0; // Default case (unlikely to occur if member status is valid)
     }
 
     /**
      * Registers a payment for a member.
+     * This includes verifying the payment amount, creating a payment object, updating the member's payment status, and saving to the file.
      *
-     * @param memberId           The ID of the member making the payment.
-     * @param amount             The payment amount.
-     * @param memberRepository   The repository to find the member.
-     * @param paymentFileHandler The file handler to save payments.
-     * @param filePath           The file path for saving payments.
+     * @param memberId           The ID of the member making the payment
+     * @param amount             The payment amount
+     * @param memberRepository   Repository to find the member by ID
+     * @param paymentFileHandler File handler to save payments
+     * @param filePath           Path to the file where payments are stored
      */
     public void registerPayment(int memberId, double amount, MemberRepository memberRepository, FileHandler paymentFileHandler, String filePath) {
         if (amount <= 0) {
@@ -102,18 +106,18 @@ public class PaymentService {
     /**
      * Updates a member's payment status.
      *
-     * @param member        The member whose payment status is being updated.
-     * @param paymentStatus The new payment status to set.
+     * @param member        The member whose payment status is being updated
+     * @param paymentStatus The new payment status to set
      */
     public void updateMemberPaymentStatus(Member member, PaymentStatus paymentStatus) {
         member.setPaymentStatus(paymentStatus);
     }
 
     /**
-     * Saves all payments to a file.
+     * Saves all payments to a file using the provided FileHandler.
      *
-     * @param paymentFileHandler The FileHandler instance to save payments.
-     * @param filePath           The file path to save payments to.
+     * @param paymentFileHandler File handler to save payments
+     * @param filePath           The file path where payments are stored
      */
     public void savePaymentsToFile(FileHandler paymentFileHandler, String filePath) {
         // Save all payments to the file
@@ -123,7 +127,7 @@ public class PaymentService {
     /**
      * Displays all payments made by a specific member.
      *
-     * @param memberId The ID of the member whose payments are being displayed.
+     * @param memberId The ID of the member whose payments are being displayed
      */
     public void viewPaymentsForMember(int memberId) {
         List<Payment> memberPayments = paymentRepository.findPaymentsByMemberId(memberId);
@@ -141,8 +145,8 @@ public class PaymentService {
     /**
      * Retrieves the total amount of all payments for a specific member.
      *
-     * @param memberId The ID of the member whose payments are being totaled.
-     * @return The total payment amount for the member.
+     * @param memberId The ID of the member whose total payment is being calculated
+     * @return The total payment amount for the member
      */
     public double getTotalPaymentsForMember(int memberId) {
         List<Payment> memberPayments = paymentRepository.findPaymentsByMemberId(memberId);
@@ -155,9 +159,10 @@ public class PaymentService {
 
     /**
      * Retrieves a summary of payments for all members.
+     * This includes the count of paid and pending members and the total amount of payments collected.
      *
-     * @param memberList The list of all members.
-     * @return A string representing the payment summary.
+     * @param memberList The list of all members
+     * @return A string representing the payment summary
      */
     public String getPaymentSummary(List<Member> memberList) {
         int paidCount = getMembersPaidList(memberList).size();
@@ -178,8 +183,8 @@ public class PaymentService {
     /**
      * Retrieves a list of members who have completed their payment.
      *
-     * @param memberList The list of all members.
-     * @return A list of members with a payment status of COMPLETE.
+     * @param memberList The list of all members
+     * @return A list of members with a payment status of COMPLETE
      */
     public List<Member> getMembersPaidList(List<Member> memberList) {
         List<Member> paidMembers = new ArrayList<>();
@@ -194,8 +199,8 @@ public class PaymentService {
     /**
      * Retrieves a list of members whose payment status is pending.
      *
-     * @param memberList The list of all members.
-     * @return A list of members with a payment status of PENDING.
+     * @param memberList The list of all members
+     * @return A list of members with a payment status of PENDING
      */
     public List<Member> getMembersPendingList(List<Member> memberList) {
         List<Member> pendingMembers = new ArrayList<>();
@@ -210,8 +215,8 @@ public class PaymentService {
     /**
      * Sets a payment reminder for a member.
      *
-     * @param memberId        The ID of the member to set the reminder for.
-     * @param reminderMessage The reminder message.
+     * @param memberId        The ID of the member to set the reminder for
+     * @param reminderMessage The reminder message
      */
     public void setPaymentReminder(int memberId, String reminderMessage) {
         String reminder = "Reminder for Member ID: " + memberId + ": " + reminderMessage;
@@ -222,7 +227,7 @@ public class PaymentService {
     /**
      * Retrieves all payment reminders.
      *
-     * @return A list of payment reminders.
+     * @return A list of payment reminders
      */
     public List<String> getAllReminders() {
         return paymentRepository.getReminders();
@@ -231,8 +236,8 @@ public class PaymentService {
     /**
      * Removes a specific reminder for a member.
      *
-     * @param memberId The ID of the member whose reminder is to be removed.
-     * @param message  The message of the reminder to remove.
+     * @param memberId The ID of the member whose reminder is to be removed
+     * @param message  The message of the reminder to remove
      */
     public void removeReminder(int memberId, String message) {
         String reminder = "Reminder for Member ID: " + memberId + ": " + message;
@@ -252,44 +257,50 @@ public class PaymentService {
     }
 
     /**
-     *     Setter to update junior rate
+     * Setter to update the junior membership rate.
+     *
+     * @param juniorRate The new junior rate
      */
     public void setJuniorRate(double juniorRate) {
         this.juniorRate = juniorRate;
-        saveRatestoFile(); // Save the changes to the file after updating the rate
+        saveRatestoFile(); // Save the updated rates to file
     }
 
     /**
-     *  setter to update senior rate
-      */
+     * Setter to update the senior membership rate.
+     *
+     * @param seniorRate The new senior rate
+     */
     public void setSeniorRate(double seniorRate) {
         this.seniorRate = seniorRate;
-        saveRatestoFile(); // Save the changes to the file after updating the rate
+        saveRatestoFile(); // Save the updated rates to file
     }
 
     /**
-     *  saves junior rate and senior rate to paymentRates.dat
-      */
-
-    private void saveRatestoFile () {
+     * Saves the junior and senior rates to the paymentRates.dat file.
+     */
+    private void saveRatestoFile() {
         fileHandler.savePaymentRates(juniorRate, seniorRate);
     }
 
     /**
-     *     takes the rates from paymentrates.dat and updates the attributes junior and senior in paymentservice.
-      */
+     * Updates the payment rates by loading them from the paymentRates.dat file.
+     */
     public void updatePaymentRatesFromFile() {
         double[] rates = fileHandler.loadPaymentRates();
         this.juniorRate = rates[0];
         this.seniorRate = rates[1];
     }
 
-    public double[] getPaymentRates () {
+    /**
+     * Retrieves the current payment rates for junior and senior memberships.
+     *
+     * @return An array containing the junior and senior rates
+     */
+    public double[] getPaymentRates() {
         double[] paymentRates = new double[2];
         paymentRates[0] = this.juniorRate;
         paymentRates[1] = this.seniorRate;
-
         return paymentRates;
     }
-
 }

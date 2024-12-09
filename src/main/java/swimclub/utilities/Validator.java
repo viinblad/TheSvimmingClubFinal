@@ -3,6 +3,9 @@ package swimclub.utilities;
 import swimclub.models.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Utility class for validating data in the swim club application.
  */
@@ -197,20 +200,20 @@ public class Validator {
 
     public static void validateCompetitionResult(CompetitionResults result) {
         if (result == null) {
-            throw new IllegalArgumentException("Invalid competition result: Result cannot be null.");
+            throw new IllegalArgumentException("Invalid competition result: Result cannot be empty.");
         }
     }
 
     public static void validateMemberNotNull(Member member) {
         if (member == null) {
-            throw new IllegalArgumentException("Invalid member: Member cannot be null.");
+            throw new IllegalArgumentException("Invalid member: Member cannot be empty.");
         }
     }
 
 
     public static void validateEventName(String event) {
-        if (event == null){
-            throw new IllegalArgumentException("Invalid event name: Event name cannot be null.");
+        if (event == null || event.trim().isEmpty()){
+            throw new IllegalArgumentException("Invalid event name: Event name cannot be empty.");
         }
     }
 
@@ -225,6 +228,15 @@ public class Validator {
             throw new IllegalArgumentException("Invalid time: Time must be greater than 0.");
         }
     }
+
+   public static void validateActivityType(ActivityType activityType) {
+       List<ActivityType> validActivityType = Arrays.asList(ActivityType.CRAWL, ActivityType.BACKCRAWL, ActivityType.BREASTSTROKE, ActivityType.BUTTERFLY);
+       if (!validActivityType.contains(activityType)) {
+           throw new IllegalArgumentException("Invalid activity type: Activity type must be Crawl, Backcrawl, Breastroke, or Butterfly.");
+       }
+   }
+
+
     public static void validateDate(String date){
         LocalDateTime now = LocalDateTime.now();
 

@@ -7,18 +7,33 @@ import swimclub.services.StaffService;
 
 import java.util.List;
 
+/**
+ * Controller class for handling staff-related operations.
+ */
 public class StaffController {
 
     private final StaffRepository staffRepository;
     private final StaffService staffService;
 
-    // Constructor to initialize the StaffController with StaffService and StaffRepository
+    // === CONSTRUCTOR ===
+    /**
+     * Constructor to initialize the StaffController with StaffService and StaffRepository.
+     *
+     * @param staffService The service handling staff-related logic.
+     * @param staffRepository The repository for accessing staff data.
+     */
     public StaffController(StaffService staffService, StaffRepository staffRepository) {
         this.staffService = staffService;
         this.staffRepository = staffRepository;
     }
 
-    // Method to find a coach by their ID
+    // === FIND COACH BY ID ===
+    /**
+     * Finds a coach by their ID.
+     *
+     * @param coachId The ID of the coach.
+     * @return The coach object if found, null otherwise.
+     */
     public Coach findCoachById(int coachId) {
         return staffRepository.findCoachById(coachId); // Use repository to find the coach by ID
     }
@@ -54,12 +69,24 @@ public class StaffController {
         return newCoach;
     }
 
-    // Method to find a coach by their team name
+    // === FIND COACH BY TEAM NAME ===
+    /**
+     * Finds a coach by the team name they are associated with.
+     *
+     * @param teamName The team name.
+     * @return The coach object if found, null otherwise.
+     */
     public Coach findCoachByTeamName(String teamName) {
         return staffRepository.findCoachByTeamName(teamName);
     }
 
     // Method to get a list of all coaches and display their details
+    // === GET LIST OF COACHES ===
+    /**
+     * Retrieves and displays the list of all coaches.
+     *
+     * @return A boolean indicating whether the list was retrieved successfully.
+     */
     public boolean getCoachList() {
         List<Coach> coachList = staffRepository.getCoachList();
 
@@ -77,5 +104,13 @@ public class StaffController {
             }
             return true;
         }
+    }
+
+    // === SAVE COACH LIST ===
+    /**
+     * Saves the current list of coaches to the repository.
+     */
+    public void saveCoachList() {
+        staffRepository.saveCoachList();
     }
 }
