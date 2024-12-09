@@ -36,7 +36,7 @@ public class Main {
         CompetitionResultRepository competitionResultRepository = new CompetitionResultRepository(fileHandler, competitionResultsFilePath);
 
         StaffRepository staffRepository = new StaffRepository(fileHandler);
-        TrainingResultsRepository trainingResultsRepository = new TrainingResultsRepository(fileHandler,trainingResultsFilePath);
+        TrainingResultsRepository trainingResultsRepository = new TrainingResultsRepository(fileHandler,trainingResultsFilePath,memberRepository);
         // Load members, payments, and teams from the file
         memberRepository.reloadMembers(); // Load member data
         paymentRepository.loadPayments(paymentFilePath, memberRepository); // Load payment data
@@ -75,7 +75,7 @@ public class Main {
         );
 
         CompetitionResultController competitionResultController = new CompetitionResultController(competitionResultService);
-        TrainingResultsController trainingResultsController = new TrainingResultsController(trainingResultsService);
+        TrainingResultsController trainingResultsController = new TrainingResultsController(trainingResultsService, trainingResultsRepository);
 
         // Instantiate the UserInterface, passing all controllers (including teamController)
         UserInterface userInterface = new UserInterface(memberController, paymentController, teamController, competitionResultController, staffController,trainingResultsController);

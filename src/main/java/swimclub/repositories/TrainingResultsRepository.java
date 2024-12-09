@@ -1,6 +1,6 @@
 package swimclub.repositories;
 
-import swimclub.models.CompetitionResults;
+import swimclub.models.ActivityType;
 import swimclub.models.Member;
 import swimclub.models.TrainingResults;
 import swimclub.utilities.FileHandler;
@@ -13,17 +13,54 @@ public class TrainingResultsRepository {
     private final List<TrainingResults> results;
     private final FileHandler fileHandler;
     private final String trainingResultsFilePath;
+    private final MemberRepository memberRepository;
 
-    public TrainingResultsRepository(FileHandler filehandler, String trainingResultsFilePath) {
+    public TrainingResultsRepository(FileHandler filehandler, String trainingResultsFilePath, MemberRepository memberRepository) {
+        this.memberRepository = memberRepository;
         this.results = new ArrayList<>();
         this.fileHandler = filehandler;
         this.trainingResultsFilePath = trainingResultsFilePath;
+    }
+    public Member findById(int id){
+        for (TrainingResults result : results){
+            if (result.getMember().getMemberId() == id){
+                return result.getMember();
+            }
+        }
+        return null;
+    }
+
+    public TrainingResults findResultsByMemberAndActivity(int memberId, ActivityType activityType) {
+        // Iterate through all training results in the list
+        for (TrainingResults result : results) {
+            // Check if both memberId and activityType match
+            if (result.getMember().getMemberId() == memberId && result.getActivityType().equals(activityType)) {
+                return result; // Return the first matching result
+            }
+        }
+        // If no match is found, return null
+        return null;
+    }
+
+    public void updateResults(TrainingResults updatedResults){
+        TrainingResults existingResults = findResultsByMemberAndActivity(updatedResults.getMember().getMemberId(),updatedResults.getMember().getActivityType());
+
+        if (existingResults == null) {
+            throw new RuntimeException("Member not found for ID " + updatedResults.getMember().getMemberId());
+        }
+        existingResults.setTime(updatedResults.getTime());
+        existingResults.setDate(updatedResults.getDate());
+
+        fileHandler.saveTrainingResults(results);
+
+    loadResults(memberRepository);
+
     }
 
     public void addResults(TrainingResults result) {
         Validator.validateTrainingResult(result);
         results.add(result);
-        fileHandler.saveTrainingResults(results, trainingResultsFilePath);
+        fileHandler.saveTrainingResults(results);
     }
 
     public List<TrainingResults> getResultsByMember(Member member) {
@@ -46,7 +83,7 @@ public class TrainingResultsRepository {
         }
 
         // Save the updated list to the file
-        fileHandler.saveTrainingResults(results, trainingResultsFilePath);
+        fileHandler.saveTrainingResults(results);
     }
     public void loadResults(MemberRepository memberRepository){
         results.clear();

@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
 import java.text.DecimalFormat;
+
 /**
  * UserInterface handles the interaction between the user and the program.
  * It allows the user to register, update, and view members, as well as manage payments.
@@ -120,7 +121,7 @@ public class UserInterface {
             case 7:
                 manageTeams();  // Handle payments (new option)
                 break;
-            case 8 :
+            case 8:
                 manageCompetitions();
                 break;
             case 9:
@@ -336,596 +337,594 @@ public class UserInterface {
     }
 
 
-/**
- * Removes the coach from the specified team.
- * <p>
- * This method prints all the available teams, prompts the user to input a team name,
- * and removes the coach from that team. If the team or coach is not found, it will print
- * an error message.
- */
-private void removeTeamCoach() {
-    // Print all teams and check if there are any teams available in the system
-    boolean foundTeams = teamController.printAllTeams();
-    if (!foundTeams) {
-        // If no teams are found, display a message and exit the method
-        System.out.println("No teams found on the list.");
-        return; // Exit if no teams are available
+    /**
+     * Removes the coach from the specified team.
+     * <p>
+     * This method prints all the available teams, prompts the user to input a team name,
+     * and removes the coach from that team. If the team or coach is not found, it will print
+     * an error message.
+     */
+    private void removeTeamCoach() {
+        // Print all teams and check if there are any teams available in the system
+        boolean foundTeams = teamController.printAllTeams();
+        if (!foundTeams) {
+            // If no teams are found, display a message and exit the method
+            System.out.println("No teams found on the list.");
+            return; // Exit if no teams are available
+        }
+
+        // Prompt the user for the team name to remove the coach from
+        System.out.print("Enter the name of the team of which the coach has to be removed: ");
+        String teamName = scanner.nextLine().trim();  // Read the team name input from the user
+
+        // Attempt to find the coach of the team and remove them
+        try {
+            // Find the team by name
+            Team team = teamController.findTeamByName(teamName);
+            if (team == null) {
+                throw new IllegalArgumentException("Team not found.");
+            }
+
+            // Check if the team has a coach
+            Coach teamCoach = team.getTeamCoach();
+            if (teamCoach == null) {
+                throw new IllegalArgumentException("No coach assigned to the team '" + teamName + "'.");
+            }
+
+            // Print the confirmation message before removing the coach
+            System.out.println("Coach '" + teamCoach.getName() + "' removed from team '" + teamName + "'.");
+
+            // Remove the coach from the team
+            teamController.removeTeamCoach(teamName);
+
+            // Set the team name of the coach to null as they are no longer assigned to the team
+            staffController.findCoachById(teamCoach.getCoachId()).setTeamName(null);
+
+        } catch (IllegalArgumentException e) {
+            // Handle any error in the process, such as no team found or no coach assigned
+            System.out.println("Error removing team coach: " + e.getMessage());
+        }
     }
 
-    // Prompt the user for the team name to remove the coach from
-    System.out.print("Enter the name of the team of which the coach has to be removed: ");
-    String teamName = scanner.nextLine().trim();  // Read the team name input from the user
+    /**
+     * Creates a new team by collecting the team name and type from the user.
+     */
+    private void createTeam() {
+        System.out.print("Enter Team Name: ");
+        String teamName = scanner.nextLine().trim();
 
-    // Attempt to find the coach of the team and remove them
-    try {
-        // Find the team by name
+        System.out.print("Enter Team Type (Junior Competitive / Senior Competitive): ");
+        String teamTypeStr = scanner.nextLine().trim().toUpperCase();
+
+        // Validate team type input
+        if (!teamTypeStr.equals("JUNIOR COMPETITIVE") && !teamTypeStr.equals("SENIOR COMPETITIVE")) {
+            System.out.println("Invalid team type. Please enter 'Junior Competitive' or 'Senior Competitive'.");
+            return;
+        }
+
+        try {
+            teamController.createTeam(teamName, teamTypeStr, null);
+            System.out.println("Team '" + teamName + "' created successfully.");
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error creating team: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Adds a member to an existing team.
+     */
+    private void addMemberToTeam() {
+        System.out.print("Enter Team Name: ");
+        String teamName = scanner.nextLine().trim();
+
+        System.out.print("Enter Member ID to Add: ");
+        int memberId;
+        try {
+            memberId = Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid Member ID. Please enter a valid number.");
+            return;
+        }
+
+        Member member = memberController.findMemberById(memberId);
+        if (member == null) {
+            System.out.println("Member not found.");
+            return;
+        }
+
+        try {
+            teamController.addMemberToTeam(teamName, member);
+            System.out.println("Member '" + member.getName() + "' added to team '" + teamName + "'.");
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error adding member to team: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Removes a member from an existing team.
+     */
+    private void removeMemberFromTeam() {
+        System.out.print("Enter Team Name: ");
+        String teamName = scanner.nextLine().trim();
+
+        System.out.print("Enter Member ID to Remove: ");
+        int memberId;
+        try {
+            memberId = Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid Member ID. Please enter a valid number.");
+            return;
+        }
+
+        Member member = memberController.findMemberById(memberId);
+        if (member == null) {
+            System.out.println("Member not found.");
+            return;
+        }
+
+        try {
+            teamController.removeMemberFromTeam(teamName, member);
+            System.out.println("Member '" + member.getName() + "' removed from team '" + teamName + "'.");
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error removing member from team: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Assigns a team coach to a specific team.
+     */
+    private void assignTeamCoach() {
+        // First, print all teams and check if there are any teams available in the system
+        boolean foundTeams = teamController.printAllTeams();
+        if (!foundTeams) {
+            // If no teams are found, display a message and exit the method
+            System.out.println("No teams found on the list.");
+            return; // Exit if no teams are available
+        }
+
+        // Prompt the user for the team name
+        System.out.print("Enter the name of the team the new coach should be assigned to: ");
+        String teamName = scanner.nextLine().trim();  // Read the team name input from the user
+
+        // Check if the entered team name exists in the list of teams
         Team team = teamController.findTeamByName(teamName);
         if (team == null) {
-            throw new IllegalArgumentException("Team not found.");
+            // If the team doesn't exist, notify the user and exit
+            System.out.println("Team '" + teamName + "' not found.");
+            return;  // Exit if the team is not found
         }
 
-        // Check if the team has a coach
-        Coach teamCoach = team.getTeamCoach();
-        if (teamCoach == null) {
-            throw new IllegalArgumentException("No coach assigned to the team '" + teamName + "'.");
+        // Check if the team already has a coach
+        if (team.getTeamCoach() != null) {
+            System.out.println("This team already has a coach: '" + team.getTeamCoach().getName() + "'. Cannot assign a new coach.");
+            return; // Exit if the team already has a coach
         }
 
-        // Print the confirmation message before removing the coach
-        System.out.println("Coach '" + teamCoach.getName() + "' removed from team '" + teamName + "'.");
-
-        // Remove the coach from the team
-        teamController.removeTeamCoach(teamName);
-
-        // Set the team name of the coach to null as they are no longer assigned to the team
-        staffController.findCoachById(teamCoach.getCoachId()).setTeamName(null);
-
-    } catch (IllegalArgumentException e) {
-        // Handle any error in the process, such as no team found or no coach assigned
-        System.out.println("Error removing team coach: " + e.getMessage());
-    }
-}
-
-/**
- * Creates a new team by collecting the team name and type from the user.
- */
-private void createTeam() {
-    System.out.print("Enter Team Name: ");
-    String teamName = scanner.nextLine().trim();
-
-    System.out.print("Enter Team Type (Junior Competitive / Senior Competitive): ");
-    String teamTypeStr = scanner.nextLine().trim().toUpperCase();
-
-    // Validate team type input
-    if (!teamTypeStr.equals("JUNIOR COMPETITIVE") && !teamTypeStr.equals("SENIOR COMPETITIVE")) {
-        System.out.println("Invalid team type. Please enter 'Junior Competitive' or 'Senior Competitive'.");
-        return;
-    }
-
-    try {
-        teamController.createTeam(teamName, teamTypeStr, null);
-        System.out.println("Team '" + teamName + "' created successfully.");
-    } catch (IllegalArgumentException e) {
-        System.out.println("Error creating team: " + e.getMessage());
-    }
-}
-
-/**
- * Adds a member to an existing team.
- */
-private void addMemberToTeam() {
-    System.out.print("Enter Team Name: ");
-    String teamName = scanner.nextLine().trim();
-
-    System.out.print("Enter Member ID to Add: ");
-    int memberId;
-    try {
-        memberId = Integer.parseInt(scanner.nextLine());
-    } catch (NumberFormatException e) {
-        System.out.println("Invalid Member ID. Please enter a valid number.");
-        return;
-    }
-
-    Member member = memberController.findMemberById(memberId);
-    if (member == null) {
-        System.out.println("Member not found.");
-        return;
-    }
-
-    try {
-        teamController.addMemberToTeam(teamName, member);
-        System.out.println("Member '" + member.getName() + "' added to team '" + teamName + "'.");
-    } catch (IllegalArgumentException e) {
-        System.out.println("Error adding member to team: " + e.getMessage());
-    }
-}
-
-/**
- * Removes a member from an existing team.
- */
-private void removeMemberFromTeam() {
-    System.out.print("Enter Team Name: ");
-    String teamName = scanner.nextLine().trim();
-
-    System.out.print("Enter Member ID to Remove: ");
-    int memberId;
-    try {
-        memberId = Integer.parseInt(scanner.nextLine());
-    } catch (NumberFormatException e) {
-        System.out.println("Invalid Member ID. Please enter a valid number.");
-        return;
-    }
-
-    Member member = memberController.findMemberById(memberId);
-    if (member == null) {
-        System.out.println("Member not found.");
-        return;
-    }
-
-    try {
-        teamController.removeMemberFromTeam(teamName, member);
-        System.out.println("Member '" + member.getName() + "' removed from team '" + teamName + "'.");
-    } catch (IllegalArgumentException e) {
-        System.out.println("Error removing member from team: " + e.getMessage());
-    }
-}
-
-/**
- * Assigns a team coach to a specific team.
- */
-private void assignTeamCoach() {
-    // First, print all teams and check if there are any teams available in the system
-    boolean foundTeams = teamController.printAllTeams();
-    if (!foundTeams) {
-        // If no teams are found, display a message and exit the method
-        System.out.println("No teams found on the list.");
-        return; // Exit if no teams are available
-    }
-
-    // Prompt the user for the team name
-    System.out.print("Enter the name of the team the new coach should be assigned to: ");
-    String teamName = scanner.nextLine().trim();  // Read the team name input from the user
-
-    // Check if the entered team name exists in the list of teams
-    Team team = teamController.findTeamByName(teamName);
-    if (team == null) {
-        // If the team doesn't exist, notify the user and exit
-        System.out.println("Team '" + teamName + "' not found.");
-        return;  // Exit if the team is not found
-    }
-
-    // Check if the team already has a coach
-    if (team.getTeamCoach() != null) {
-        System.out.println("This team already has a coach: '" + team.getTeamCoach().getName() + "'. Cannot assign a new coach.");
-        return; // Exit if the team already has a coach
-    }
-
-    // Now that we know the team exists, check if there are any coaches available
-    boolean foundCoaches = staffController.getCoachList();
-    if (!foundCoaches) {
-        // If no coaches are found, display a message and exit the method
-        System.out.println("No coaches found on the coach list.");
-        return;  // Exit if no coaches are available
-    }
-
-    // Prompt for the coach ID
-    System.out.print("Enter the Coach ID of the coach you want to assign to the team: ");
-    int coachId;
-    try {
-        coachId = Integer.parseInt(scanner.nextLine().trim());  // Ensure leading/trailing spaces are removed
-    } catch (NumberFormatException e) {
-        System.out.println("Invalid coach ID. Please enter a valid number.");
-        return; // Exit on invalid input
-    }
-
-    // Find the coach by ID
-    Coach coach = staffController.findCoachById(coachId);
-    if (coach == null) {
-        // If the coach isn't found, notify the user and exit
-        System.out.println("Coach not found.");
-        return; // Exit if the coach isn't found
-    }
-
-    // Attempt to assign the coach to the team
-    try {
-        teamController.assignTeamCoach(teamName, coach); // assigning coach to team.
-        coach.setTeamName(teamName); // assigning team name to coach.
-        staffController.saveCoachList(); // Save updated coach data
-        System.out.println("Coach '" + coach.getName() + "' assigned as coach of team '" + teamName + "'.");
-    } catch (IllegalArgumentException e) {
-        System.out.println("Error assigning team coach: " + e.getMessage());
-    }
-}
-
-/**
- * Displays all teams and their details.
- */
-private void viewTeams() {
-    List<Team> teams = teamController.getAllTeams();
-    if (teams.isEmpty()) {
-        System.out.println("No teams available.");
-    } else {
-        System.out.println("--- All Teams ---");
-        for (Team team : teams) {
-            System.out.println(team);
+        // Now that we know the team exists, check if there are any coaches available
+        boolean foundCoaches = staffController.getCoachList();
+        if (!foundCoaches) {
+            // If no coaches are found, display a message and exit the method
+            System.out.println("No coaches found on the coach list.");
+            return;  // Exit if no coaches are available
         }
-    }
-}
 
-/**
- * Deletes a team by its name.
- */
-private void deleteTeam() {
-    System.out.print("Enter Team Name to Delete: ");
-    String teamName = scanner.nextLine().trim();
-
-    try {
-        teamController.deleteTeam(teamName);
-        System.out.println("Team '" + teamName + "' deleted successfully.");
-    } catch (IllegalArgumentException e) {
-        System.out.println("Error deleting team: " + e.getMessage());
-    }
-}
-
-
-/**
- * Deletes a member by their ID.
- */
-private void deleteMember() {
-    System.out.println("Enter Member's ID:");
-    int memberId = Integer.parseInt(scanner.nextLine());
-    boolean success = memberController.deleteMember(memberId);
-    if (success) {
-        System.out.println("Member successfully deleted.");
-    } else {
-        System.out.println("Member not found, please check the ID and try again.");
-    }
-}
-
-/**
- * Searches for members by ID, name, or phone number.
- */
-private void searchMembers() {
-    System.out.print("Enter search query (ID, name, or phone number): ");
-    String query = scanner.nextLine();
-    List<Member> results = memberController.searchMembers(query);
-
-    if (results.isEmpty()) {
-        System.out.println("No members found matching the query.");
-    } else {
-        System.out.println("\n--- Search Results ---");
-        results.forEach(member ->
-                System.out.println("ID: " + member.getMemberId() +
-                        ", Name: " + member.getName() +
-                        ", Membership: " + member.getMembershipDescription() +
-                        ", Phone: " + member.getPhoneNumber() +
-                        ", Email: " + member.getEmail()));
-    }
-}
-
-/**
- * Handles payment-related operations: Registering payments and viewing payments.
- */
-private void handlePayments() {
-    System.out.println("\n--- Payment Management ---");
-    System.out.println("1. Register Payment");
-    System.out.println("2. View Payments for Member");
-    System.out.println("3. Filter Members by Payment Status");
-    System.out.println("4. View Payment Summary");
-    System.out.println("5. Payment reminder manager");
-    System.out.println("6. Update Payment Rates");
-    System.out.println("7. Exit to Main Menu");
-
-    System.out.print("Please choose an option (1-5): ");
-    int paymentOption = Integer.parseInt(scanner.nextLine());
-
-    switch (paymentOption) {
-        case 1:
-            registerPayment();  // Register a new payment
-
-            break;
-        case 2:
-            viewPaymentsForMember();  // View payment history for the member
-            break;
-        case 3:
-            filterMembersByPaymentStatus();  // Filter members by payment status
-            break;
-        case 4:
-            paymentController.viewPaymentSummary(); // Show payment summary
-            break;
-        case 5:
-            managePaymentReminders();
-            break;
-        case 6:
-            managePaymentRates();
-        case 7:
-            return;  // Exit to main menu
-        default:
-            System.out.println("Invalid option. Please choose a valid number.");
-    }
-}
-
-/**
- * gives an overview of the current payment rates to the user, and gives the user the possibility of updating the payment rates
- * which will lead to update paymentrates() method.
- */
-private void managePaymentRates() {
-    DecimalFormat df = new DecimalFormat("#.##"); // Format to show up to 2 decimal places
-
-    System.out.println("The current payment rates:");
-    System.out.println("Yearly junior-membership price: " + df.format(paymentController.getPaymentRates()[0]) + " DKK");
-    System.out.println("Yearly senior-membership price: " + df.format(paymentController.getPaymentRates()[1]) + " DKK");
-
-    System.out.println("Do you want to update the payment rates? Type \"Yes\" or \"No\"");
-    String choice = scanner.nextLine();
-    boolean validInput = false;
-
-    while (!validInput) {
-        switch (choice.toLowerCase()) {
-            case "yes":
-                updatePaymentRates();
-                validInput = true;
-                break;
-            case "no":
-                validInput = true;
-                break;
-            default:
-                System.out.println("Invalid input.");
-        }
-    }
-}
-
-/**
- * updates the payment rates with userinput.
- */
-private void updatePaymentRates() {
-    DecimalFormat df = new DecimalFormat("#.##"); // Format to show up to 2 decimal places
-
-    boolean validInput = false;
-
-    while (!validInput) {
-        // prints out junior price.
-        System.out.println("(Old yearly junior-membership price: " + df.format(paymentController.getPaymentRates()[0]) + " DKK) " +
-                "Please type in the updated price in DKK: ");
+        // Prompt for the coach ID
+        System.out.print("Enter the Coach ID of the coach you want to assign to the team: ");
+        int coachId;
         try {
-            double newJuniorPrice = scanner.nextDouble(); // Get the new junior price
-            scanner.nextLine(); // Clear the buffer
-
-            // prints out senior price.
-            System.out.println("(Old yearly senior-membership price: " + df.format(paymentController.getPaymentRates()[1]) + " DKK) " +
-                    "Please type in the updated price in DKK: ");
-            double newSeniorPrice = scanner.nextDouble(); // Get the new senior price
-            scanner.nextLine(); // Clear the buffer
-
-            // updates the payment rates.
-            paymentController.setPaymentRates(newJuniorPrice, newSeniorPrice);
-
-            // print outs the new updated payment rates.
-            System.out.println("You have now updated the prices. The updated payment rates:");
-            System.out.println("Yearly junior-membership price: " + df.format(paymentController.getPaymentRates()[0]) + " DKK");
-            System.out.println("Yearly senior-membership price: " + df.format(paymentController.getPaymentRates()[1]) + " DKK");
-
-            validInput = true; // Exit loop since input is valid
-
-        } catch (InputMismatchException e) {
-            // Handle invalid input (values that are not a double)
-            System.out.println("Invalid input. Please enter a valid number for the price.");
-            scanner.nextLine(); // Clear the buffer to consume the invalid input
-        }
-    }
-}
-
-/**
- * Registers a new payment for a member by entering member ID and payment amount.
- */
-private void registerPayment() {
-    System.out.print("Enter member ID to register payment: ");
-    int memberId = Integer.parseInt(scanner.nextLine());
-    System.out.print("Enter payment amount: ");
-    double amount = Double.parseDouble(scanner.nextLine());
-
-    // Call the PaymentController to register the payment
-    paymentController.registerPayment(memberId, amount);
-}
-
-/**
- * Displays all payments made by a specific member.
- */
-private void viewPaymentsForMember() {
-    System.out.print("Enter member ID to view payments: ");
-    int memberId = Integer.parseInt(scanner.nextLine());
-
-    // Call the PaymentController to view payments for the member
-    paymentController.viewPaymentsForMember(memberId);
-}
-
-/**
- * Filters members based on their payment status and displays the filtered list.
- */
-private void filterMembersByPaymentStatus() {
-    System.out.println("Enter payment status (COMPLETE or PENDING): ");
-    String statusInput = scanner.nextLine().toUpperCase();
-    PaymentStatus paymentStatus = PaymentStatus.valueOf(statusInput);
-
-    List<Member> filteredMembers = paymentController.getMembersByPaymentStatus(paymentStatus);
-    System.out.println("Members with payment status " + paymentStatus + ":");
-    filteredMembers.forEach(member -> System.out.println("ID: " + member.getMemberId() + ", Name: " + member.getName()));
-}
-
-/**
- * Manages payment reminders (add, view, delete, clear reminders).
- */
-private void managePaymentReminders() {
-    System.out.println("\n--- Payment Reminder Management ---");
-    System.out.println("1. Add Payment Reminder");
-    System.out.println("2. View All Reminders");
-    System.out.println("3. Remove Specific Reminder");
-    System.out.println("4. Clear All Reminders");
-    System.out.println("5. Exit to Payment Management");
-
-    System.out.print("Please choose an option (1-5): ");
-    int reminderOption = Integer.parseInt(scanner.nextLine());
-
-    switch (reminderOption) {
-        case 1 -> addPaymentReminder();
-        case 2 -> viewAllReminders();
-        case 3 -> removePaymentReminder();
-        case 4 -> clearAllReminders();
-        case 5 -> {
-            return;  // Exit to Payment Management
-        }
-        default -> System.out.println("Invalid option. Please choose a valid number.");
-    }
-}
-
-/**
- * Adds a payment reminder for a specific member.
- */
-private void addPaymentReminder() {
-    System.out.print("Enter Member ID to set a reminder: ");
-    int memberId = Integer.parseInt(scanner.nextLine());
-    System.out.print("Enter Reminder Message: ");
-    String reminderMessage = scanner.nextLine();
-
-    paymentController.setPaymentReminder(memberId, reminderMessage);
-    System.out.println("Reminder added successfully for Member ID: " + memberId);
-}
-
-/**
- * Displays all payment reminders.
- */
-private void viewAllReminders() {
-    System.out.println("\n--- All Payment Reminders ---");
-    paymentController.viewAllReminders();
-}
-
-/**
- * Removes a specific reminder for a member.
- */
-private void removePaymentReminder() {
-    System.out.print("Enter Member ID for the reminder to remove: ");
-    int memberId = Integer.parseInt(scanner.nextLine());
-    System.out.print("Enter Reminder Message to remove: ");
-    String reminderMessage = scanner.nextLine();
-
-    paymentController.removePaymentReminder(memberId, reminderMessage);
-    System.out.println("Reminder removed successfully for Member ID: " + memberId);
-}
-
-/**
- * Clears all payment reminders.
- */
-private void clearAllReminders() {
-    System.out.print("Are you sure you want to clear all reminders? (yes/no): ");
-    String confirmation = scanner.nextLine().toLowerCase();
-
-    if (confirmation.equals("yes")) {
-        paymentController.clearAllReminders();
-        System.out.println("All reminders have been cleared.");
-    } else {
-        System.out.println("Operation cancelled.");
-    }
-}
-
-/**
- * Validates and retrieves a positive numeric age input from the user.
- *
- * @param scanner The Scanner object for reading user input.
- * @param prompt  The prompt message displayed to the user.
- * @return A valid age input as a string.
- */
-private static String correctAgeInput(Scanner scanner, String prompt) {
-    String age;
-    while (true) {
-        try {
-            // Display the prompt message to the user
-            System.out.print(prompt);
-            age = scanner.nextLine().trim();
-
-            // Validate that the input only contains digits
-            if (!age.matches("\\d+")) {
-                throw new NumberFormatException("Only numeric values are allowed.");
-            }
-
-            // Convert the input to an integer
-
-            // Ensure the age is a positive number
-            if (Integer.parseInt(age) > 0) {
-                return age; // Return the valid age
-            } else {
-                System.out.println("Invalid age. Age must be positive.");
-            }
+            coachId = Integer.parseInt(scanner.nextLine().trim());  // Ensure leading/trailing spaces are removed
         } catch (NumberFormatException e) {
-            // Handle invalid input and provide feedback to the user
-            System.out.println("Invalid input. Please enter numbers");
+            System.out.println("Invalid coach ID. Please enter a valid number.");
+            return; // Exit on invalid input
         }
-    }
-}
 
-/**
- * Validates and retrieves a valid 8-digit phone number input from the user.
- *
- * @param scanner The Scanner object for reading user input.
- * @param prompt  The prompt message displayed to the user.
- * @return A valid phone number as an integer.
- */
-// Rule for right phonenumber input
-private static String correctPHInput(Scanner scanner, String prompt) {
-    String phoneNumber;
-    while (true) {
+        // Find the coach by ID
+        Coach coach = staffController.findCoachById(coachId);
+        if (coach == null) {
+            // If the coach isn't found, notify the user and exit
+            System.out.println("Coach not found.");
+            return; // Exit if the coach isn't found
+        }
+
+        // Attempt to assign the coach to the team
         try {
-            System.out.print(prompt);
-            phoneNumber = scanner.nextLine().trim();
-            if (!phoneNumber.matches("\\d+")) {
-                throw new NumberFormatException("Only numeric values are allowed.");
-            }
-
-            if (Integer.parseInt(phoneNumber) >= 10000000 && Integer.parseInt(phoneNumber) <= 99999999) {
-                return phoneNumber;
-            } else {
-                System.out.println("Phonenumber must be exactly 8 digits.");
-            }
-
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid input. Please enter a 8 digits number.");
+            teamController.assignTeamCoach(teamName, coach); // assigning coach to team.
+            coach.setTeamName(teamName); // assigning team name to coach.
+            staffController.saveCoachList(); // Save updated coach data
+            System.out.println("Coach '" + coach.getName() + "' assigned as coach of team '" + teamName + "'.");
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error assigning team coach: " + e.getMessage());
         }
     }
-}
 
-private static String correctZipCodeInput(Scanner scanner, String prompt) {
-    String zipCode;
-    while (true) {
-        try {
-            System.out.print(prompt);
-            zipCode = scanner.nextLine().trim();
-            if (!zipCode.matches("\\d+")) {
-                throw new NumberFormatException("Only numeric values are allowed");
-            }
-            if (Integer.parseInt(zipCode) >= 1000 && Integer.parseInt(zipCode) <= 9990) {
-                return zipCode;
-            } else {
-                System.out.println("Zipcode has to be 4 digits.");
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid input. Please enter a 4 digits number.");
-        }
-    }
-}
-
-private static String correctEmailInput(Scanner scanner, String prompt) {
-    String email;
-    while (true) {
-        System.out.print(prompt);
-        email = scanner.nextLine();
-
-        if (email.contains("@") && email.contains(".")) {
-            return email;
+    /**
+     * Displays all teams and their details.
+     */
+    private void viewTeams() {
+        List<Team> teams = teamController.getAllTeams();
+        if (teams.isEmpty()) {
+            System.out.println("No teams available.");
         } else {
-            System.out.println("Invalid input. Email must contain '@' and '.' - Try again.");
+            System.out.println("--- All Teams ---");
+            for (Team team : teams) {
+                System.out.println(team);
+            }
         }
     }
-}
+
+    /**
+     * Deletes a team by its name.
+     */
+    private void deleteTeam() {
+        System.out.print("Enter Team Name to Delete: ");
+        String teamName = scanner.nextLine().trim();
+
+        try {
+            teamController.deleteTeam(teamName);
+            System.out.println("Team '" + teamName + "' deleted successfully.");
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error deleting team: " + e.getMessage());
+        }
+    }
 
 
+    /**
+     * Deletes a member by their ID.
+     */
+    private void deleteMember() {
+        System.out.println("Enter Member's ID:");
+        int memberId = Integer.parseInt(scanner.nextLine());
+        boolean success = memberController.deleteMember(memberId);
+        if (success) {
+            System.out.println("Member successfully deleted.");
+        } else {
+            System.out.println("Member not found, please check the ID and try again.");
+        }
+    }
+
+    /**
+     * Searches for members by ID, name, or phone number.
+     */
+    private void searchMembers() {
+        System.out.print("Enter search query (ID, name, or phone number): ");
+        String query = scanner.nextLine();
+        List<Member> results = memberController.searchMembers(query);
+
+        if (results.isEmpty()) {
+            System.out.println("No members found matching the query.");
+        } else {
+            System.out.println("\n--- Search Results ---");
+            results.forEach(member ->
+                    System.out.println("ID: " + member.getMemberId() +
+                            ", Name: " + member.getName() +
+                            ", Membership: " + member.getMembershipDescription() +
+                            ", Phone: " + member.getPhoneNumber() +
+                            ", Email: " + member.getEmail()));
+        }
+    }
+
+    /**
+     * Handles payment-related operations: Registering payments and viewing payments.
+     */
+    private void handlePayments() {
+        System.out.println("\n--- Payment Management ---");
+        System.out.println("1. Register Payment");
+        System.out.println("2. View Payments for Member");
+        System.out.println("3. Filter Members by Payment Status");
+        System.out.println("4. View Payment Summary");
+        System.out.println("5. Payment reminder manager");
+        System.out.println("6. Update Payment Rates");
+        System.out.println("7. Exit to Main Menu");
+
+        System.out.print("Please choose an option (1-5): ");
+        int paymentOption = Integer.parseInt(scanner.nextLine());
+
+        switch (paymentOption) {
+            case 1:
+                registerPayment();  // Register a new payment
+
+                break;
+            case 2:
+                viewPaymentsForMember();  // View payment history for the member
+                break;
+            case 3:
+                filterMembersByPaymentStatus();  // Filter members by payment status
+                break;
+            case 4:
+                paymentController.viewPaymentSummary(); // Show payment summary
+                break;
+            case 5:
+                managePaymentReminders();
+                break;
+            case 6:
+                managePaymentRates();
+            case 7:
+                return;  // Exit to main menu
+            default:
+                System.out.println("Invalid option. Please choose a valid number.");
+        }
+    }
+
+    /**
+     * gives an overview of the current payment rates to the user, and gives the user the possibility of updating the payment rates
+     * which will lead to update paymentrates() method.
+     */
+    private void managePaymentRates() {
+        DecimalFormat df = new DecimalFormat("#.##"); // Format to show up to 2 decimal places
+
+        System.out.println("The current payment rates:");
+        System.out.println("Yearly junior-membership price: " + df.format(paymentController.getPaymentRates()[0]) + " DKK");
+        System.out.println("Yearly senior-membership price: " + df.format(paymentController.getPaymentRates()[1]) + " DKK");
+
+        System.out.println("Do you want to update the payment rates? Type \"Yes\" or \"No\"");
+        String choice = scanner.nextLine();
+        boolean validInput = false;
+
+        while (!validInput) {
+            switch (choice.toLowerCase()) {
+                case "yes":
+                    updatePaymentRates();
+                    validInput = true;
+                    break;
+                case "no":
+                    validInput = true;
+                    break;
+                default:
+                    System.out.println("Invalid input.");
+            }
+        }
+    }
+
+    /**
+     * updates the payment rates with userinput.
+     */
+    private void updatePaymentRates() {
+        DecimalFormat df = new DecimalFormat("#.##"); // Format to show up to 2 decimal places
+
+        boolean validInput = false;
+
+        while (!validInput) {
+            // prints out junior price.
+            System.out.println("(Old yearly junior-membership price: " + df.format(paymentController.getPaymentRates()[0]) + " DKK) " +
+                    "Please type in the updated price in DKK: ");
+            try {
+                double newJuniorPrice = scanner.nextDouble(); // Get the new junior price
+                scanner.nextLine(); // Clear the buffer
+
+                // prints out senior price.
+                System.out.println("(Old yearly senior-membership price: " + df.format(paymentController.getPaymentRates()[1]) + " DKK) " +
+                        "Please type in the updated price in DKK: ");
+                double newSeniorPrice = scanner.nextDouble(); // Get the new senior price
+                scanner.nextLine(); // Clear the buffer
+
+                // updates the payment rates.
+                paymentController.setPaymentRates(newJuniorPrice, newSeniorPrice);
+
+                // print outs the new updated payment rates.
+                System.out.println("You have now updated the prices. The updated payment rates:");
+                System.out.println("Yearly junior-membership price: " + df.format(paymentController.getPaymentRates()[0]) + " DKK");
+                System.out.println("Yearly senior-membership price: " + df.format(paymentController.getPaymentRates()[1]) + " DKK");
+
+                validInput = true; // Exit loop since input is valid
+
+            } catch (InputMismatchException e) {
+                // Handle invalid input (values that are not a double)
+                System.out.println("Invalid input. Please enter a valid number for the price.");
+                scanner.nextLine(); // Clear the buffer to consume the invalid input
+            }
+        }
+    }
+
+    /**
+     * Registers a new payment for a member by entering member ID and payment amount.
+     */
+    private void registerPayment() {
+        System.out.print("Enter member ID to register payment: ");
+        int memberId = Integer.parseInt(scanner.nextLine());
+        System.out.print("Enter payment amount: ");
+        double amount = Double.parseDouble(scanner.nextLine());
+
+        // Call the PaymentController to register the payment
+        paymentController.registerPayment(memberId, amount);
+    }
+
+    /**
+     * Displays all payments made by a specific member.
+     */
+    private void viewPaymentsForMember() {
+        System.out.print("Enter member ID to view payments: ");
+        int memberId = Integer.parseInt(scanner.nextLine());
+
+        // Call the PaymentController to view payments for the member
+        paymentController.viewPaymentsForMember(memberId);
+    }
+
+    /**
+     * Filters members based on their payment status and displays the filtered list.
+     */
+    private void filterMembersByPaymentStatus() {
+        System.out.println("Enter payment status (COMPLETE or PENDING): ");
+        String statusInput = scanner.nextLine().toUpperCase();
+        PaymentStatus paymentStatus = PaymentStatus.valueOf(statusInput);
+
+        List<Member> filteredMembers = paymentController.getMembersByPaymentStatus(paymentStatus);
+        System.out.println("Members with payment status " + paymentStatus + ":");
+        filteredMembers.forEach(member -> System.out.println("ID: " + member.getMemberId() + ", Name: " + member.getName()));
+    }
+
+    /**
+     * Manages payment reminders (add, view, delete, clear reminders).
+     */
+    private void managePaymentReminders() {
+        System.out.println("\n--- Payment Reminder Management ---");
+        System.out.println("1. Add Payment Reminder");
+        System.out.println("2. View All Reminders");
+        System.out.println("3. Remove Specific Reminder");
+        System.out.println("4. Clear All Reminders");
+        System.out.println("5. Exit to Payment Management");
+
+        System.out.print("Please choose an option (1-5): ");
+        int reminderOption = Integer.parseInt(scanner.nextLine());
+
+        switch (reminderOption) {
+            case 1 -> addPaymentReminder();
+            case 2 -> viewAllReminders();
+            case 3 -> removePaymentReminder();
+            case 4 -> clearAllReminders();
+            case 5 -> {
+                return;  // Exit to Payment Management
+            }
+            default -> System.out.println("Invalid option. Please choose a valid number.");
+        }
+    }
+
+    /**
+     * Adds a payment reminder for a specific member.
+     */
+    private void addPaymentReminder() {
+        System.out.print("Enter Member ID to set a reminder: ");
+        int memberId = Integer.parseInt(scanner.nextLine());
+        System.out.print("Enter Reminder Message: ");
+        String reminderMessage = scanner.nextLine();
+
+        paymentController.setPaymentReminder(memberId, reminderMessage);
+        System.out.println("Reminder added successfully for Member ID: " + memberId);
+    }
+
+    /**
+     * Displays all payment reminders.
+     */
+    private void viewAllReminders() {
+        System.out.println("\n--- All Payment Reminders ---");
+        paymentController.viewAllReminders();
+    }
+
+    /**
+     * Removes a specific reminder for a member.
+     */
+    private void removePaymentReminder() {
+        System.out.print("Enter Member ID for the reminder to remove: ");
+        int memberId = Integer.parseInt(scanner.nextLine());
+        System.out.print("Enter Reminder Message to remove: ");
+        String reminderMessage = scanner.nextLine();
+
+        paymentController.removePaymentReminder(memberId, reminderMessage);
+        System.out.println("Reminder removed successfully for Member ID: " + memberId);
+    }
+
+    /**
+     * Clears all payment reminders.
+     */
+    private void clearAllReminders() {
+        System.out.print("Are you sure you want to clear all reminders? (yes/no): ");
+        String confirmation = scanner.nextLine().toLowerCase();
+
+        if (confirmation.equals("yes")) {
+            paymentController.clearAllReminders();
+            System.out.println("All reminders have been cleared.");
+        } else {
+            System.out.println("Operation cancelled.");
+        }
+    }
+
+    /**
+     * Validates and retrieves a positive numeric age input from the user.
+     *
+     * @param scanner The Scanner object for reading user input.
+     * @param prompt  The prompt message displayed to the user.
+     * @return A valid age input as a string.
+     */
+    private static String correctAgeInput(Scanner scanner, String prompt) {
+        String age;
+        while (true) {
+            try {
+                // Display the prompt message to the user
+                System.out.print(prompt);
+                age = scanner.nextLine().trim();
+
+                // Validate that the input only contains digits
+                if (!age.matches("\\d+")) {
+                    throw new NumberFormatException("Only numeric values are allowed.");
+                }
+
+                // Convert the input to an integer
+
+                // Ensure the age is a positive number
+                if (Integer.parseInt(age) > 0) {
+                    return age; // Return the valid age
+                } else {
+                    System.out.println("Invalid age. Age must be positive.");
+                }
+            } catch (NumberFormatException e) {
+                // Handle invalid input and provide feedback to the user
+                System.out.println("Invalid input. Please enter numbers");
+            }
+        }
+    }
+
+    /**
+     * Validates and retrieves a valid 8-digit phone number input from the user.
+     *
+     * @param scanner The Scanner object for reading user input.
+     * @param prompt  The prompt message displayed to the user.
+     * @return A valid phone number as an integer.
+     */
+// Rule for right phonenumber input
+    private static String correctPHInput(Scanner scanner, String prompt) {
+        String phoneNumber;
+        while (true) {
+            try {
+                System.out.print(prompt);
+                phoneNumber = scanner.nextLine().trim();
+                if (!phoneNumber.matches("\\d+")) {
+                    throw new NumberFormatException("Only numeric values are allowed.");
+                }
+
+                if (Integer.parseInt(phoneNumber) >= 10000000 && Integer.parseInt(phoneNumber) <= 99999999) {
+                    return phoneNumber;
+                } else {
+                    System.out.println("Phonenumber must be exactly 8 digits.");
+                }
+
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a 8 digits number.");
+            }
+        }
+    }
+
+    private static String correctZipCodeInput(Scanner scanner, String prompt) {
+        String zipCode;
+        while (true) {
+            try {
+                System.out.print(prompt);
+                zipCode = scanner.nextLine().trim();
+                if (!zipCode.matches("\\d+")) {
+                    throw new NumberFormatException("Only numeric values are allowed");
+                }
+                if (Integer.parseInt(zipCode) >= 1000 && Integer.parseInt(zipCode) <= 9990) {
+                    return zipCode;
+                } else {
+                    System.out.println("Zipcode has to be 4 digits.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a 4 digits number.");
+            }
+        }
+    }
+
+    private static String correctEmailInput(Scanner scanner, String prompt) {
+        String email;
+        while (true) {
+            System.out.print(prompt);
+            email = scanner.nextLine();
+
+            if (email.contains("@") && email.contains(".")) {
+                return email;
+            } else {
+                System.out.println("Invalid input. Email must contain '@' and '.' - Try again.");
+            }
+        }
+    }
 
 
     private void addCompetitionResult() {
@@ -938,7 +937,7 @@ private static String correctEmailInput(Scanner scanner, String prompt) {
         if (member == null) {
             System.out.println("No member found with the given ID.");
             return;
-    }
+        }
 
         System.out.println("Enter event name: ");
         String eventName = scanner.nextLine();
@@ -961,7 +960,7 @@ private static String correctEmailInput(Scanner scanner, String prompt) {
         System.out.println("--- All Competition Results ---");
 
         List<CompetitionResults> results = competitionResultController.getAllResults();
-        if(results.isEmpty()) {
+        if (results.isEmpty()) {
             System.out.println("No competition results found.");
         } else {
             for (CompetitionResults result : results) {
@@ -993,8 +992,6 @@ private static String correctEmailInput(Scanner scanner, String prompt) {
     }
 
 
-
-
     private void manageCompetitions() {
         int competitionOption;
         do {
@@ -1021,30 +1018,50 @@ private static String correctEmailInput(Scanner scanner, String prompt) {
         } while (competitionOption != 4); // Exit loop when option 4 is selected
     }
 
-    private void manageTrainingResults(){
+    private void manageTrainingResults() {
         int trainingResultsOption;
         do {
             System.out.println("\n ---Training results---");
             System.out.println("1. Add training results");
             System.out.println("2. View training results for member");
             System.out.println("3. View all training results");
-            System.out.println("4. Back to Main Menu");
+            System.out.println("4. View top 5 results for each disciplin");
+            System.out.println("5. Back to Main Menu");
             System.out.print("Please choose an option (1-3): ");
 
             try {
                 trainingResultsOption = Integer.parseInt(scanner.nextLine());
-                switch (trainingResultsOption){
+                switch (trainingResultsOption) {
                     case 1 -> addTrainingResults(); //Add trainingResults to member
                     case 2 -> viewMemberTrainingResults(); // View results for specific member
                     case 3 -> viewAllTrainingResults(); // View every training result
-                    case 4 -> System.out.println("Returning to Main Menu..."); // Exit submenu
+                    case 4 -> viewTop5Results();
+                    case 5 -> System.out.println("Returning to Main Menu..."); // Exit submenu
                     default -> System.out.println("Invalid option. Please choose a number between 1 and 4.");
                 }
-            } catch (NumberFormatException e){
+            } catch (NumberFormatException e) {
                 System.out.println("Invalid input. Please enter a number between 1 and 3.");
                 trainingResultsOption = -1;
             }
         } while (trainingResultsOption != 3); // Exit loop when option 4 is selected
+
+    }
+
+    private void viewTop5Results() {
+        int inputOptions;
+        System.out.println("\n---Results menu---");
+        System.out.println("1. top five results in CRAWL");
+        System.out.println("2. top five results in BACKCRAWL");
+        System.out.println("3. top five results in BREATHSTROKE");
+        System.out.println("4. top five results in BUTTERFLY");
+
+        inputOptions = Integer.parseInt(scanner.nextLine());
+
+        if (inputOptions == 1) {
+            trainingResultsController.top5Crawl();
+        } else if (inputOptions == 2) {
+            trainingResultsController.top5BackCrawl();
+        }
 
     }
 
@@ -1059,10 +1076,10 @@ private static String correctEmailInput(Scanner scanner, String prompt) {
             return;
         }
         List<TrainingResults> results = trainingResultsController.getResultsByMember(member);
-        if (results.isEmpty()){
+        if (results.isEmpty()) {
             System.out.println("No results found for the member.");
         } else {
-            for (TrainingResults result : results){
+            for (TrainingResults result : results) {
                 System.out.println(result);
             }
         }
@@ -1070,7 +1087,7 @@ private static String correctEmailInput(Scanner scanner, String prompt) {
 
     }
 
-    private void addTrainingResults(){
+    private void addTrainingResults() {
         System.out.println("\n---Add training results---");
         System.out.print("Enter memberId:");
         int memberId = Integer.parseInt(scanner.nextLine());
@@ -1078,18 +1095,14 @@ private static String correctEmailInput(Scanner scanner, String prompt) {
 
         MembershipLevel level = null;
 
-        if(member == null){
+        if (member == null) {
             System.out.println("No member found wtih given ID.");
             return;
         }
 
         System.out.print("Enter discipline (Breaststroke, Crawl, Backcrawl or Butterfly):");
-        String activityType = scanner.nextLine();
+        String activityType = scanner.nextLine().trim();
 
-        System.out.print("Enter the total length swum during this training session (In meters):");
-        int length = scanner.nextInt();
-        //Consume line
-        scanner.nextLine();
 
         System.out.print("Enter time:");
         double time = scanner.nextDouble();
@@ -1098,23 +1111,23 @@ private static String correctEmailInput(Scanner scanner, String prompt) {
         scanner.nextLine();
 
         System.out.print("Enter date of training (dd-MM-yyyy):");
-        String date = scanner.nextLine();
+        String date = scanner.nextLine().trim();
 
         try {
-            trainingResultsController.addTrainingResults(member, activityType, length, time, date, level);
+            trainingResultsController.addTrainingResults(member, activityType, time, date, level);
             System.out.println("Training results succesfully added.");
         } catch (Exception e) {
             System.out.println("Error adding training result." + e.getMessage());
         }
     }
 
-    public void viewAllTrainingResults(){
+    public void viewAllTrainingResults() {
         List<TrainingResults> results = trainingResultsController.getAllResults();
 
-        if (results.isEmpty()){
+        if (results.isEmpty()) {
             System.out.println("No training results found.");
         } else {
-            for (TrainingResults result : results){
+            for (TrainingResults result : results) {
                 System.out.println(result);
             }
         }

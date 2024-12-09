@@ -23,6 +23,8 @@ public abstract class Member {
     private int phoneNumber;             // Phone number of the member
     private List<Payment> payments = new ArrayList<>(); // List of all payments made by the member
     private Team team; // Reference to the team this member belongs to
+    private double time;
+    private String date;
 
 
     /**
@@ -152,6 +154,13 @@ public abstract class Member {
         return new ArrayList<>(this.payments); // Return a copy to avoid external modification
     }
 
+    public double getTime() {
+        return time;
+    }
+
+    public String getDate() {
+        return date;
+    }
     // -----------------------------------------------------------------------------------------------------
     // Set Methods
     // -----------------------------------------------------------------------------------------------------
@@ -237,7 +246,13 @@ public abstract class Member {
         this.paymentStatus = paymentStatus;
     }
 
+    public void setTime(double time) {
+        this.time = time;
+    }
 
+    public void setDate(String date) {
+        this.date = date;
+    }
 
     /**
      * Updates the age of the member.

@@ -680,13 +680,12 @@ public class FileHandler {
         return results;
     }
 
-    public void saveTrainingResults(List<TrainingResults> results, String filePath) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+    public void saveTrainingResults(List<TrainingResults> results) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(trainingResultsFilePath))) {
             for (TrainingResults result : results) {
                 writer.write(result.getMember().getMemberId() + ";" +
                         result.getLevel() + ";" +
                         result.getActivityType() + ";" +
-                        result.getLength() + ";" +
                         result.getTime() + ";" +
                         result.getDate());
                 writer.newLine();
@@ -705,14 +704,13 @@ public class FileHandler {
                 String memberIdStr = parts[0];
                 MembershipLevel level = MembershipLevel.valueOf(parts[1]);
                 ActivityType activityType = ActivityType.valueOf(parts[2]);
-                int length = Integer.parseInt(parts[3]);
-                double time = Double.parseDouble(parts[4]);
-                String date = parts[5];
+                double time = Double.parseDouble(parts[3]);
+                String date = parts[4];
 
                 // Resolve the member from MemberRepository
                 Member member = memberRepository.findById(Integer.parseInt(memberIdStr));
                 if (member != null) {
-                    results.add(new TrainingResults(member, level, activityType, length, time, date));
+                    results.add(new TrainingResults(member, level, activityType, time, date));
                 }
             }
 
