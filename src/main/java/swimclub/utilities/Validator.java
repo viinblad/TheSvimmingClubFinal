@@ -195,64 +195,116 @@ public class Validator {
         }
     }
 
-    public static void validateCompetitionResult(CompetitionResults result) {
-        if (result == null) {
-            throw new IllegalArgumentException("Invalid competition result: Result cannot be empty.");
-        }
-    }
-
-    public static void validateMemberNotNull(Member member) {
-        if (member == null) {
-            throw new IllegalArgumentException("Invalid member: Member cannot be empty.");
-        }
-    }
-
-
-    public static void validateEventName(String event) {
-        if (event == null || event.trim().isEmpty()){
-            throw new IllegalArgumentException("Invalid event name: Event name cannot be empty.");
-        }
-    }
-
-    public static void validatePlacement(int placement) {
-        if (placement < 1) {
-            throw new IllegalArgumentException("Invalid placement: Placement must be greater than 0.");
-        }
-    }
-
-    public static void validateTime(double time) {
-        if (time < 0) {
-            throw new IllegalArgumentException("Invalid time: Time must be greater than 0.");
-        }
-    }
-
-   public static void validateActivityType(ActivityType activityType) {
-       List<ActivityType> validActivityType = Arrays.asList(ActivityType.CRAWL, ActivityType.BACKCRAWL, ActivityType.BREASTSTROKE, ActivityType.BUTTERFLY);
-       if (!validActivityType.contains(activityType)) {
-           throw new IllegalArgumentException("Invalid activity type: Activity type must be Crawl, Backcrawl, Breastroke, or Butterfly.");
-       }
-   }
-
-
-    public static void validateDate(String date){
-        LocalDateTime now = LocalDateTime.now();
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-
-        try {
-            LocalDateTime inputDate = LocalDateTime.parse(date,formatter);
-
-            if (inputDate.isAfter(now)){
-                System.out.println("Has to be present time.");
+        /**
+         * Validates a competition result.
+         * Ensures that the result is not null.
+         *
+         * @param result The competition result to validate.
+         * @throws IllegalArgumentException if the result is null.
+         */
+        public static void validateCompetitionResult(CompetitionResults result) {
+            if (result == null) {
+                throw new IllegalArgumentException("Invalid competition result: Result cannot be empty.");
             }
-        } catch (Exception e){
-            System.out.println("Invalid date format. Please enter 'yyyy-mm-dd'");
         }
-    }
 
-    public static void validateTrainingResult(TrainingResults result) {
-        if (result == null) {
-            throw new IllegalArgumentException("Invalid competition result: Result cannot be null.");
+        /**
+         * Validates that a member is not null.
+         * Ensures that the provided member is not null.
+         *
+         * @param member The member to validate.
+         * @throws IllegalArgumentException if the member is null.
+         */
+        public static void validateMemberNotNull(Member member) {
+            if (member == null) {
+                throw new IllegalArgumentException("Invalid member: Member cannot be empty.");
+            }
+        }
+
+        /**
+         * Validates the event name.
+         * Ensures that the event name is not null or empty.
+         *
+         * @param event The event name to validate.
+         * @throws IllegalArgumentException if the event name is null or empty.
+         */
+        public static void validateEventName(String event) {
+            if (event == null || event.trim().isEmpty()) {
+                throw new IllegalArgumentException("Invalid event name: Event name cannot be empty.");
+            }
+        }
+
+        /**
+         * Validates the placement in a competition.
+         * Ensures that the placement is greater than or equal to 1.
+         *
+         * @param placement The placement to validate.
+         * @throws IllegalArgumentException if the placement is less than 1.
+         */
+        public static void validatePlacement(int placement) {
+            if (placement < 1) {
+                throw new IllegalArgumentException("Invalid placement: Placement must be greater than 0.");
+            }
+        }
+
+        /**
+         * Validates the time in a competition or training session.
+         * Ensures that the time is a non-negative value.
+         *
+         * @param time The time to validate.
+         * @throws IllegalArgumentException if the time is negative.
+         */
+        public static void validateTime(double time) {
+            if (time < 0) {
+                throw new IllegalArgumentException("Invalid time: Time must be greater than 0.");
+            }
+        }
+
+        /**
+         * Validates the activity type in a competition or training session.
+         * Ensures that the activity type is one of the predefined valid values (Crawl, Backcrawl, Breaststroke, Butterfly).
+         *
+         * @param activityType The activity type to validate.
+         * @throws IllegalArgumentException if the activity type is not one of the valid types.
+         */
+        public static void validateActivityType(ActivityType activityType) {
+            List<ActivityType> validActivityType = Arrays.asList(ActivityType.CRAWL, ActivityType.BACKCRAWL, ActivityType.BREASTSTROKE, ActivityType.BUTTERFLY);
+            if (!validActivityType.contains(activityType)) {
+                throw new IllegalArgumentException("Invalid activity type: Activity type must be Crawl, Backcrawl, Breaststroke, or Butterfly.");
+            }
+        }
+
+        /**
+         * Validates the date format and checks if the date is not in the future.
+         * Ensures that the date is in the correct format ("dd-MM-yyyy") and is not later than the current date.
+         * Prints a message if the date is in the future or if the format is incorrect.
+         *
+         * @param date The date to validate in the "dd-MM-yyyy" format.
+         */
+        public static void validateDate(String date) {
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
+            try {
+                LocalDateTime inputDate = LocalDateTime.parse(date, formatter);
+                if (inputDate.isAfter(now)) {
+                    System.out.println("Has to be present time.");
+                }
+            } catch (Exception e) {
+                System.out.println("Invalid date format. Please enter 'yyyy-MM-dd'.");
+            }
+        }
+
+        /**
+         * Validates a training result.
+         * Ensures that the training result is not null.
+         *
+         * @param result The training result to validate.
+         * @throws IllegalArgumentException if the result is null.
+         */
+        public static void validateTrainingResult(TrainingResults result) {
+            if (result == null) {
+                throw new IllegalArgumentException("Invalid competition result: Result cannot be null.");
+            }
         }
     }
-}

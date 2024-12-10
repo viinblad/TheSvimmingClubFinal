@@ -19,6 +19,8 @@ class PaymentServiceTest {
     private static final String TEST_PAYMENTRATES_FILE = "src/main/ressources/paymentRates.dat";
     private static final String TEST_TEAMS_FILE = "src/main/ressources/teams.dat";
     private static final String TEST_STAFF_FILE = "src/main/ressources/teams.dat";
+    private static final String TEST_TRAININGRESULTS_FILE = "src/main/ressources/trainingResults.dat";
+    private static final String TEST_COMPETITIONRESULTS_FILE = "src/main/ressources/competitionResults.dat";
 
     private FileHandler fileHandler;
     private MemberRepository memberRepository;
@@ -29,10 +31,14 @@ class PaymentServiceTest {
     public void setUp() {
         createTestFile(TEST_MEMBER_FILE);
         createTestFile(TEST_PAYMENT_FILE);
+        createTestFile(TEST_PAYMENTRATES_FILE);
         createTestFile(TEST_REMINDER_FILE);
         createTestFile(TEST_STAFF_FILE);
+        createTestFile(TEST_TEAMS_FILE);
+        createTestFile(TEST_COMPETITIONRESULTS_FILE);
+        createTestFile(TEST_TRAININGRESULTS_FILE);
 
-        fileHandler = new FileHandler(TEST_MEMBER_FILE, TEST_PAYMENT_FILE, TEST_REMINDER_FILE, TEST_PAYMENTRATES_FILE, TEST_TEAMS_FILE, TEST_STAFF_FILE);
+        fileHandler = new FileHandler(TEST_MEMBER_FILE, TEST_PAYMENT_FILE, TEST_REMINDER_FILE, TEST_PAYMENTRATES_FILE, TEST_TEAMS_FILE, TEST_STAFF_FILE,TEST_COMPETITIONRESULTS_FILE,TEST_TRAININGRESULTS_FILE);
         memberRepository = new MemberRepository(fileHandler);
         paymentRepository = new PaymentRepository("src/main/resources/reminders.dat");
         paymentService = new PaymentService(paymentRepository, fileHandler);
@@ -61,7 +67,7 @@ class PaymentServiceTest {
         // Arrange
         Member member = new SeniorMember("1", "Alice", "alice@example.com", "City", "Street", "Region",
                 12345, new MembershipType(MembershipCategory.COMPETITIVE, MembershipLevel.SENIOR),
-                MembershipStatus.ACTIVE, ActivityType.BACKCRAWL, PaymentStatus.PENDING, 30, 12345678);
+                MembershipStatus.ACTIVE, ActivityType.BACKCRAWL, PaymentStatus.PENDING, 30, 12345678,"SD");
         memberRepository.save(member);
         double paymentAmount = 1600;
 
@@ -79,7 +85,7 @@ class PaymentServiceTest {
         // Arrange
         Member member = new SeniorMember("1", "Alice", "alice@example.com", "City", "Street", "Region",
                 12345, new MembershipType(MembershipCategory.COMPETITIVE, MembershipLevel.SENIOR),
-                MembershipStatus.ACTIVE, ActivityType.BACKCRAWL, PaymentStatus.PENDING, 30, 12345678);
+                MembershipStatus.ACTIVE, ActivityType.BACKCRAWL, PaymentStatus.PENDING, 30, 12345678,"sd");
         memberRepository.save(member);
 
         paymentService.registerPayment(member.getMemberId(), 1600, memberRepository, fileHandler, TEST_PAYMENT_FILE);
@@ -114,7 +120,7 @@ class PaymentServiceTest {
         // Arrange
         Member member = new SeniorMember("1", "Alice", "alice@example.com", "City", "Street", "Region",
                 12345, new MembershipType(MembershipCategory.COMPETITIVE, MembershipLevel.SENIOR),
-                MembershipStatus.ACTIVE, ActivityType.BACKCRAWL, PaymentStatus.PENDING, 30, 12345678);
+                MembershipStatus.ACTIVE, ActivityType.BACKCRAWL, PaymentStatus.PENDING, 30, 12345678,"sdf");
         memberRepository.save(member);
 
         paymentService.registerPayment(member.getMemberId(), 1600, memberRepository, fileHandler, TEST_PAYMENT_FILE);
@@ -132,10 +138,10 @@ class PaymentServiceTest {
         // Arrange
         Member member1 = new SeniorMember("1", "Alice", "alice@example.com", "City", "Street", "Region",
                 12345, new MembershipType(MembershipCategory.COMPETITIVE, MembershipLevel.SENIOR),
-                MembershipStatus.ACTIVE, ActivityType.BACKCRAWL, PaymentStatus.COMPLETE, 30, 12345678);
+                MembershipStatus.ACTIVE, ActivityType.BACKCRAWL, PaymentStatus.COMPLETE, 30, 12345678,"Sd");
         Member member2 = new SeniorMember("2", "Bob", "bob@example.com", "City", "Street", "Region",
                 12345, new MembershipType(MembershipCategory.COMPETITIVE, MembershipLevel.SENIOR),
-                MembershipStatus.ACTIVE, ActivityType.CRAWL, PaymentStatus.PENDING, 30, 12345679);
+                MembershipStatus.ACTIVE, ActivityType.CRAWL, PaymentStatus.PENDING, 30, 12345679,"sd");
         memberRepository.save(member1);
         memberRepository.save(member2);
 
