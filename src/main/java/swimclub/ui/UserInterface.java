@@ -7,7 +7,12 @@ import swimclub.controllers.StaffController;
 import swimclub.controllers.TeamController;
 import swimclub.controllers.*;
 import swimclub.models.*;
+import swimclub.utilities.Validator;
 
+import java.time.LocalDate;
+import java.time.Year;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Locale;
@@ -414,29 +419,58 @@ public class UserInterface {
      * Adds a member to an existing team.
      */
     private void addMemberToTeam() {
+        // Display the list of teams and allow the user to pick a team
+        viewTeams();
         System.out.print("Enter Team Name: ");
-        String teamName = scanner.nextLine().trim();
+        String teamName = scanner.nextLine().trim();  // User input for team name
 
+        // Display the list of all members
+        memberController.viewAllMembers();
         System.out.print("Enter Member ID to Add: ");
+
+        // Initialize memberId and handle potential NumberFormatException
         int memberId;
         try {
-            memberId = Integer.parseInt(scanner.nextLine());
+            memberId = Integer.parseInt(scanner.nextLine());  // Parse the entered member ID
         } catch (NumberFormatException e) {
             System.out.println("Invalid Member ID. Please enter a valid number.");
             return;
         }
 
+        // Retrieve the member by ID from the memberController
         Member member = memberController.findMemberById(memberId);
         if (member == null) {
             System.out.println("Member not found.");
-            return;
+            return;  // If member is not found, exit the method
         }
 
-        try {
-            teamController.addMemberToTeam(teamName, member);
-            System.out.println("Member '" + member.getName() + "' added to team '" + teamName + "'.");
-        } catch (IllegalArgumentException e) {
-            System.out.println("Error adding member to team: " + e.getMessage());
+        // Debugging output: Check the current team name
+        System.out.println("Current team name of member " + member.getName() + ": " + member.getTeamName());
+
+        // Check if the member is already part of a team
+        // If the member's team is "no team" or null, they are unassigned
+        String memberTeamName = member.getTeamName();
+        if (memberTeamName == null || memberTeamName.trim().equalsIgnoreCase("no team")) {
+            // Proceed with adding the member to the team
+            Team team = teamController.findTeamByName(teamName);
+            if (team == null) {
+                System.out.println("Team '" + teamName + "' not found.");
+                return;  // If team doesn't exist, exit the method
+            }
+
+            try {
+                // Add member to the team
+                teamController.addMemberToTeam(teamName, member); // Team logic
+                memberController.addTeamToMember(member, teamName); // Member logic
+
+                // Debugging output: Check if the team was updated for the member
+                System.out.println("Member '" + member.getName() + "' has been assigned to team '" + teamName + "'.");
+            } catch (IllegalArgumentException e) {
+                System.out.println("Error adding member to team: " + e.getMessage());
+            }
+        } else {
+            // If the member is already part of a team, show the error message
+            System.out.println("Error: Member is already part of a team. Current team: " + member.getTeamName());
         }
     }
 
@@ -930,8 +964,23 @@ public class UserInterface {
     private void addCompetitionResult() {
         System.out.println("\n--- Add Competition Result ---");
 
-        System.out.print("Enter Member ID: ");
-        int memberId = Integer.parseInt(scanner.nextLine());
+        int memberId;
+        while (true) {
+            try {
+                System.out.print("Enter Member ID: ");
+                String input = scanner.nextLine().trim();
+                if (input.isEmpty()) {
+                    throw new IllegalArgumentException("Member ID cannot be empty.");
+                }
+                memberId = Integer.parseInt(input);
+                break;
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid Member ID. Please enter a numeric value.");
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+
         Member member = memberController.findMemberById(memberId);
 
         if (member == null) {
@@ -939,22 +988,92 @@ public class UserInterface {
             return;
         }
 
-        System.out.println("Enter event name: ");
-        String eventName = scanner.nextLine();
+        String eventName;
+        while (true) {
+            System.out.println("Enter event name (cannot be empty): ");
+            eventName = scanner.nextLine().trim();
+            try {
+                Validator.validateEventName(eventName);
+                break;
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
+            }
+        }
 
-        System.out.println("Enter placement: ");
-        int placement = Integer.parseInt(scanner.nextLine());
+        ActivityType activityType;
+        while (true) {
+            System.out.println("Enter activity type (Crawl, Butterfly, Breaststroke, Backcrawl): ");
+            String activityTypeInput = scanner.nextLine().trim().toUpperCase();
+            try {
+                activityType = ActivityType.valueOf(activityTypeInput);
+                break;
+            } catch (IllegalArgumentException e) {
+                System.out.println("Invalid activity type. Please enter one of the valid options.");
+            }
+        }
 
-        System.out.println("Enter time (in seconds): ");
-        double time = Double.parseDouble(scanner.nextLine());
+        int placement;
+        while (true) {
+            try {
+                System.out.println("Enter placement (must be greater than 0): ");
+                placement = Integer.parseInt(scanner.nextLine().trim());
+                Validator.validatePlacement(placement);
+                break;
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid placement. Please enter a numeric value.");
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+
+        double time;
+        while (true) {
+            try {
+                System.out.println("Enter time (in seconds, must be greater than 0): ");
+                time = Double.parseDouble(scanner.nextLine().trim());
+                Validator.validateTime(time);
+                break;
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid time. Please enter a numeric value.");
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+
+        System.out.println("Enter date (DD-MM-YYYY): ");
+        LocalDate now = LocalDate.now();
+        LocalDate competitionDate;
+
+        while (true) {
+            String dateInput = scanner.nextLine().trim();
+
+            try {
+                // Parse the input using the DateTimeFormatter
+                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+                competitionDate = LocalDate.parse(dateInput, dateTimeFormatter);
+
+                // Check if the date is not in the future
+                if (!competitionDate.isAfter(now)) {
+                    break; // Exit the loop if the date is valid and not in the future
+                } else {
+                    System.out.println("The date cannot be in the future. Please enter a valid date in DD-MM-YYYY format.");
+                }
+            } catch (DateTimeParseException e) {
+                System.out.println("Invalid date format or nonexistent date. Please enter a valid date in DD-MM-YYYY format.");
+            }
+        }
+
+        MembershipLevel level = member.getAge() < 18 ? MembershipLevel.JUNIOR : MembershipLevel.SENIOR;
 
         try {
-            competitionResultController.addResult(member, eventName, placement, time);
+            competitionResultController.addCompetitionResult(member, eventName, placement, time, competitionDate.toString(), level, activityType);
             System.out.println("Competition result added successfully.");
         } catch (Exception e) {
             System.out.println("Error adding competition result: " + e.getMessage());
         }
-    }
+}
+
+
 
     private void viewAllCompetitionResults() {
         System.out.println("--- All Competition Results ---");
@@ -1029,7 +1148,7 @@ public class UserInterface {
             System.out.println("1. Add training results");
             System.out.println("2. View training results for member");
             System.out.println("3. View all training results");
-            System.out.println("4. View top 5 results for each discipline");
+            System.out.println("4. View top 5 results for each disciplin");
             System.out.println("5. Back to Main Menu");
             System.out.print("Please choose an option (1-3): ");
 
@@ -1041,7 +1160,7 @@ public class UserInterface {
                     case 3 -> viewAllTrainingResults(); // View all training results
                     case 4 -> viewTop5Results(); // View top 5 results per discipline
                     case 5 -> System.out.println("Returning to Main Menu..."); // Exit submenu
-                    default -> System.out.println("Invalid option. Please choose a number between 1 and 4.");
+                    default -> System.out.println("Invalid option. Please choose a number between 1 and 5.");
                 }
             } catch (NumberFormatException e) {
                 System.out.println("Invalid input. Please enter a number between 1 and 3.");
@@ -1108,6 +1227,7 @@ public class UserInterface {
             default:
                 break;
         }
+
     }
 
     /**
@@ -1133,6 +1253,8 @@ public class UserInterface {
                 System.out.println(result);
             }
         }
+
+
     }
 
     /**
@@ -1161,9 +1283,29 @@ public class UserInterface {
 
         // Consume next line to prevent issues with scanner
         scanner.nextLine();
+        System.out.println("Enter date (DD-MM-YYYY): ");
+        LocalDate now = LocalDate.now();
+        LocalDate trainingDate;
 
-        System.out.print("Enter date of training (dd-MM-yyyy):");
-        String date = scanner.nextLine().trim();
+        while (true) {
+            String dateInput = scanner.nextLine().trim();
+
+            try {
+                // Parse the input using the DateTimeFormatter
+                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+                trainingDate = LocalDate.parse(dateInput, dateTimeFormatter);
+
+                // Check if the date is not in the future
+                if (!trainingDate.isAfter(now)) {
+                    break; // Exit the loop if the date is valid and not in the future
+                } else {
+                    System.out.println("The date cannot be in the future. Please enter a valid date in DD-MM-YYYY format.");
+                }
+            } catch (DateTimeParseException e) {
+                System.out.println("Invalid date format or nonexistent date. Please enter a valid date in DD-MM-YYYY format.");
+            }
+        }
+
 
         try {
             trainingResultsController.addTrainingResults(member, activityType, time, date, level);
@@ -1187,5 +1329,4 @@ public class UserInterface {
             }
         }
     }
-
 }

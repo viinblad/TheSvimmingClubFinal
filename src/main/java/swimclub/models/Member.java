@@ -22,35 +22,41 @@ public abstract class Member {
     private int age;                     // Age of the member
     private int phoneNumber;             // Phone number of the member
     private List<Payment> payments = new ArrayList<>(); // List of all payments made by the member
+    private String teamName;
     private Team team; // Reference to the team this member belongs to
     private double time;
     private String date;
 
-
+    // -----------------------------------------------------------------------------------------------------
+    // Constructor
+    // -----------------------------------------------------------------------------------------------------
     /**
      * Constructor for initializing a Member object.
      */
     public Member(String memberId, String name, String email, String city, String street,
                   String region, int zipcode, MembershipType membershipType,
-                  MembershipStatus membershipStatus,ActivityType activityType, PaymentStatus paymentStatus,
-                  int age, int phoneNumber) {
+                  MembershipStatus membershipStatus, ActivityType activityType, PaymentStatus paymentStatus,
+                  int age, int phoneNumber, String teamName) {
         this.memberId = Integer.parseInt(memberId);
         this.name = name;
         this.email = email;
         this.city = city;
         this.street = street;
         this.region = region;
-        this.zipcode =  zipcode;
+        this.zipcode = zipcode;
         this.membershipType = membershipType;
         this.membershipStatus = membershipStatus;
         this.activityType = activityType;
         this.paymentStatus = paymentStatus;
         this.age = age;
         this.phoneNumber = phoneNumber;
+
+        // Initialize teamName to "no team" if not provided
+        this.teamName = (teamName != null && !teamName.trim().isEmpty()) ? teamName : "no team";
     }
 
     // -----------------------------------------------------------------------------------------------------
-    // Get Methods
+    // Getter Methods
     // -----------------------------------------------------------------------------------------------------
 
     /**
@@ -145,24 +151,17 @@ public abstract class Member {
      *
      * @return The team or null if not assigned.
      */
-    public Team getTeam() {
-        return team;
+    public String getTeamName() {
+        return this.teamName;
     }
 
 
     public List<Payment> getPayments() {
-        return new ArrayList<>(this.payments); // Return a copy to avoid external modification
+        return new ArrayList<>(payments); // Return a copy to avoid external modification
     }
 
-    public double getTime() {
-        return time;
-    }
-
-    public String getDate() {
-        return date;
-    }
     // -----------------------------------------------------------------------------------------------------
-    // Set Methods
+    // Setter Methods
     // -----------------------------------------------------------------------------------------------------
     /**
      * @param memberId  The unique ID of the member.
@@ -274,10 +273,10 @@ public abstract class Member {
     /**
      * Sets the team for the member.
      *
-     * @param team The team to assign.
+     * @param teamName The team to assign.
      */
-    public void setTeam(Team team) {
-        this.team = team;
+    public void setTeamName(String teamName) {
+        this.teamName = teamName;
     }
 
     // -----------------------------------------------------------------------------------------------------
@@ -286,15 +285,15 @@ public abstract class Member {
 
     /**
      * Adds a payment to the member's payment list.
+     * Updates the payment status automatically.
      */
     public void addPayment(Payment payment) {
-        this.payments.add(payment);
-        updatePaymentStatus(); // Update the overall payment status based on the new payment
+        payments.add(payment);
+        updatePaymentStatus(); // Update the payment status based on the current payments
     }
 
     /**
      * Calculates the total amount paid by the member.
-     *
      * @return The total amount paid.
      */
     public double calculateTotalPaid() {
@@ -305,15 +304,18 @@ public abstract class Member {
     }
 
     /**
-     * Updates the overall payment status of the member based on individual payments.
+     * Updates the overall payment status of the member.
+     * If any payment is pending, the status is set to PENDING.
+     * If all payments are complete, the status is set to COMPLETE.
+     * Otherwise, the status is set to FAILED.
      */
     private void updatePaymentStatus() {
         if (payments.stream().anyMatch(payment -> payment.getPaymentStatus() == PaymentStatus.PENDING)) {
-            this.paymentStatus = PaymentStatus.PENDING;
+            paymentStatus = PaymentStatus.PENDING;
         } else if (payments.stream().allMatch(payment -> payment.getPaymentStatus() == PaymentStatus.COMPLETE)) {
-            this.paymentStatus = PaymentStatus.COMPLETE;
+            paymentStatus = PaymentStatus.COMPLETE;
         } else {
-            this.paymentStatus = PaymentStatus.FAILED;
+            paymentStatus = PaymentStatus.FAILED;
         }
     }
 
@@ -323,7 +325,6 @@ public abstract class Member {
 
     /**
      * Abstract method to be implemented by subclasses to provide specific membership descriptions.
-     *
      * @return A string describing the member's type and attributes.
      */
     public abstract String getMembershipDescription();

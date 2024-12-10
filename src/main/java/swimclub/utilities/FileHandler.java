@@ -1,8 +1,10 @@
 package swimclub.utilities;
 
+import swimclub.controllers.TeamController;
 import swimclub.models.*;
 import swimclub.repositories.MemberRepository;
 import swimclub.repositories.StaffRepository;
+import swimclub.repositories.TeamRepository;
 
 import java.io.*;
 import java.time.LocalDate;
@@ -77,6 +79,10 @@ public class FileHandler {
                 if (!line.trim().isEmpty()) {
                     Member member = parseMember(line);
                     if (member != null) {
+                        // Ensure the team name is not null or empty
+                        if (member.getTeamName() == null || member.getTeamName().isEmpty()) {
+                            member.setTeamName("No team");  // Set "No team" if it's missing
+                        }
                         members.add(member);
                     }
                 }
@@ -219,6 +225,10 @@ public class FileHandler {
     // ---------------------------
 
     private String formatMember(Member member) {
+        String teamName = (member.getTeamName() != null && !member.getTeamName().isEmpty())
+                ? member.getTeamName()
+                : "No team";  // If teamName is null or empty, use "No team"
+
         return member.getMemberId() + ";" +
                 member.getName() + ";" +
                 member.getEmail() + ";" +
@@ -231,13 +241,23 @@ public class FileHandler {
                 member.getMembershipType().getLevel() + " " +
                 member.getMembershipType().getCategory() + ";" +
                 member.getMembershipStatus() + ";" +
-                member.getActivityType() + ";" +  // Added ActivityType
-                member.getPaymentStatus();
+                member.getActivityType() + ";" +
+                member.getPaymentStatus() + ";" +
+                teamName;  // Use the teamName or "No team" if null/empty
     }
-
+   // String teamName, TeamType teamType, Coach coach
+    /**
+     * Parses a line of text into a Member object (Junior or Senior).
+     *
+     * @param line A semicolon-separated string representing member details.
+     * @return A Member object if parsing is successful; otherwise, null.
+     */
     private Member parseMember(String line) {
+        // Split the line into parts using semicolon as a delimiter
         String[] parts = line.split(";");
-        if (parts.length < 13) {  // Ensure the expected number of fields
+
+        // Validate that the line has at least 13 fields (excluding optional team name)
+        if (parts.length < 13) {
             System.err.println("Skipping invalid member data: " + line);
             return null;
         }
@@ -257,30 +277,40 @@ public class FileHandler {
             // Parse membership type (e.g., "SENIOR COMPETITIVE")
             String membershipDescription = parts[9];
             String[] membershipParts = membershipDescription.split(" ");
+
+            // Construct MembershipType from parsed values
             MembershipType membershipType = new MembershipType(
-                    MembershipCategory.valueOf(membershipParts[1].toUpperCase()),
-                    MembershipLevel.valueOf(membershipParts[0].toUpperCase())
+                    MembershipCategory.valueOf(membershipParts[1].toUpperCase()), // COMPETITIVE/RECREATIONAL
+                    MembershipLevel.valueOf(membershipParts[0].toUpperCase())    // JUNIOR/SENIOR
             );
 
-            // Parse membership status (e.g., ACTIVE)
+            // Parse membership status (ACTIVE/INACTIVE), activity type, and payment status
             MembershipStatus membershipStatus = MembershipStatus.valueOf(parts[10].toUpperCase());
             ActivityType activityType = ActivityType.valueOf(parts[11].toUpperCase());
             PaymentStatus paymentStatus = PaymentStatus.valueOf(parts[12].toUpperCase());
 
-            // Validate the data
+            // Extract team name, which can be null or empty
+            String teamName = (parts.length > 13 && !parts[13].trim().isEmpty()) ? parts[13].trim() : "No team";
+
+            // Validate the parsed data using a Validator utility
             Validator.validateMemberData(name, age, membershipDescription, email, city, street, region, zipcode,
                     phoneNumber, membershipStatus, activityType.toString(), paymentStatus);
 
-            // Create the correct subclass of Member based on age (Junior or Senior)
+            // Create the appropriate subclass of Member based on membership level (Junior/Senior)
             if (membershipType.getLevel() == MembershipLevel.JUNIOR) {
-                return new JuniorMember(String.valueOf(id), name, email, city, street, region, zipcode, membershipType,
-                        membershipStatus, activityType, paymentStatus, age, phoneNumber);
+                return new JuniorMember(
+                        String.valueOf(id), name, email, city, street, region, zipcode, membershipType,
+                        membershipStatus, activityType, paymentStatus, age, phoneNumber, teamName
+                );
             } else {
-                return new SeniorMember(String.valueOf(id), name, email, city, street, region, zipcode, membershipType,
-                        membershipStatus, activityType, paymentStatus, age, phoneNumber);
+                return new SeniorMember(
+                        String.valueOf(id), name, email, city, street, region, zipcode, membershipType,
+                        membershipStatus, activityType, paymentStatus, age, phoneNumber, teamName
+                );
             }
 
         } catch (Exception e) {
+            // Log an error if parsing fails and return null
             System.err.println("Error parsing member: " + line + " - " + e.getMessage());
             return null;
         }
@@ -647,9 +677,11 @@ public class FileHandler {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
             for (CompetitionResults result : results) {
                 writer.write(result.getMember().getMemberId() + ";" +
-                        result.getEvent() + ";" +
-                        result.getPlacement() + ";" +
-                        result.getTime());
+                            result.getActivityType() + ";" +
+                            result.getEvent() + ";" +
+                            result.getPlacement() + ";" +
+                            result.getDate() + ";" +
+                            result.getTime());
                 writer.newLine();
             }
         } catch (IOException e) {
@@ -663,18 +695,24 @@ public class FileHandler {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split(";");
-                String memberIdStr = parts[0];
+
+                // Parse required data
+                int memberId = Integer.parseInt(parts[0]);
                 String event = parts[1];
-                int placement = Integer.parseInt(parts[2]);
-                double time = Double.parseDouble(parts[3]);
+                ActivityType activityType = ActivityType.valueOf(parts[2].toUpperCase()); // Assuming activity type is stored as a string
+                int placement = Integer.parseInt(parts[3]);
+                double time = Double.parseDouble(parts[4]);
+                String date = parts[5];
+                MembershipLevel level = MembershipLevel.valueOf(parts[6].toUpperCase()); // Assuming level is stored as a string
 
                 // Resolve the member from MemberRepository
-                Member member = memberRepository.findById(Integer.parseInt(memberIdStr));
+                Member member = memberRepository.findById(memberId);
                 if (member != null) {
-                    results.add(new CompetitionResults(member, event, placement, time));
+                    // Add competition result to the list
+                    results.add(new CompetitionResults(member, level, event, placement, time, date, activityType));
                 }
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             System.err.println("Error loading competition results: " + e.getMessage());
         }
         return results;

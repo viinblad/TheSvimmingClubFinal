@@ -8,10 +8,6 @@ import swimclub.utilities.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Controller class for managing training results. It handles the logic for adding,
- * retrieving, and sorting training results for different swimming disciplines.
- */
 public class TrainingResultsController {
     private final TrainingResultsService trainingService;
     private final TrainingResultsRepository trainingResultsRepository;
@@ -93,14 +89,6 @@ public class TrainingResultsController {
         return trainingService.getAllResults();
     }
 
-    /**
-     * Displays the top 5 training results for the Crawl discipline (Senior).
-     * Sorts the results based on time and prints the top performers.
-     */
-    /**
-     * Displays the top 5 training results for the Crawl discipline (Senior).
-     * Sorts the results based on time and prints the top performers.
-     */
     public void top5Crawl() {
         List<TrainingResults> crawlList = trainingResultsRepository.getAllResults();
 
@@ -143,6 +131,7 @@ public class TrainingResultsController {
                 backCrawlResults.add(result);
             }
         }
+        backCrawlResults.sort(new CrawlComparator());
 
         // If no results for Backcrawl, print a message
         if (backCrawlResults.isEmpty()) {
