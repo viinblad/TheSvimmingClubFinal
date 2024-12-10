@@ -60,7 +60,7 @@ public class UserInterface {
             printMenu();  // Display the main menu
             option = getUserInput();  // Get user's input option
             handleOption(option);  // Handle the option selected by the user
-        } while (option != 9); // Exit when the user selects option 8
+        } while (option != 10); // Exit when the user selects option 8
     }
 
     /**
@@ -498,6 +498,7 @@ public class UserInterface {
 
         try {
             teamController.removeMemberFromTeam(teamName, member);
+            memberController.removeTeamFromMember(member);
             System.out.println("Member '" + member.getName() + "' removed from team '" + teamName + "'.");
         } catch (IllegalArgumentException e) {
             System.out.println("Error removing member from team: " + e.getMessage());
@@ -1148,25 +1149,26 @@ public class UserInterface {
             System.out.println("1. Add training results");
             System.out.println("2. View training results for member");
             System.out.println("3. View all training results");
-            System.out.println("4. View top 5 results for each disciplin");
+            System.out.println("4. View top 5 results for each discipline");
             System.out.println("5. Back to Main Menu");
             System.out.print("Please choose an option (1-5): ");
 
             try {
                 trainingResultsOption = Integer.parseInt(scanner.nextLine());
-                switch (trainingResultsOption) {
-                    case 1 -> addTrainingResults(); // Add training results to a member's record
-                    case 2 -> viewMemberTrainingResults(); // View specific member's results
-                    case 3 -> viewAllTrainingResults(); // View all training results
-                    case 4 -> viewTop5Results(); // View top 5 results per discipline
+                switch (trainingResultsOption){
+                    case 1 -> addTrainingResults(); //Add trainingResults to member
+                    case 2 -> viewMemberTrainingResults(); // View results for specific member
+                    case 3 -> viewAllTrainingResults(); // View every training result
+                    case 4 -> viewTop5Results();
                     case 5 -> System.out.println("Returning to Main Menu..."); // Exit submenu
                     default -> System.out.println("Invalid option. Please choose a number between 1 and 5.");
                 }
             } catch (NumberFormatException e) {
-                System.out.println("Invalid input. Please enter a number between 1 and 3.");
+                System.out.println("Invalid input. Please enter a number between 1 and 5.");
                 trainingResultsOption = -1;
             }
-        } while (trainingResultsOption != 5); // Exit loop when option 5 is selected
+        } while (trainingResultsOption != 5); // Exit loop when option 4 is selected
+
     }
 
     /**
@@ -1271,7 +1273,7 @@ public class UserInterface {
         MembershipLevel level = null;
 
         if (member == null) {
-            System.out.println("No member found with given ID.");
+            System.out.println("No member found wtih given ID.");
             return;
         }
 
