@@ -6,7 +6,6 @@ import swimclub.utilities.PasswordUtils;
 import swimclub.utilities.Validator;
 
 import java.time.LocalDate;
-import java.time.Year;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.InputMismatchException;
@@ -29,12 +28,16 @@ public class UserInterface {
 
 
     /**
-     * Constructor to initialize the UserInterface with the member controller and payment controller.
+     * Constructor to initialize the UserInterface with the provided controllers.
+     * This constructor sets up the necessary controllers for managing members, payments, teams, competition results, staff, training results, and admin functionalities.
      *
-     * @param memberController  The controller that handles the logic for member actions.
-     * @param paymentController The controller that handles the logic for payment actions.
-     * @param teamController    The controller that handles the logic for team actions.
-     * @param adminController
+     * @param memberController             The controller that handles the logic for member actions, such as registering, searching, and updating members.
+     * @param paymentController            The controller that manages payment-related actions, including registering and viewing payments.
+     * @param teamController               The controller that handles team-related actions, such as creating and managing teams.
+     * @param competitionResultController  The controller that manages competition results, including viewing and adding results.
+     * @param staffController              The controller that handles staff-related actions, such as managing staff members and roles.
+     * @param trainingResultsController    The controller that manages training results, including adding and viewing training outcomes for members.
+     * @param adminController              The controller that handles admin functionalities, including user management (adding, updating, deleting users).
      */
     public UserInterface(MemberController memberController, PaymentController paymentController, TeamController teamController, CompetitionResultController competitionResultController, StaffController staffController, TrainingResultsController trainingResultsController, AdminController adminController) {
 
@@ -51,50 +54,20 @@ public class UserInterface {
     /**
      * Starts the user interface, displaying the login prompt (adminMenu) and handling user input.
      */
+
     public void start() {
-        // First, display the admin login menu
-        adminMenu();  // This will handle login for admins
+        boolean loggedIn = false;
 
-        // Once logged in, proceed with the regular menu
-        int option;
-        do {
-            printMenu();  // Display the main menu
-            option = getUserInput();  // Get user's input option
-            handleOption(option);  // Handle the option selected by the user
-        } while (option != 10); // Exit when the user selects option 10 (Exit)
-    }
-
-    /**
-     * Prints the main menu of the user interface.
-     */
-    private void printMenu() {
-        System.out.println("\n--- Swim Club Member Management ---");
-        System.out.println("1. Register New Member");
-        System.out.println("2. Search Members");
-        System.out.println("3. Update Member");
-        System.out.println("4. View All Members");
-        System.out.println("5. Delete Member");
-        System.out.println("6. Payment Management");
-        System.out.println("7. Team Management");
-        System.out.println("8. Competition Management");
-        System.out.println("9. Register training results");
-        System.out.println("10. Exit");
-        System.out.print("Please choose an option (1-10): ");
-    }
-
-    /**
-     * Reads user input to select an option from the menu.
-     *
-     * @return The selected option as an integer.
-     */
-    private int getUserInput() {
-        int option = -1;
-        try {
-            option = Integer.parseInt(scanner.nextLine());  // Parse the input as integer
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid input. Please enter a number between 1 and 10.");
+        // Loop until login is successful
+        while (!loggedIn) {
+            try {
+                adminMenu();  // The adminMenu method handles login and role-based menu redirection
+                loggedIn = true;  // If login succeeds, exit the loop
+            } catch (IllegalArgumentException e) {
+                System.out.println("Login failed: " + e.getMessage());
+                System.out.println("Please try again.\n");
+            }
         }
-        return option;
     }
 
     public void adminMenu() {
@@ -107,136 +80,264 @@ public class UserInterface {
             User user = adminController.login(username, password);
             System.out.println("Welcome, " + user.getUsername() + " (" + user.getRole() + ")!");
 
-            // Admin-specific functionality: Show menu based on the role
-            if (user.getRole() == Role.ADMIN) {
-                showAdminMenu(); // Show the Admin menu if the user is an Admin
-            } else if (user.getRole() == Role.CHAIRMAN) {
-                showChairmanMenu(); // Show Chairman menu if the user is a Chairman
-            } else if (user.getRole() == Role.TREASURER) {
-                showTreasurerMenu(); // Show Treasurer menu if the user is a Treasurer
-            } else if (user.getRole() == Role.COACH) {
-                showCoachMenu(); // Show Coach menu if the user is a Coach
-            } else {
-                System.out.println("Role not authorized.");
+            // Redirect to role-specific menus
+            switch (user.getRole()) {
+                case ADMIN -> showAdminMenu(); // Full access for Admin
+                case CHAIRMAN -> showChairmanMenu(); // Access for Chairman
+                case TREASURER -> showTreasurerMenu(); // Access for Treasurer
+                case COACH -> showCoachMenu(); // Access for Coach
+                default -> System.out.println("Role not authorized.");
+            }
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid username or password."); // Rethrow exception for the start method
+        }
+    }
+
+    /**
+     * Displays the Admin menu and handles the admin-related functions.
+     * The Admin menu allows the creation of new users and access to different management areas.
+     */
+    private void showAdminMenu() {
+        int option = -1;
+        do {
+            System.out.println("\n--- Admin Functions ---");
+            System.out.println("1. Create New Admin User");
+            System.out.println("2. Manage Users");
+            System.out.println("3. Manage Members");
+            System.out.println("4. Manage Teams");
+            System.out.println("5. Manage Payments");
+            System.out.println("6. Manage Competitions");
+            System.out.println("7. Manage Training Results");
+            System.out.println("8. Exit");
+            System.out.print("Please choose an option (1-8): ");
+
+            try {
+                option = Integer.parseInt(scanner.nextLine());  // Read user input and parse it to an integer
+
+                switch (option) {
+                    case 8 -> {
+                        exitProgram();  // Call exitProgram() to exit the program
+                        System.out.println("Returning to Main Menu...");  // Notify the user before exiting
+                    }
+                    default -> handleAdminOptions(option);  // Handle selected option in the menu
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a number between 1 and 8.");
+            } catch (Exception e) {
+                System.err.println("An error occurred: " + e.getMessage());
+            }
+        } while (true);  // Keep running until option 8 is selected to exit
+    }
+
+    /**
+     * Handles the options selected by the admin, such as creating new users, managing members, etc.
+     *
+     * @param option The selected option from the admin menu.
+     */
+    private void handleAdminOptions(int option) {
+        try {
+            switch (option) {
+                case 1 -> createNewAdminUser();  // Admin can create new admin users
+                case 2 -> manageUsers();  // Admin can manage existing users (list, remove, etc.)
+                case 3 -> manageMembers();  // Manage members (available for Chairman)
+                case 4 -> manageTeams();  // Manage teams (available for Chairman, Coach)
+                case 5 -> handlePayments();  // Handle payments (available for Chairman, Treasurer)
+                case 6 -> manageCompetitions();  // Manage competitions (available for Chairman)
+                case 7 -> manageTrainingResults();  // Manage training results (available for Chairman, Coach)
+                default -> System.out.println("Invalid option. Please choose a valid number.");
+            }
+        } catch (Exception e) {
+            // Catch any exception that occurs while handling options
+            System.err.println("An error occurred while processing your option: " + e.getMessage());
+        }
+    }
+
+
+
+
+    /**
+     * Allows the admin to create a new user with a specified role (Admin, Chairman, Treasurer, Coach).
+     * The password is validated, hashed, and the user is added to the system.
+     */
+    private void createNewAdminUser() {
+        try {
+            System.out.print("Enter username for new user: ");
+            String username = scanner.nextLine();
+
+            // Validate that the username is not empty
+            while (username.trim().isEmpty()) {
+                System.out.println("Username cannot be empty.");
+                System.out.print("Enter username for new user: ");
+                username = scanner.nextLine();
             }
 
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
+            System.out.print("Enter password for new user: ");
+            String password = scanner.nextLine();
+
+            // Validate password length and security
+            while (password.length() < 6) {
+                System.out.println("Password must be at least 6 characters long.");
+                System.out.print("Enter password for new user: ");
+                password = scanner.nextLine();
+            }
+
+            // Hash the password and generate a salt
+            String salt = PasswordUtils.generateSalt();  // Generate salt for password hashing
+            String hashedPassword = PasswordUtils.hashPassword(password, salt);  // Hash the password
+
+            // Ask for the role of the new user
+            System.out.println("Select role for the new user:");
+            System.out.println("1. CHAIRMAN");
+            System.out.println("2. TREASURER");
+            System.out.println("3. COACH");
+            System.out.println("4. ADMIN");
+            System.out.print("Enter the number for the role: ");
+
+            int roleOption = -1;
+            boolean validRole = false;
+            Role role = null;
+
+            // Validate user input for role selection
+            while (!validRole) {
+                try {
+                    roleOption = Integer.parseInt(scanner.nextLine());
+                    switch (roleOption) {
+                        case 1 -> { role = Role.CHAIRMAN; validRole = true; }
+                        case 2 -> { role = Role.TREASURER; validRole = true; }
+                        case 3 -> { role = Role.COACH; validRole = true; }
+                        case 4 -> { role = Role.ADMIN; validRole = true; }
+                        default -> System.out.println("Invalid role selected. Please choose a valid number between 1 and 4.");
+                    }
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid input. Please enter a number between 1 and 4.");
+                }
+            }
+
+            // Create the new user with the selected role
+            User newUser = new User(username, hashedPassword, salt, role);
+
+            // Add the new user to the repository
+            adminController.register(username, password, role);  // Using AdminController to register the new user
+
+            // Confirm the user was created
+            System.out.println("User created successfully with role: " + role);
+        } catch (Exception e) {
+            System.err.println("An error occurred while creating the new user: " + e.getMessage());
         }
     }
 
-    // Admin menu for creating new users and managing all areas
-    private void showAdminMenu() {
-        System.out.println("\n--- Admin Functions ---");
-        System.out.println("1. Create New Admin User");
-        System.out.println("2. Manage Users");
-        System.out.println("3. Manage Members");
-        System.out.println("4. Manage Teams");
-        System.out.println("5. Manage Payments");
-        System.out.println("6. Manage Competitions");
-        System.out.println("7. Manage Training Results");
-        System.out.println("8. Exit");
-        System.out.print("Please choose an option (1-8): ");
+    /**
+     * Allows the admin to manage users. This includes viewing, deleting, and updating user details.
+     */
+    private void manageUsers() {
+        System.out.println("\n--- Manage Users ---");
+        System.out.println("1. List All Users");
+        System.out.println("2. Delete User");
+        System.out.println("3. Update User");
+        System.out.println("4. Exit to Admin Menu");
+        System.out.print("Please choose an option (1-4): ");
 
-        int option = Integer.parseInt(scanner.nextLine());
-        handleAdminOptions(option);
-    }
-
-    // Handling admin options, including creating new users and accessing features
-    private void handleAdminOptions(int option) {
-        switch (option) {
-            case 1:
-                createNewAdminUser();  // Admin can create new admin users
-                break;
-            case 2:
-                manageUsers();  // Admin can manage existing users (list, remove, etc.)
-                break;
-            case 3:
-                manageMembers(option);  // Manage members (available for Chairman)
-                break;
-            case 4:
-                manageTeams();  // Manage teams (available for Chairman, Coach)
-                break;
-            case 5:
-                handlePayments();  // Handle payments (available for Chairman, Treasurer)
-                break;
-            case 6:
-                manageCompetitions();  // Manage competitions (available for Chairman)
-                break;
-            case 7:
-                manageTrainingResults();  // Manage training results (available for Chairman, Coach)
-                break;
-            case 8:
-                exitProgram();  // Exit the program
-                break;
-            default:
-                System.out.println("Invalid option. Please choose a valid number.");
+        int option;
+        try {
+            option = Integer.parseInt(scanner.nextLine());
+            switch (option) {
+                case 1 -> listAllUsers();  // List all users
+                case 2 -> deleteUser();     // Delete a user
+                case 3 -> updateUser();     // Update user details
+                case 4 -> System.out.println("Returning to Admin Menu..."); // Exit to Admin Menu
+                default -> System.out.println("Invalid option. Please choose a valid number between 1 and 4.");
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid input. Please enter a number between 1 and 4.");
         }
     }
 
+    /**
+     * Displays a list of all users in the system.
+     */
+    /**
+     * Displays a list of all users in the system.
+     */
+    private void listAllUsers() {
+        System.out.println("\n--- All Users ---");
+        // Call the listUsers method from AdminController to display the list of users
+        adminController.listUsers(); // This will display all users
+    }
 
-    // Function to create a new admin user (Admin can create new users with different roles)
-    private void createNewAdminUser() {
-        System.out.print("Enter username for new user: ");
+    /**
+     * Prompts the admin to delete a user by their username.
+     */
+    private void deleteUser() {
+        System.out.print("Enter the username of the user to delete: ");
         String username = scanner.nextLine();
 
-        System.out.print("Enter password for new user: ");
-        String password = scanner.nextLine();
-
-        // Validate password length and security
-        while (password.length() < 6) {
-            System.out.println("Password must be at least 6 characters long.");
-            System.out.print("Enter password for new user: ");
-            password = scanner.nextLine();
+        // Try to delete the user using AdminController
+        try {
+            adminController.deleteUser(adminController.getLoggedInUsername(), adminController.getLoggedInPassword(), username);
+            System.out.println("User '" + username + "' has been deleted successfully.");
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error: " + e.getMessage());
         }
-
-        // Hash the password and generate a salt
-        String salt = PasswordUtils.generateSalt();  // Generate salt for password hashing
-        String hashedPassword = PasswordUtils.hashPassword(password, salt);  // Hash the password
-
-        // Ask for the role of the new user
-        System.out.println("Select role for the new user:");
-        System.out.println("1. CHAIRMAN");
-        System.out.println("2. TREASURER");
-        System.out.println("3. COACH");
-        System.out.println("4. ADMIN");
-        System.out.print("Enter the number for the role: ");
-        int roleOption = Integer.parseInt(scanner.nextLine());
-
-        // Map input to the corresponding role
-        Role role = null;
-        switch (roleOption) {
-            case 1:
-                role = Role.CHAIRMAN;
-                break;
-            case 2:
-                role = Role.TREASURER;
-                break;
-            case 3:
-                role = Role.COACH;
-                break;
-            case 4:
-                role = Role.ADMIN;
-                break;
-            default:
-                System.out.println("Invalid role selected. Defaulting to COACH.");
-                role = Role.COACH;  // Default to COACH if invalid input
-        }
-
-        // Create the new user with the selected role
-        User newUser = new User(username, hashedPassword, salt, role);
-
-        // Add the new user to the repository
-        adminController.register(username, password, role);  // Using AdminController to register the new user
-        System.out.println("User created successfully with role: " + role);
     }
 
-    // Manage Users (List, delete, etc. for Admin)
-    private void manageUsers() {
-        // Implement functionality to manage users (view, remove, update, etc.)
-        System.out.println("\n--- Manage Users ---");
-        // Display list of users, delete, or update
+    /**
+     * Allows the admin to update the details of an existing user.
+     */
+    private void updateUser() {
+        System.out.print("Enter the username of the user to update: ");
+        String username = scanner.nextLine();
+
+        // Try to find the user to update using the AdminController
+        User userToUpdate = adminController.getUserByUsername(username);
+        if (userToUpdate != null) {
+            // Prompt for new details (e.g., password, role, etc.)
+            System.out.print("Enter new password for the user (leave blank to keep current): ");
+            String newPassword = scanner.nextLine();
+
+            if (!newPassword.isEmpty()) {
+                // If a new password is provided, hash and update it
+                String salt = PasswordUtils.generateSalt();
+                String hashedPassword = PasswordUtils.hashPassword(newPassword, salt);
+                userToUpdate.setPassword(hashedPassword);
+                userToUpdate.setSalt(salt);
+            }
+
+            System.out.println("Choose new role for the user:");
+            System.out.println("1. CHAIRMAN");
+            System.out.println("2. TREASURER");
+            System.out.println("3. COACH");
+            System.out.println("4. ADMIN");
+            System.out.print("Enter the number for the role: ");
+            int roleOption = Integer.parseInt(scanner.nextLine());
+
+            Role role;
+            switch (roleOption) {
+                case 1 -> role = Role.CHAIRMAN;
+                case 2 -> role = Role.TREASURER;
+                case 3 -> role = Role.COACH;
+                case 4 -> role = Role.ADMIN;
+                default -> {
+                    System.out.println("Invalid role. Keeping current role.");
+                    role = userToUpdate.getRole();  // Keep the current role if invalid input
+                }
+            }
+
+            // Update user role
+            userToUpdate.setRole(role);
+
+            // Save the updated user details back to the repository
+            try {
+                adminController.updateUser(adminController.getLoggedInUsername(), adminController.getLoggedInPassword(), username, newPassword, role);
+                System.out.println("User '" + username + "' has been updated successfully.");
+            } catch (IllegalArgumentException e) {
+                System.out.println("Error: " + e.getMessage());
+            }
+        } else {
+            System.out.println("User not found.");
+        }
     }
+
+
 
     /**
      * Displays the menu for Chairman-specific functionality and redirects to handleOption() based on the selected option.
@@ -279,72 +380,66 @@ public class UserInterface {
 
     /**
      * Handles the user's selected menu option.
-     * Based on the option, it either registers, updates, views members or handles payments.
+     * Depending on the option, it performs specific actions for members, payments, teams, competitions, and training results.
      *
-     * @param option The selected option from the menu (1-7).
+     * @param option The selected option from the menu (1-10).
      */
     private void handleOption(int option) {
-
-        switch (option) {
-            case 1:
-                registerMember();  // Register a new member
-                break;
-            case 2:
-                searchMembers();  // Search members
-                break;
-            case 3:
-                updateMember();  // Update member details
-                break;
-            case 4:
-                memberController.viewAllMembers();  // View all members
-                break;
-            case 5:
-                deleteMember();  // Delete a member
-                break;
-            case 6:
-                handlePayments();  // Handle payments (new option)
-                break;
-            case 7:
-                manageTeams();  // Handle payments (new option)
-                break;
-            case 8:
-                manageCompetitions();
-                break;
-            case 9:
-                manageTrainingResults();
-                break;
-            case 10:
-                exitProgram(); // Exit the program
-                break;
-            default:
-                System.out.println("Invalid option. Please choose a number between 1 and 7.");
+        try {
+            switch (option) {
+                case 1 -> registerMember();  // Register a new member
+                case 2 -> searchMembers();  // Search members
+                case 3 -> updateMember();  // Update member details
+                case 4 -> memberController.viewAllMembers();  // View all members
+                case 5 -> deleteMember();  // Delete a member
+                case 6 -> handlePayments();  // Handle payments
+                case 7 -> manageTeams();  // Manage teams
+                case 8 -> manageCompetitions();  // Manage competitions
+                case 9 -> manageTrainingResults();  // Manage training results
+                case 10 -> exitProgram();  // Exit the program
+                default -> System.out.println("Invalid option. Please choose a number between 1 and 10.");
+            }
+        } catch (Exception e) {
+            // Catch and display any exceptions that occur during handling options
+            System.err.println("An error occurred while processing your choice: " + e.getMessage());
         }
     }
 
-    private void manageMembers(int option) {
+    /**
+     * Manages member-related operations such as registering, searching, updating,
+     * viewing, and deleting members. Redirects to the appropriate function based on the user's choice.
+     */
+    private void manageMembers() {
+        int option;
+        do {
+            System.out.println("\n--- Member Management ---");
+            System.out.println("1. Register New Member");
+            System.out.println("2. Search Members");
+            System.out.println("3. Update Member");
+            System.out.println("4. View All Members");
+            System.out.println("5. Delete Member");
+            System.out.println("6. Back to Main Menu");
+            System.out.print("Please choose an option (1-6): ");
 
-        switch (option) {
-            case 1:
-                registerMember();  // Register a new member
-                break;
-            case 2:
-                searchMembers();  // Search members
-                break;
-            case 3:
-                updateMember();  // Update member details
-                break;
-            case 4:
-                memberController.viewAllMembers();  // View all members
-                break;
-            case 5:
-                deleteMember();  // Delete a member
-                break;
-            case 6:
-                exitProgram(); // Exit the program
-                break;
-            default:
-                System.out.println("Invalid option. Please choose a number between 1 and 6.");
-        }
+            try {
+                option = Integer.parseInt(scanner.nextLine());
+                switch (option) {
+                    case 1 -> registerMember();  // Register a new member
+                    case 2 -> searchMembers();  // Search members
+                    case 3 -> updateMember();  // Update member details
+                    case 4 -> memberController.viewAllMembers();  // View all members
+                    case 5 -> deleteMember();  // Delete a member
+                    case 6 -> System.out.println("Returning to Main Menu..."); // Exit submenu
+                    default -> System.out.println("Invalid option. Please choose a number between 1 and 6.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a number between 1 and 6.");
+                option = -1; // Ensure loop continues on invalid input
+            } catch (Exception e) {
+                System.err.println("An error occurred: " + e.getMessage());
+                option = -1; // Ensure loop continues if an exception is caught
+            }
+        } while (option != 6); // Exit loop when the user selects option 6
     }
 
     /**
@@ -434,10 +529,11 @@ public class UserInterface {
     }
 
     /**
-     * Manages team-related operations: creating, viewing, updating, and deleting teams.
+     * Manages team-related operations such as creating, viewing, updating,
+     * and deleting teams. Redirects to the appropriate function based on the user's choice.
      */
     private void manageTeams() {
-        int teamOption = -1;
+        int teamOption;
         do {
             System.out.println("\n--- Team Management ---");
             System.out.println("1. Create Team");
@@ -448,30 +544,35 @@ public class UserInterface {
             System.out.println("6. Register new Coach to the Swimming Club");
             System.out.println("7. View Teams");
             System.out.println("8. Delete Team");
-            System.out.println("9. Exit to Main Menu");
-
+            System.out.println("9. Back to Main Menu");
             System.out.print("Please choose an option (1-9): ");
+
             try {
                 teamOption = Integer.parseInt(scanner.nextLine());
+                switch (teamOption) {
+                    case 1 -> createTeam();  // Create a new team
+                    case 2 -> addMemberToTeam();  // Add a member to a team
+                    case 3 -> removeMemberFromTeam();  // Remove a member from a team
+                    case 4 -> assignTeamCoach();  // Assign a coach to a team
+                    case 5 -> removeTeamCoach();  // Remove a coach from a team
+                    case 6 -> registerCoach();  // Register a new coach to the swimming club
+                    case 7 -> viewTeams();  // View all teams
+                    case 8 -> deleteTeam();  // Delete a team
+                    case 9 -> manageTrainingResults();  // Manage training results
+                    case 10 -> manageCompetitions();  // Manage competitions results
+                    case 11 -> System.out.println("Returning to Main Menu...");  // Exit to main menu
+                    default -> System.out.println("Invalid option. Please choose a valid number.");
+                }
             } catch (NumberFormatException e) {
                 System.out.println("Invalid input. Please enter a number between 1 and 9.");
-                continue;
+                teamOption = -1; // Ensure loop continues on invalid input
+            } catch (Exception e) {
+                System.err.println("An error occurred: " + e.getMessage());
+                teamOption = -1; // Ensure loop continues if an exception is caught
             }
-
-            switch (teamOption) {
-                case 1 -> createTeam();
-                case 2 -> addMemberToTeam();
-                case 3 -> removeMemberFromTeam();
-                case 4 -> assignTeamCoach();
-                case 5 -> removeTeamCoach();
-                case 6 -> registerCoach();
-                case 7 -> viewTeams();
-                case 8 -> deleteTeam();
-                case 9 -> System.out.println("Returning to Main Menu...");
-                default -> System.out.println("Invalid option. Please choose a valid number.");
-            }
-        } while (teamOption != 9);
+        } while (teamOption != 11); // Exit loop when option 9 is selected
     }
+
 
     /**
      * Registers a new coach and optionally assigns them to a team.
@@ -851,45 +952,47 @@ public class UserInterface {
     }
 
     /**
-     * Handles payment-related operations: Registering payments and viewing payments.
+     * Handles payment-related operations such as registering payments, viewing payment history,
+     * filtering members by payment status, managing payment reminders, and updating payment rates.
      */
     private void handlePayments() {
-        System.out.println("\n--- Payment Management ---");
-        System.out.println("1. Register Payment");
-        System.out.println("2. View Payments for Member");
-        System.out.println("3. Filter Members by Payment Status");
-        System.out.println("4. View Payment Summary");
-        System.out.println("5. Payment reminder manager");
-        System.out.println("6. Update Payment Rates");
-        System.out.println("7. Exit to Main Menu");
+        int paymentOption;
+        do {
+            System.out.println("\n--- Payment Management ---");
+            System.out.println("1. Register Payment");
+            System.out.println("2. View Payments for Member");
+            System.out.println("3. Filter Members by Payment Status");
+            System.out.println("4. View Payment Summary");
+            System.out.println("5. Payment Reminder Manager");
+            System.out.println("6. Update Payment Rates");
+            System.out.println("7. log out");
 
-        System.out.print("Please choose an option (1-5): ");
-        int paymentOption = Integer.parseInt(scanner.nextLine());
+            System.out.print("Please choose an option (1-8): ");
 
-        switch (paymentOption) {
-            case 1:
-                registerPayment();  // Register a new payment
-
-                break;
-            case 2:
-                viewPaymentsForMember();  // View payment history for the member
-                break;
-            case 3:
-                filterMembersByPaymentStatus();  // Filter members by payment status
-                break;
-            case 4:
-                paymentController.viewPaymentSummary(); // Show payment summary
-                break;
-            case 5:
-                managePaymentReminders();
-                break;
-            case 6:
-                managePaymentRates();
-            case 7:
-                return;  // Exit to main menu
-            default:
-                System.out.println("Invalid option. Please choose a valid number.");
-        }
+            try {
+                paymentOption = Integer.parseInt(scanner.nextLine());
+                // Using the modern "->" lambda-like syntax in switch
+                switch (paymentOption) {
+                    case 1 -> registerPayment();  // Register a new payment
+                    case 2 -> viewPaymentsForMember();  // View payment history for the member
+                    case 3 -> filterMembersByPaymentStatus();  // Filter members by payment status
+                    case 4 -> paymentController.viewPaymentSummary();  // Show payment summary
+                    case 5 -> managePaymentReminders();  // Manage payment reminders
+                    case 6 -> managePaymentRates();  // Update payment rates
+                    case 7 -> {
+                        System.out.println("Returning to Main Menu...");  // Exit to main menu
+                        return;  // Exit the method and return to the main menu
+                    }
+                    default -> System.out.println("Invalid option. Please choose a valid number.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a number between 1 and 7.");
+                paymentOption = -1;  // Ensure loop continues on invalid input
+            } catch (Exception e) {
+                System.err.println("An error occurred: " + e.getMessage());
+                paymentOption = -1;  // Ensure loop continues if an exception is caught
+            }
+        } while (paymentOption != 7);  // Exit loop when option 7 is selected
     }
 
     /**

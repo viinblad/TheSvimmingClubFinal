@@ -134,7 +134,7 @@ public class AuthRepository {
      * Loads users from the .dat file into the in-memory database.
      * Each line in the file is expected to contain a username, hashed password, salt, and role.
      */
-    private void loadUsers() {
+    public void loadUsers() {
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;
             while ((line = reader.readLine()) != null) {
@@ -159,7 +159,7 @@ public class AuthRepository {
      * Each user's data is saved in a line with the following format:
      * username;hashedPassword;salt;role
      */
-    private void saveUsers() {
+    public void saveUsers() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
             for (User user : userDatabase.values()) {
                 writer.write(user.getUsername() + ";" + user.getHashedPassword() + ";" + user.getSalt() + ";" + user.getRole());
@@ -167,6 +167,50 @@ public class AuthRepository {
             }
         } catch (IOException e) {
             System.err.println("Error saving users: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Updates an existing user's details (password and/or role).
+     *
+     * @param username   The username of the user to update.
+     * @param newPassword The new password for the user (or null to keep the current password).
+     * @param newRole    The new role for the user (or null to keep the current role).
+     */
+    public void updateUser(String username, String newPassword, Role newRole) {
+        User user = getUserByUsername(username);
+        if (user == null) {
+            throw new IllegalArgumentException("User not found.");
+        }
+
+        // Update password if a new one is provided
+        if (newPassword != null && !newPassword.isEmpty()) {
+            String salt = PasswordUtils.generateSalt();
+            String hashedPassword = PasswordUtils.hashPassword(newPassword, salt);
+            user = new User(username, hashedPassword, salt, user.getRole()); // Create a new User with updated password
+        }
+
+        // Update role if a new one is provided
+        if (newRole != null) {
+            user = new User(user.getUsername(), user.getHashedPassword(), user.getSalt(), newRole); // Update the role
+        }
+
+        // Save updated user information in the repository
+        saveUsers(); // Persist changes
+    }
+
+    /**
+     * Deletes a user from the repository by their username.
+     *
+     * @param username The username of the user to delete.
+     */
+    public void deleteUser(String username) {
+        if (userDatabase.containsKey(username)) {
+            userDatabase.remove(username);
+            saveUsers(); // Save updated user list
+            System.out.println("User '" + username + "' has been deleted.");
+        } else {
+            System.out.println("User not found.");
         }
     }
 }

@@ -7,16 +7,8 @@ import swimclub.services.*;
 import swimclub.ui.UserInterface;
 
 public class Main {
-    /**
-     * The main method that initializes the application, loads data, and starts the user interface.
-     * It also handles saving changes back to the files after the user interaction.
-     *
-     * @param args Command-line arguments (not used in this program).
-     *             This parameter allows for passing arguments when running the program,
-     *             but in this specific implementation, it is not used in the code.
-     */
     public static void main(String[] args) {
-        // File paths for member data, payment data, reminder data, teams data and user authentication data
+        // File paths for various data files
         String memberFilePath = "src/main/resources/members.dat";
         String paymentFilePath = "src/main/resources/payments.dat";
         String reminderFilePath = "src/main/resources/reminders.dat";
@@ -27,93 +19,67 @@ public class Main {
         String trainingResultsFilePath = "src/main/resources/trainingResults.dat";
         String authFilePath = "src/main/resources/users.dat";
 
-        // Initialize FileHandler for managing file operations across various data sets
+        // Initialize FileHandler for managing file operations
         FileHandler fileHandler = new FileHandler(
-                memberFilePath,
-                paymentFilePath,
-                reminderFilePath,
-                paymentRatesFilePath,
-                teamsFilePath,
-                competitionResultsFilePath,
-                staffFilePath,
-                trainingResultsFilePath
+                memberFilePath, paymentFilePath, reminderFilePath, paymentRatesFilePath,
+                teamsFilePath, competitionResultsFilePath, staffFilePath, trainingResultsFilePath
         );
 
-
-
-        // Initialize the repositories, passing the respective FileHandlers
+        // Initialize the repositories
         MemberRepository memberRepository = new MemberRepository(fileHandler);
-        PaymentRepository paymentRepository = new PaymentRepository(reminderFilePath); // Pass the reminder file path
+        PaymentRepository paymentRepository = new PaymentRepository(reminderFilePath);
         CompetitionResultRepository competitionResultRepository = new CompetitionResultRepository(fileHandler, competitionResultsFilePath);
-
         StaffRepository staffRepository = new StaffRepository(fileHandler);
-
-        TrainingResultsRepository trainingResultsRepository = new TrainingResultsRepository(fileHandler,trainingResultsFilePath, memberRepository);
+        TrainingResultsRepository trainingResultsRepository = new TrainingResultsRepository(fileHandler, trainingResultsFilePath, memberRepository);
+        UserRepository userRepository = new UserRepository(authFilePath);  // Use UserRepository for user management
         AuthRepository authRepository = new AuthRepository(authFilePath);
 
-        // Load members, payments, and teams from the file
-        memberRepository.reloadMembers(); // Load member data
-        paymentRepository.loadPayments(paymentFilePath, memberRepository); // Load payment data4
+        // Load data from the repositories
+        memberRepository.reloadMembers();
+        paymentRepository.loadPayments(paymentFilePath, memberRepository);
+        competitionResultRepository.loadResults(memberRepository);
+        trainingResultsRepository.loadResults(memberRepository);
 
-
-        competitionResultRepository.loadResults(memberRepository); // Load competition results
-        trainingResultsRepository.loadResults(memberRepository); // Load training results
-
-        // Initialize services for handling member, payment, competition result, and training result logic
+        // Initialize services
         MemberService memberService = new MemberService(memberRepository);
         PaymentService paymentService = new PaymentService(paymentRepository, fileHandler);
         CompetitionResultService competitionResultService = new CompetitionResultService(competitionResultRepository);
         TrainingResultsService trainingResultsService = new TrainingResultsService(trainingResultsRepository);
 
-        // Initialize TeamRepository and load teams from file
+        // Initialize the necessary repositories for teams and staff
         TeamRepository teamRepository = new TeamRepository(fileHandler);
-        teamRepository.loadTeams(memberRepository, staffRepository);  // Pass MemberRepository to loadTeams
-
-        // Initialize TeamService with the TeamRepository
+        teamRepository.loadTeams(memberRepository, staffRepository);
         TeamService teamService = new TeamService(teamRepository);
 
-        // Initialize StaffService for managing staff members
+        // Initialize services for staff and authentication
         StaffService staffService = new StaffService(staffRepository);
         AuthService authService = new AuthService(authRepository);
 
-
         // Instantiate the controllers
         MemberController memberController = new MemberController(memberService, memberRepository);
-        TeamController teamController = new TeamController(teamService);  // Pass TeamService to TeamController
+        TeamController teamController = new TeamController(teamService);
         StaffController staffController = new StaffController(staffService, staffRepository);
         CompetitionResultController competitionResultController = new CompetitionResultController(competitionResultService);
-        TrainingResultsController trainingResultsController = new TrainingResultsController(trainingResultsService , trainingResultsRepository);
-        AdminController adminController = new AdminController(authService);
-        PaymentController paymentController = new PaymentController(
-                paymentService,
-                memberRepository,
-                fileHandler,
-                paymentFilePath,
-                paymentRatesFilePath,
-                adminController
-        );
+        TrainingResultsController trainingResultsController = new TrainingResultsController(trainingResultsService, trainingResultsRepository);
+        AdminController adminController = new AdminController(authService, userRepository);  // Pass AuthService and UserRepository to AdminController
+        PaymentController paymentController = new PaymentController(paymentService, memberRepository, fileHandler, paymentFilePath, paymentRatesFilePath, adminController);
 
-
-
-        // Instantiate the UserInterface and pass all controllers to it
-        UserInterface userInterface = new UserInterface(
-                memberController,
+        // Initialize the UserInterface and pass all controllers to it
+        UserInterface userInterface = new UserInterface(memberController,
                 paymentController,
                 teamController,
                 competitionResultController,
                 staffController,
                 trainingResultsController,
-                adminController
-        );
+                adminController);
 
-        // Start the User Interface to handle interactions with the user
+        // Start the User Interface
         userInterface.start();
 
-        // After user interaction, save any changes back to the respective files
-        fileHandler.saveMembers(memberRepository.findAll()); // Save updated members
-        fileHandler.savePayments(paymentRepository.findAll(), paymentFilePath); // Save updated payments
-        // Reminder data is managed by PaymentRepository, so no need to handle it here
-        fileHandler.saveTeams(teamController.getAllTeams()); // Save teams to the file
-        fileHandler.saveCompetitionResults(competitionResultRepository.getAllResults(), competitionResultsFilePath); // Save competition results to the file
+        // After user interaction, save the updated data
+        fileHandler.saveMembers(memberRepository.findAll());
+        fileHandler.savePayments(paymentRepository.findAll(), paymentFilePath);
+        fileHandler.saveTeams(teamController.getAllTeams());
+        fileHandler.saveCompetitionResults(competitionResultRepository.getAllResults(), competitionResultsFilePath);
     }
 }
