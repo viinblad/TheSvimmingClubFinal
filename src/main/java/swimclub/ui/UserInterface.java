@@ -1150,7 +1150,7 @@ public class UserInterface {
             System.out.println("3. View all training results");
             System.out.println("4. View top 5 results for each disciplin");
             System.out.println("5. Back to Main Menu");
-            System.out.print("Please choose an option (1-3): ");
+            System.out.print("Please choose an option (1-5): ");
 
             try {
                 trainingResultsOption = Integer.parseInt(scanner.nextLine());
@@ -1308,7 +1308,7 @@ public class UserInterface {
 
 
         try {
-            trainingResultsController.addTrainingResults(member, activityType, time, date, level);
+            trainingResultsController.addTrainingResults(member, activityType, time, trainingDate.toString(), level);
             System.out.println("Training results successfully added.");
         } catch (Exception e) {
             System.out.println("Error adding training result. " + e.getMessage());
