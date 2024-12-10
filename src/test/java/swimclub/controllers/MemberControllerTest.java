@@ -8,7 +8,6 @@ import swimclub.repositories.MemberRepository;
 import swimclub.services.MemberService;
 import swimclub.utilities.FileHandler;
 
-
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -16,12 +15,15 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class MemberControllerTest {
+
     private static final String TEST_MEMBER_FILE = "src/test/java/testResources/testMembers.dat";
     private static final String TEST_PAYMENT_FILE = "src/test/java/testResources/testPayments.dat";
     private static final String TEST_REMINDER_FILE = "src/test/java/testResources/testReminders.dat";
     private static final String TEST_PAYMENTRATES_FILE = "src/main/ressources/paymentRates.dat";
     private static final String TEST_TEAM_FILE = "src/main/ressources/teams.dat";
+    private static final String TEST_COMPETITIONRESULTS_FILE = "src/main/competitionResults.dat";
     private static final String TEST_STAFF_FILE = "src/main/ressources/teams.dat";
+    private static final String TEST_TRAININGRESULTS_FILE = "src/main/ressources.trainingResults.dat";
 
     private MemberService memberService;
     private MemberRepository memberRepository;
@@ -38,7 +40,10 @@ class MemberControllerTest {
         createTestFile(TEST_STAFF_FILE);
 
         // Initialize the FileHandler with the file paths
-        fileHandler = new FileHandler(TEST_MEMBER_FILE, TEST_PAYMENT_FILE, TEST_REMINDER_FILE, TEST_PAYMENTRATES_FILE,TEST_TEAM_FILE, TEST_STAFF_FILE);
+        fileHandler = new FileHandler(
+                TEST_MEMBER_FILE, TEST_PAYMENT_FILE, TEST_REMINDER_FILE, TEST_PAYMENTRATES_FILE,
+                TEST_TEAM_FILE, TEST_COMPETITIONRESULTS_FILE, TEST_STAFF_FILE, TEST_TRAININGRESULTS_FILE
+        );
 
         // Initialize MemberRepository with the FileHandler instance
         memberRepository = new MemberRepository(fileHandler);
@@ -47,6 +52,7 @@ class MemberControllerTest {
         memberService = new MemberService(memberRepository);
         controller = new MemberController(memberService, memberRepository);
     }
+
     private void createTestFile(String fileName) {
         File file = new File(fileName);
         if (!file.exists()) {
@@ -58,13 +64,11 @@ class MemberControllerTest {
         }
     }
 
-
     @AfterEach
-    void tearDown(){
+    void tearDown() {
         new File(TEST_MEMBER_FILE).delete();
         new File(TEST_PAYMENT_FILE).delete();
         new File(TEST_REMINDER_FILE).delete();
-
     }
 
     @Test
@@ -84,14 +88,18 @@ class MemberControllerTest {
         String phoneNumber = "60126754";
 
         // Act
-        Member registeredMember = controller.registerMember(name, email, city, street, region, Integer.parseInt(zipcode),
-                membershipType, membershipStatus, activityType, paymentStatus, ageStr, Integer.parseInt(phoneNumber));
+        Member registeredMember = controller.registerMember(
+                name, email, city, street, region, Integer.parseInt(zipcode),
+                membershipType, membershipStatus, activityType, paymentStatus,
+                ageStr, Integer.parseInt(phoneNumber)
+        );
 
         // Assert
         assertNotNull(registeredMember); // Ensure a member is returned
         assertEquals("Carsten", registeredMember.getName()); // Ensure the name is correctly set
         assertInstanceOf(SeniorMember.class, registeredMember); // Ensure it's a SeniorMember based on the age
     }
+
     @Test
     void registerMember_ShouldCreateJuniorMember_WhenAgeIsUnder18() {
         // Arrange
@@ -109,13 +117,16 @@ class MemberControllerTest {
         String phoneNumber = "60126754";
 
         // Act
-        Member registeredMember = controller.registerMember(name, email, city, street, region, Integer.parseInt(zipcode),
-                membershipType, membershipStatus, activityType, paymentStatus, ageStr, Integer.parseInt(phoneNumber));
+        Member registeredMember = controller.registerMember(
+                name, email, city, street, region, Integer.parseInt(zipcode),
+                membershipType, membershipStatus, activityType, paymentStatus,
+                ageStr, Integer.parseInt(phoneNumber)
+        );
 
         // Assert
         assertNotNull(registeredMember); // Ensure a member is returned
         assertEquals("Carsten", registeredMember.getName()); // Ensure the name is correctly set
-        assertInstanceOf(JuniorMember.class, registeredMember); // Ensure it's a SeniorMember based on the age
+        assertInstanceOf(JuniorMember.class, registeredMember); // Ensure it's a JuniorMember based on the age
     }
 
     @Test
@@ -135,8 +146,11 @@ class MemberControllerTest {
         String phoneNumber = "60126754";
 
         // Act - Register the member using the controller
-        Member registeredMember = controller.registerMember(name, email, city, street, region, Integer.parseInt(zipcode),
-                membershipType, membershipStatus, activityType, paymentStatus, ageStr, Integer.parseInt(phoneNumber));
+        Member registeredMember = controller.registerMember(
+                name, email, city, street, region, Integer.parseInt(zipcode),
+                membershipType, membershipStatus, activityType, paymentStatus,
+                ageStr, Integer.parseInt(phoneNumber)
+        );
 
         // Store the member's ID for later use in the update
         int memberId = registeredMember.getMemberId();
@@ -156,9 +170,11 @@ class MemberControllerTest {
         String newPhoneNumber = "60336754";
 
         // Act - Update the member with the new information
-        controller.updateMember(memberId, newName, newEmail,
-                newAgeStr, newCity, newStreet, newRegion, Integer.parseInt(newZipcode),
-                newMembershipType, newMembershipStatus, newActivityType, newPaymentStatus, Integer.parseInt(newPhoneNumber));
+        controller.updateMember(
+                memberId, newName, newEmail, newAgeStr, newCity, newStreet, newRegion,
+                Integer.parseInt(newZipcode), newMembershipType, newMembershipStatus,
+                newActivityType, newPaymentStatus, Integer.parseInt(newPhoneNumber)
+        );
 
         // Fetch the updated member from the repository
         Member updatedMember = memberRepository.findById(memberId);
@@ -177,7 +193,7 @@ class MemberControllerTest {
 
     @Test
     void deleteMember() {
-        //Arrange - member to be deleted
+        // Arrange - member to be deleted
         String name = "Carsten";
         String email = "CarstenWork@email.dk";
         String city = "Herning";
@@ -191,17 +207,20 @@ class MemberControllerTest {
         String ageStr = "23";
         String phoneNumber = "60126754";
 
-        //Act - Deleting the member
-        Member registeredMember = controller.registerMember(name, email, city,
-                street, region, Integer.parseInt(zipcode), membershipType, membershipStatus, activityType,
-                paymentStatus, ageStr, Integer.parseInt(phoneNumber));
+        // Act - Deleting the member
+        Member registeredMember = controller.registerMember(
+                name, email, city, street, region, Integer.parseInt(zipcode),
+                membershipType, membershipStatus, activityType, paymentStatus,
+                ageStr, Integer.parseInt(phoneNumber)
+        );
 
         controller.deleteMember(registeredMember.getMemberId());
 
-        //Assert
+        // Assert
         Member deletedMember = memberRepository.findById(registeredMember.getMemberId());
         assertNull(deletedMember);
     }
+
     @Test
     void viewAllMembers() {
         // Arrange - Create two members: Carsten and Kasper
@@ -232,17 +251,21 @@ class MemberControllerTest {
         String kasperPhoneNumber = "60336754";
 
         // Act - Register Carsten and Kasper
-        Member carsten = controller.registerMember(carstenName, carstenEmail, carstenCity, carstenStreet, carstenRegion,
-                Integer.parseInt(carstenZipcode), carstenMembershipType, carstenMembershipStatus, carstenActivityType, carstenPaymentStatus,
-                carstenAgeStr, Integer.parseInt(carstenPhoneNumber));
+        Member carsten = controller.registerMember(
+                carstenName, carstenEmail, carstenCity, carstenStreet, carstenRegion,
+                Integer.parseInt(carstenZipcode), carstenMembershipType, carstenMembershipStatus,
+                carstenActivityType, carstenPaymentStatus, carstenAgeStr, Integer.parseInt(carstenPhoneNumber)
+        );
 
-        Member kasper = controller.registerMember(kasperName, kasperEmail, kasperCity, kasperStreet, kasperRegion,
-                Integer.parseInt(kasperZipcode), kasperMembershipType, kasperMembershipStatus, kasperActivityType, kasperPaymentStatus,
-                kasperAgeStr, Integer.parseInt(kasperPhoneNumber));
+        Member kasper = controller.registerMember(
+                kasperName, kasperEmail, kasperCity, kasperStreet, kasperRegion,
+                Integer.parseInt(kasperZipcode), kasperMembershipType, kasperMembershipStatus,
+                kasperActivityType, kasperPaymentStatus, kasperAgeStr, Integer.parseInt(kasperPhoneNumber)
+        );
 
         controller.viewAllMembers();
 
-        //Assert
+        // Assert
         assertNotNull(memberRepository.findById(carsten.getMemberId()));
         assertNotNull(memberRepository.findById(kasper.getMemberId()));
     }
@@ -264,8 +287,11 @@ class MemberControllerTest {
         String phoneNumber = "60126754";
 
         // Act - Register the new member
-        Member registeredMember = controller.registerMember(name, email, city, street, region, Integer.parseInt(zipcode),
-                membershipType, membershipStatus, activityType, paymentStatus, ageStr, Integer.parseInt(phoneNumber));
+        Member registeredMember = controller.registerMember(
+                name, email, city, street, region, Integer.parseInt(zipcode),
+                membershipType, membershipStatus, activityType, paymentStatus,
+                ageStr, Integer.parseInt(phoneNumber)
+        );
 
         // Act - Search for members by name
         List<Member> memberList = controller.searchMembers("Carsten");

@@ -649,6 +649,14 @@ public class FileHandler {
     }
 
 
+    /**
+     * Deletes a coach from the system.
+     * This method removes a coach from the list of coaches and saves the updated list.
+     * It returns true if the coach was successfully deleted, and false if no coach with the specified ID was found.
+     *
+     * @param coachToDelete The coach to be deleted from the system.
+     * @return boolean True if the coach was deleted, false otherwise.
+     */
     public boolean deleteCoach(Coach coachToDelete) {
         boolean coachDeleted = false;
         List<Coach> coachList = loadCoaches(); // Load all coaches from the file
@@ -673,16 +681,22 @@ public class FileHandler {
         return coachDeleted; // Return true if coach was deleted, false if not
     }
 
-
+    /**
+     * Saves the list of competition results to a file.
+     * The competition results are saved in a CSV-like format where each line represents a competition result.
+     *
+     * @param results The list of competition results to be saved.
+     * @param filePath The file path where the competition results should be saved.
+     */
     public void saveCompetitionResults(List<CompetitionResults> results, String filePath) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
             for (CompetitionResults result : results) {
                 writer.write(result.getMember().getMemberId() + ";" +
-                            result.getActivityType() + ";" +
-                            result.getEvent() + ";" +
-                            result.getPlacement() + ";" +
-                            result.getDate() + ";" +
-                            result.getTime());
+                        result.getActivityType() + ";" +
+                        result.getEvent() + ";" +
+                        result.getPlacement() + ";" +
+                        result.getDate() + ";" +
+                        result.getTime());
                 writer.newLine();
             }
         } catch (IOException e) {
@@ -690,6 +704,14 @@ public class FileHandler {
         }
     }
 
+    /**
+     * Loads competition results from a file and maps them to {@link CompetitionResults} objects.
+     * Each result is parsed from a semicolon-separated format and added to the list if the corresponding member is found in the repository.
+     *
+     * @param filePath The file path from which to load the competition results.
+     * @param memberRepository The member repository used to look up members by their ID.
+     * @return A list of {@link CompetitionResults} objects loaded from the file.
+     */
     public List<CompetitionResults> loadCompetitionResults(String filePath, MemberRepository memberRepository) {
         List<CompetitionResults> results = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
@@ -719,6 +741,12 @@ public class FileHandler {
         return results;
     }
 
+    /**
+     * Saves the list of training results to a file.
+     * Each training result is saved in a CSV-like format, where each line represents a training result.
+     *
+     * @param results The list of training results to be saved.
+     */
     public void saveTrainingResults(List<TrainingResults> results) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(trainingResultsFilePath))) {
             for (TrainingResults result : results) {
@@ -734,6 +762,14 @@ public class FileHandler {
         }
     }
 
+    /**
+     * Loads training results from a file and maps them to {@link TrainingResults} objects.
+     * Each result is parsed from a semicolon-separated format and added to the list if the corresponding member is found in the repository.
+     *
+     * @param filePath The file path from which to load the training results.
+     * @param memberRepository The member repository used to look up members by their ID.
+     * @return A list of {@link TrainingResults} objects loaded from the file.
+     */
     public List<TrainingResults> loadTrainingResults(String filePath, MemberRepository memberRepository) {
         List<TrainingResults> results = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
