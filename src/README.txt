@@ -1,67 +1,90 @@
 Swim Club Management System
+
 Project Description
 
-This is a Swim Club Management System, a software project developed by 4 programming student developers.
-The goal of this project is to provide a comprehensive solution for managing swim club members, their memberships, activities, and payments.
-The system allows for member registration, updates, deletion, payment management, and more. It is designed to make the management of a swim club easier and more efficient.
-The software is a part of a school delivery assignment.
+The Swim Club Management System is a comprehensive software project developed by four programming student developers.
+The goal of this project is to simplify and automate the management of swim club members, memberships, activities, payments, and administrative tasks.
+This project was created as part of a school assignment to demonstrate our programming and software development skills.
 
-The Swim Club Management System is a software solution for managing a swim club's members, payments, and related activities. The system allows you to:
+Key Features:
 
-    Register and manage members.
-    Track membership types and payment statuses.
-    Calculate and register payments.
-    Generate payment reminders and track payment statuses.
+      1.Member Management: Register, update, delete, and search for members.
 
-This application is designed to automate the key administrative tasks of a swim club, improving efficiency and reducing manual errors.
-Features
+      2.Payment Management: Track and manage member payments, calculate fees, and set reminders.
 
-    Member Management: Add, update, and delete members.
-    Payment Management: Record payments, calculate fees, and track payment status (Pending, Completed, or Failed).
-    Activity Tracking: Record and display member activity types.
-    Reminders: Set and manage payment reminders for members.
-    Search: Search for members based on ID, name, or phone number.
+      3.Activity Tracking: Record and display member activity types (e.g., swimming styles).
+
+      4.Reminders: Create and manage payment reminders.
+
+      5.Role-Based Access: Admin, Chairman, Treasurer, and Coach roles with tailored menu options.
+
+This application improves efficiency by reducing manual errors and streamlining administrative processes for swim clubs.
 
 Technologies Used
 
-    Java: The core programming language.
-    File Handling: For saving and loading member and payment data from text files.
-    Object-Oriented Programming: Designed using classes and objects to manage members, payments, and activities.
+    - Java: Core programming language.
+
+    - JUnit: For testing controllers and services.
+
+    - File Handling: Data is stored and retrieved from .dat files.
+
+    - Object-Oriented Programming (OOP): A class- and object-based structure.
+
+    - Draw.io: Used to create visual documentation like class diagrams.
 
 
-Features
+Description of Key Directories
 
-    Member Management:
-        Register new members.
-        Update member information.
-        View all members.
-        Delete members.
-        Search members by ID, name, or phone number.
+/docs: Contains documentation and diagrams.
 
-    Membership Types:
-        Different membership types: Junior, Senior, Competitive, and Exercise.
+/main/java/swimclub/controllers: Includes controllers for managing application logic (e.g., MemberController, PaymentController).
 
-    Payment Management:
-        Register payments for members.
-        View payments made by a specific member.
-        Filter members by payment status (Complete, Pending, Failed).
-        Generate payment summaries.
-        Set payment reminders.
+/main/java/swimclub/models: Defines key data models like Member and Payment.
+
+/main/java/swimclub/repositories: Manages file-based data persistence for members and payments.
+
+/main/java/swimclub/services: Contains reusable business logic, such as fee calculations and validations.
+
+/main/java/swimclub/ui: Implements the user interface for interacting with the application.
+
+/test/java/swimclub: Contains unit tests for controllers and services.
+
 
 File Structure
 
-/src
-    /swimclub
-        /controllers
-        /models
-        /repositories
-        /services
-        /ui
-        /utilities
-    /resources
-        members.txt
-        payments.txt
-        reminders.txt
+src
+├── docs
+│   ├── classdiagram.png.svg          # Class diagram
+│   ├── domainmodeldefinprojekt.drawio # Domain model for the project
+├── main
+│   ├── java
+│   │   ├── swimclub
+│   │   │   ├── controllers           # Handles business logic and user interactions
+│   │   │   ├── exceptions            # Custom exceptions for error handling
+│   │   │   ├── models                # Data structures for members, payments, etc.
+│   │   │   ├── repositories          # Handles data persistence (e.g., file management)
+│   │   │   ├── services              # Contains business logic (e.g., calculating fees)
+│   │   │   ├── ui                    # User interface for interaction (console-based)
+│   │   │   ├── utilities             # General-purpose utilities (e.g., validators)
+│   │   │   └── Main.java             # Entry point of the application
+│   ├── resources
+│       ├── competitionResults.dat    # Data file for competition result records
+│       ├── members.dat               # Data file for member information
+│       ├── paymentsRates.dat         # Data file for payment rates
+│       ├── payments.dat              # Data file for payment records
+│       ├── reminders.dat             # Data file for payment reminders
+│       ├── staff.dat                 # Data file for staff records
+│       ├── teams.dat                 # Data file for teams records
+│       ├── trainingResults.dat       # Data file for training results records
+│       ├── users.dat                 # Data file for users records
+├── test
+│   ├── java
+│   │   ├── swimclub
+│   │   │   ├── controllers
+│   │   │   │   └── MemberControllerTest.java  # Tests for MemberController
+│   │   │   ├── services
+│   │   │   │   └── PaymentServiceTest.java    # Tests for PaymentService
+│   ├── testResources                          # Resources for testing
 README.txt
 
 Description of Key Directories:
@@ -76,12 +99,13 @@ Description of Key Directories:
 Requirements
 
     Java 11 or higher
+    JUnit: For testing
     A text editor or IDE such as IntelliJ IDEA or Eclipse for running and editing the code.
 
 Setup and Running the Project
 1. Clone the repository or download the project files.
 
-git clone https://github.com/rassbiehl/TheSwimmingClub.git
+git clone https:https://github.com/viinblad/TheSvimmingClubFinal.git
 
 2. Navigate to the project directory.
 
@@ -91,7 +115,7 @@ cd swim-club-management
 
 If you're using a command line interface, compile the project using:
 
-javac -d bin src/swimclub/*.java
+javac -d bin src/main/java/swimclub/*.java
 
 Then run the Main class:
 
@@ -108,63 +132,50 @@ Once the system is running, the user will be presented with a menu in the termin
     View summaries and reminders
 
 Follow the prompts to interact with the system.
+
 Features Walkthrough
-Member Management
 
-    Register a New Member: Enter the member’s personal details, including name, age, address, contact information, and membership type.
-    Update Member Information: Modify an existing member’s details.
-    Delete Member: Remove a member from the system.
-    Search Members: Find members by ID, name, or phone number.
+Member Management:
 
-Payment Management
+   Register: Add a new member with personal and membership details.
 
-    Register Payment: Record a payment made by a member, including payment amount and payment status (Completed, Pending, Failed).
-    View Member Payments: View all payments made by a specific member.
-    Filter Members by Payment Status: View members filtered by payment status.
-    Payment Summary: Display a summary of total payments and paid members.
+   Search: Search by ID, name, or phone number.
 
-Reminder Management
+   Update: Modify member details.
 
-    Set Payment Reminder: Set a reminder for a member about an outstanding payment.
-    View All Reminders: View all the set payment reminders.
-    Clear All Reminders: Remove all payment reminders from the system.
+   Delete: Remove a member from the system.
 
-Example Usage
-Registering a Member:
+Payment Management:
 
---- Swim Club Member Management ---
-1. Register New Member
-Enter member name: John Doe
-Enter age: 25
-Enter member email: john.doe@example.com
-Enter city of member: New York
-Enter street of member: 123 Elm St
-Enter region of member: NY
-Enter Zip code: 10001
-Enter membership type (Junior/Senior, Competitive/Exercise): Senior Competitive
-Enter activity type (Breaststroke, Crawl, Backcrawl or Butterfly): Crawl
-Enter phone number (8 digits): 12345678
+   Register Payments: Record payments and update payment statuses.
 
-Member registered successfully.
+   View Payments: Check payment history for a specific member.
 
-Viewing Payment Summary:
+   Filter: Find members by payment status (Complete, Pending, Failed).
 
---- Payment Summary ---
-Total Payments Made: $5000
-Number of Members Paid: 25
+   Reminders: Set reminders for outstanding payments.
 
-Searching for Members:
+Role-Based Menus:
 
-Enter search query (ID, name, or phone number): 12345678
-ID: 1, Name: John Doe, Membership: Senior Competitive Swimmer, Status: Active, Activity: Crawl, Payment: Complete
+   Admin: Full access to all features.
 
-Contributing
+   Chairman: Access to member and activity tracking.
 
-We welcome contributions to improve the Swim Club Management System! Feel free to:
+   Treasurer: Manage payments and reminders.
 
-    Fork the repository
-    Create a feature branch
-    Submit a pull request with your changes
+   Coach: Access training results and member activities.
+
+
+Testing
+
+   Unit tests are included to ensure the robustness of the system.
+   Navigate to the /test directory and run the test classes using your IDE or a Java testing framework like JUnit.
+
+Current Test Coverage:
+
+   MemberControllerTest
+
+   PaymentServiceTest
 
 License
 

@@ -1,10 +1,12 @@
 package swimclub.ui;
 
+
 import swimclub.controllers.*;
 import swimclub.models.*;
 import swimclub.utilities.PasswordUtils;
 import swimclub.utilities.Validator;
 
+import java.io.Console;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -40,7 +42,6 @@ public class UserInterface {
      * @param adminController              The controller that handles admin functionalities, including user management (adding, updating, deleting users).
      */
     public UserInterface(MemberController memberController, PaymentController paymentController, TeamController teamController, CompetitionResultController competitionResultController, StaffController staffController, TrainingResultsController trainingResultsController, AdminController adminController) {
-
         this.memberController = memberController;
         this.paymentController = paymentController;
         this.teamController = teamController;
@@ -70,27 +71,78 @@ public class UserInterface {
         }
     }
 
+    /**
+     * Displays the Admin menu and handles admin-related functions such as login and role-based menu redirection.
+     */
     public void adminMenu() {
-        System.out.print("Enter username: ");
+        // Use Console to hide the password input with asterisks, if available
+        Console console = System.console();
+
+        System.out.print("Welcome to your local club manage system");
+        System.out.print("\nThe Swimming club");
+        System.out.print("\nEnter username: ");
         String username = scanner.nextLine();
-        System.out.print("Enter password: ");
-        String password = scanner.nextLine();
+
+        String password = "";
+        if (console != null) {
+            // If console is available, use it to securely read the password
+            char[] passwordArray = console.readPassword("\nEnter password: ");
+            password = new String(passwordArray); // Convert char[] to String
+        } else {
+            // Fallback to regular input (no asterisks) when console is unavailable
+            System.out.print("\nEnter password: ");
+            password = readPasswordWithMask(); // Call the custom method to mask the password
+        }
 
         try {
+            // Attempt to authenticate the user
             User user = adminController.login(username, password);
             System.out.println("Welcome, " + user.getUsername() + " (" + user.getRole() + ")!");
 
-            // Redirect to role-specific menus
+            // Redirect to the appropriate menu based on user role
             switch (user.getRole()) {
-                case ADMIN -> showAdminMenu(); // Full access for Admin
-                case CHAIRMAN -> showChairmanMenu(); // Access for Chairman
-                case TREASURER -> showTreasurerMenu(); // Access for Treasurer
-                case COACH -> showCoachMenu(); // Access for Coach
+                case ADMIN -> showAdminMenu();  // Admin menu
+                case CHAIRMAN -> showChairmanMenu();  // Chairman menu
+                case TREASURER -> showTreasurerMenu();  // Treasurer menu
+                case COACH -> showCoachMenu();  // Coach menu
                 default -> System.out.println("Role not authorized.");
             }
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid username or password."); // Rethrow exception for the start method
+            System.out.println("Invalid username or password.");
         }
+    }
+
+    /**
+     * Custom method to read password and mask it with asterisks.
+     * This will work even in environments where Console is not available.
+     *
+     * @return The masked password as a String.
+     */
+    private String readPasswordWithMask() {
+        StringBuilder password = new StringBuilder();
+        try {
+            // Create a scanner for user input
+            char ch;
+            while (true) {
+                // Read one character at a time
+                ch = scanner.next().charAt(0);
+                if (ch == '\n') { // Enter key is pressed, end password input
+                    break;
+                } else if (ch == '\b') { // Backspace key is pressed, remove character
+                    if (password.length() > 0) {
+                        password.deleteCharAt(password.length() - 1);
+                        System.out.print("\b \b"); // Delete the last character on the screen
+                    }
+                } else {
+                    password.append(ch);
+                    System.out.print("*"); // Mask the input with asterisks
+                }
+            }
+            System.out.println(); // Move to the next line after input
+        } catch (Exception e) {
+            System.err.println("An error occurred while reading the password.");
+        }
+        return password.toString();
     }
 
     /**
@@ -108,26 +160,34 @@ public class UserInterface {
             System.out.println("5. Manage Payments");
             System.out.println("6. Manage Competitions");
             System.out.println("7. Manage Training Results");
-            System.out.println("8. Exit");
-            System.out.print("Please choose an option (1-8): ");
+            System.out.println("8. Go Back to Login");
+            System.out.println("9. Exit");
+            System.out.print("Please choose an option (1-9): ");
 
             try {
                 option = Integer.parseInt(scanner.nextLine());  // Read user input and parse it to an integer
 
                 switch (option) {
                     case 8 -> {
+                        System.out.println("Returning to login screen...");
+                        returnToLogin();  // Go back to the login menu
+                    }
+                    case 9 -> {
+
                         exitProgram();  // Call exitProgram() to exit the program
-                        System.out.println("Returning to Main Menu...");  // Notify the user before exiting
+                        System.out.println("Exiting the program...");  // Exit the program entirely
                     }
                     default -> handleAdminOptions(option);  // Handle selected option in the menu
                 }
             } catch (NumberFormatException e) {
-                System.out.println("Invalid input. Please enter a number between 1 and 8.");
+                System.out.println("Invalid input. Please enter a number between 1 and 9.");
             } catch (Exception e) {
                 System.err.println("An error occurred: " + e.getMessage());
             }
-        } while (true);  // Keep running until option 8 is selected to exit
+        } while (true);  // Keep running until option 8 (Exit) or 9 (Go back to login) is selected
     }
+
+
 
     /**
      * Handles the options selected by the admin, such as creating new users, managing members, etc.
@@ -151,6 +211,7 @@ public class UserInterface {
             System.err.println("An error occurred while processing your option: " + e.getMessage());
         }
     }
+
 
 
 
@@ -343,23 +404,43 @@ public class UserInterface {
      * Displays the menu for Chairman-specific functionality and redirects to handleOption() based on the selected option.
      */
     private void showChairmanMenu() {
-        // Display the Chairman-specific menu options
-        System.out.println("\n--- Chairman Functions ---");
-        System.out.println("1. Register New Member");
-        System.out.println("2. Search Members");
-        System.out.println("3. Update Member");
-        System.out.println("4. View All Members");
-        System.out.println("5. Delete Member");
-        System.out.println("6. Handle Payments");
-        System.out.println("7. Manage Teams");
-        System.out.println("8. Manage Competitions");
-        System.out.println("9. Manage Training Results");
-        System.out.println("10. Exit");
-        System.out.print("Please choose an option (1-10): ");
+        int option = -1;
+        do {
+            // Display the Chairman-specific menu options
+            System.out.println("\n--- Chairman Functions ---");
+            System.out.println("1. Register New Member");
+            System.out.println("2. Search Members");
+            System.out.println("3. Update Member");
+            System.out.println("4. View All Members");
+            System.out.println("5. Delete Member");
+            System.out.println("6. Handle Payments");
+            System.out.println("7. Manage Teams");
+            System.out.println("8. Manage Competitions");
+            System.out.println("9. Manage Training Results");
+            System.out.println("10. Go Back to Login");
+            System.out.println("11. Exit");
+            System.out.print("Please choose an option (1-11): ");
 
-        // Read user's option input and call handleOption() directly
-        int option = Integer.parseInt(scanner.nextLine());
-        handleOption(option);  // This will redirect based on the option selected by the chairman
+            try {
+                option = Integer.parseInt(scanner.nextLine());  // Read user input and parse it to an integer
+
+                switch (option) {
+                    case 10 -> {
+                        System.out.println("Returning to login screen...");
+                        returnToLogin();  // Go back to login screen
+                    }
+                    case 11 -> {
+                        exitProgram();  // Exit the program entirely
+                        System.out.println("Exiting the program...");  // Notify user before exiting
+                    }
+                    default -> handleOption(option);  // Handle selected option in the menu
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a number between 1 and 11.");
+            } catch (Exception e) {
+                System.err.println("An error occurred: " + e.getMessage());
+            }
+        } while (option != 10 && option != 11);
     }
 
     /**
@@ -382,7 +463,7 @@ public class UserInterface {
      * Handles the user's selected menu option.
      * Depending on the option, it performs specific actions for members, payments, teams, competitions, and training results.
      *
-     * @param option The selected option from the menu (1-10).
+     * @param option The selected option from the menu (1-11).
      */
     private void handleOption(int option) {
         try {
@@ -396,14 +477,16 @@ public class UserInterface {
                 case 7 -> manageTeams();  // Manage teams
                 case 8 -> manageCompetitions();  // Manage competitions
                 case 9 -> manageTrainingResults();  // Manage training results
-                case 10 -> exitProgram();  // Exit the program
-                default -> System.out.println("Invalid option. Please choose a number between 1 and 10.");
+                case 10 -> returnToLogin();  // Exit the program
+                case 11 -> exitProgram();  // Return to login screen
+                default -> System.out.println("Invalid option. Please choose a number between 1 and 11.");
             }
         } catch (Exception e) {
             // Catch and display any exceptions that occur during handling options
             System.err.println("An error occurred while processing your choice: " + e.getMessage());
         }
     }
+
 
     /**
      * Manages member-related operations such as registering, searching, updating,
@@ -442,13 +525,7 @@ public class UserInterface {
         } while (option != 6); // Exit loop when the user selects option 6
     }
 
-    /**
-     * Exits the program.
-     */
-    private void exitProgram() {
-        System.out.println("Exiting the program. Goodbye!");  // Print a goodbye message
-        System.exit(0);  // Exit the program
-    }
+
 
     /**
      * Registers a new member by collecting their details and passing them to the controller.
@@ -539,16 +616,20 @@ public class UserInterface {
             System.out.println("1. Create Team");
             System.out.println("2. Add Member to Team");
             System.out.println("3. Remove Member from Team");
-            System.out.println("4. Assign Coach to team");
-            System.out.println("5. Remove Coach from team");
-            System.out.println("6. Register new Coach to the Swimming Club");
+            System.out.println("4. Assign Coach to Team");
+            System.out.println("5. Remove Coach from Team");
+            System.out.println("6. Register New Coach to the Swimming Club");
             System.out.println("7. View Teams");
             System.out.println("8. Delete Team");
-            System.out.println("9. Back to Main Menu");
-            System.out.print("Please choose an option (1-9): ");
+            System.out.println("9. Manage Training Results");
+            System.out.println("10. Manage Competitions");
+            System.out.println("11. Go Back to Login");  // Option to return to the main menu
+            System.out.println("12. Exit");
+            System.out.print("Please choose an option (1-12): ");
 
             try {
                 teamOption = Integer.parseInt(scanner.nextLine());
+
                 switch (teamOption) {
                     case 1 -> createTeam();  // Create a new team
                     case 2 -> addMemberToTeam();  // Add a member to a team
@@ -560,18 +641,27 @@ public class UserInterface {
                     case 8 -> deleteTeam();  // Delete a team
                     case 9 -> manageTrainingResults();  // Manage training results
                     case 10 -> manageCompetitions();  // Manage competitions results
-                    case 11 -> System.out.println("Returning to Main Menu...");  // Exit to main menu
+                    case 11 -> {
+                        System.out.println("Returning to Main Menu...");  // Notify the user before going back
+                        returnToLogin();  // Return to login screen
+                    }
+                    case 12 -> {
+                        System.out.println("Exiting program...");  // Exit the program
+                        exitProgram();  // Exit the program
+                    }
                     default -> System.out.println("Invalid option. Please choose a valid number.");
                 }
             } catch (NumberFormatException e) {
-                System.out.println("Invalid input. Please enter a number between 1 and 9.");
-                teamOption = -1; // Ensure loop continues on invalid input
+                System.out.println("Invalid input. Please enter a number between 1 and 12.");
+                teamOption = -1;  // Ensure loop continues on invalid input
             } catch (Exception e) {
                 System.err.println("An error occurred: " + e.getMessage());
-                teamOption = -1; // Ensure loop continues if an exception is caught
+                teamOption = -1;  // Ensure loop continues if an exception is caught
             }
-        } while (teamOption != 11); // Exit loop when option 9 is selected
+        } while (teamOption != 11 && teamOption != 12);  // Exit loop when option 11 (Back to Main Menu) or 12 (Exit) is selected
     }
+
+
 
 
     /**
@@ -965,35 +1055,41 @@ public class UserInterface {
             System.out.println("4. View Payment Summary");
             System.out.println("5. Payment Reminder Manager");
             System.out.println("6. Update Payment Rates");
-            System.out.println("7. log out");
+            System.out.println("7. Go Back to Login");  // Option to log out
+            System.out.println("8. Exit");    // Option to exit the program
 
             System.out.print("Please choose an option (1-8): ");
 
             try {
-                paymentOption = Integer.parseInt(scanner.nextLine());
-                // Using the modern "->" lambda-like syntax in switch
+                paymentOption = Integer.parseInt(scanner.nextLine()); // Read the user's input
+
                 switch (paymentOption) {
                     case 1 -> registerPayment();  // Register a new payment
-                    case 2 -> viewPaymentsForMember();  // View payment history for the member
+                    case 2 -> viewPaymentsForMember();  // View payment history for a member
                     case 3 -> filterMembersByPaymentStatus();  // Filter members by payment status
                     case 4 -> paymentController.viewPaymentSummary();  // Show payment summary
                     case 5 -> managePaymentReminders();  // Manage payment reminders
                     case 6 -> managePaymentRates();  // Update payment rates
                     case 7 -> {
-                        System.out.println("Returning to Main Menu...");  // Exit to main menu
-                        return;  // Exit the method and return to the main menu
+                        System.out.println("Logging out..."); // Log out the user
+                        returnToLogin();  // Return to the login screen
+                    }
+                    case 8 -> {
+                        System.out.println("Exiting program...");  // Exit the program
+                        exitProgram();  // Exit the program
                     }
                     default -> System.out.println("Invalid option. Please choose a valid number.");
                 }
             } catch (NumberFormatException e) {
-                System.out.println("Invalid input. Please enter a number between 1 and 7.");
+                System.out.println("Invalid input. Please enter a number between 1 and 8.");
                 paymentOption = -1;  // Ensure loop continues on invalid input
             } catch (Exception e) {
                 System.err.println("An error occurred: " + e.getMessage());
                 paymentOption = -1;  // Ensure loop continues if an exception is caught
             }
-        } while (paymentOption != 7);  // Exit loop when option 7 is selected
+        } while (paymentOption != 7 && paymentOption != 8);  // Exit loop when option 7 (Log Out) or option 8 (Exit) is selected
     }
+
 
     /**
      * gives an overview of the current payment rates to the user, and gives the user the possibility of updating the payment rates
@@ -1647,5 +1743,18 @@ public class UserInterface {
                 System.out.println(result);
             }
         }
+    }
+    /**
+     * Exits the program.
+     */
+    private void exitProgram() {
+        System.out.println("Exiting the program. Goodbye!");  // Print a goodbye message
+        System.exit(0);  // Exit the program
+    }
+    /**
+     * This method returns to the login screen by invoking the login process again.
+     */
+    private void returnToLogin() {
+        adminMenu();  // Assuming this method is the one that handles the admin login menu
     }
 }
