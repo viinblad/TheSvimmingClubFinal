@@ -13,14 +13,15 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PaymentServiceTest {
-    private static final String TEST_MEMBER_FILE = "src/test/java/testResources/testMembers.txt";
-    private static final String TEST_PAYMENT_FILE = "src/test/java/testResources/testPayments.txt";
-    private static final String TEST_REMINDER_FILE = "src/test/java/testResources/testReminders.txt";
-    private static final String TEST_PAYMENTRATES_FILE = "src/main/ressources/paymentRates.dat";
-    private static final String TEST_TEAMS_FILE = "src/main/ressources/teams.dat";
-    private static final String TEST_STAFF_FILE = "src/main/ressources/teams.dat";
-    private static final String TEST_TRAININGRESULTS_FILE = "src/main/ressources/trainingResults.dat";
-    private static final String TEST_COMPETITIONRESULTS_FILE = "src/main/ressources/competitionResults.dat";
+    private static final String TEST_MEMBER_FILE = "src/test/resources/testMembers.txt";
+    private static final String TEST_PAYMENT_FILE = "src/test/resources/testPayments.txt";
+    private static final String TEST_REMINDER_FILE = "src/test/resources/testReminders.txt";
+    private static final String TEST_PAYMENTRATES_FILE = "src/main/resources/paymentRates.dat";
+    private static final String TEST_TEAMS_FILE = "src/main/resources/teams.dat";
+    private static final String TEST_TRAININGRESULTS_FILE = "src/main/resources/trainingResults.dat";
+    private static final String TEST_COMPETITIONRESULTS_FILE = "src/main/resources/competitionResults.dat";
+
+    private static final String TEST_STAFF_FILE = "src/main/resources/staff.dat";
 
     private FileHandler fileHandler;
     private MemberRepository memberRepository;
@@ -31,43 +32,56 @@ class PaymentServiceTest {
     public void setUp() {
         createTestFile(TEST_MEMBER_FILE);
         createTestFile(TEST_PAYMENT_FILE);
-        createTestFile(TEST_PAYMENTRATES_FILE);
         createTestFile(TEST_REMINDER_FILE);
-        createTestFile(TEST_STAFF_FILE);
-        createTestFile(TEST_TEAMS_FILE);
-        createTestFile(TEST_COMPETITIONRESULTS_FILE);
-        createTestFile(TEST_TRAININGRESULTS_FILE);
 
-        fileHandler = new FileHandler(TEST_MEMBER_FILE, TEST_PAYMENT_FILE, TEST_REMINDER_FILE, TEST_PAYMENTRATES_FILE, TEST_TEAMS_FILE, TEST_STAFF_FILE,TEST_COMPETITIONRESULTS_FILE,TEST_TRAININGRESULTS_FILE);
+        fileHandler = new FileHandler(
+                TEST_MEMBER_FILE,
+                TEST_PAYMENT_FILE,
+                TEST_REMINDER_FILE,
+                TEST_PAYMENTRATES_FILE,
+                TEST_TEAMS_FILE,
+                TEST_COMPETITIONRESULTS_FILE,
+                TEST_STAFF_FILE,
+                TEST_TRAININGRESULTS_FILE
+        );
         memberRepository = new MemberRepository(fileHandler);
-        paymentRepository = new PaymentRepository("src/main/resources/reminders.dat");
+        paymentRepository = new PaymentRepository(TEST_REMINDER_FILE);
         paymentService = new PaymentService(paymentRepository, fileHandler);
+
+        memberRepository.reloadMembers(); // Ensure the repository is in a known state
+        paymentRepository.loadPayments(TEST_PAYMENT_FILE, memberRepository);
     }
+
     private void createTestFile(String fileName) {
         File file = new File(fileName);
         if (!file.exists()) {
             try {
+                file.getParentFile().mkdirs(); // Ensure parent directories exist
                 file.createNewFile();
             } catch (IOException e) {
-                e.printStackTrace();
+                fail("Failed to create test file: " + fileName);
             }
         }
     }
 
     @AfterEach
     void tearDown() {
-        // Clean up test files
         new File(TEST_MEMBER_FILE).delete();
         new File(TEST_PAYMENT_FILE).delete();
         new File(TEST_REMINDER_FILE).delete();
     }
 
+    private Member createTestMember(String id, String name, ActivityType activityType, PaymentStatus paymentStatus) {
+        return new SeniorMember(
+                id, name, name.toLowerCase() + "@example.com", "City", "Street", "Region", 12345, new MembershipType(MembershipCategory.COMPETITIVE, MembershipLevel.SENIOR),
+                MembershipStatus.ACTIVE, activityType, paymentStatus, 30, 12345678, "SD"
+        );
+    }
+
     @Test
     void testRegisterPayment() {
         // Arrange
-        Member member = new SeniorMember("1", "Alice", "alice@example.com", "City", "Street", "Region",
-                12345, new MembershipType(MembershipCategory.COMPETITIVE, MembershipLevel.SENIOR),
-                MembershipStatus.ACTIVE, ActivityType.BACKCRAWL, PaymentStatus.PENDING, 30, 12345678,"SD");
+        Member member = createTestMember("1", "Alice", ActivityType.BACKCRAWL, PaymentStatus.PENDING);
         memberRepository.save(member);
         double paymentAmount = 1600;
 
@@ -83,9 +97,7 @@ class PaymentServiceTest {
     @Test
     void testTotalPaymentsForMember() {
         // Arrange
-        Member member = new SeniorMember("1", "Alice", "alice@example.com", "City", "Street", "Region",
-                12345, new MembershipType(MembershipCategory.COMPETITIVE, MembershipLevel.SENIOR),
-                MembershipStatus.ACTIVE, ActivityType.BACKCRAWL, PaymentStatus.PENDING, 30, 12345678,"sd");
+        Member member = createTestMember("2", "Bob", ActivityType.CRAWL, PaymentStatus.PENDING);
         memberRepository.save(member);
 
         paymentService.registerPayment(member.getMemberId(), 1600, memberRepository, fileHandler, TEST_PAYMENT_FILE);
@@ -104,23 +116,18 @@ class PaymentServiceTest {
         double invalidAmount = -1000;
 
         // Act & Assert
-        try {
-            // Call the method that should throw the exception
-            Validator.validatePayment(invalidAmount, PaymentStatus.PENDING);
-
-            // If no exception is thrown, fail the test
-            fail("Negative payment amount should throw an exception.");
-        } catch (IllegalArgumentException e) {
-            // Expected exception was thrown, test passes
-        }
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> Validator.validatePayment(invalidAmount, PaymentStatus.PENDING),
+                "Negative payment amount should throw an exception."
+        );
+        assertEquals("Invalid payment amount: Amount must be greater than 0.", exception.getMessage());
     }
 
     @Test
     void testSaveAndLoadPayments() {
         // Arrange
-        Member member = new SeniorMember("1", "Alice", "alice@example.com", "City", "Street", "Region",
-                12345, new MembershipType(MembershipCategory.COMPETITIVE, MembershipLevel.SENIOR),
-                MembershipStatus.ACTIVE, ActivityType.BACKCRAWL, PaymentStatus.PENDING, 30, 12345678,"sdf");
+        Member member = createTestMember("3", "Charlie", ActivityType.BUTTERFLY, PaymentStatus.PENDING);
         memberRepository.save(member);
 
         paymentService.registerPayment(member.getMemberId(), 1600, memberRepository, fileHandler, TEST_PAYMENT_FILE);
@@ -136,12 +143,8 @@ class PaymentServiceTest {
     @Test
     void testPaymentSummary() {
         // Arrange
-        Member member1 = new SeniorMember("1", "Alice", "alice@example.com", "City", "Street", "Region",
-                12345, new MembershipType(MembershipCategory.COMPETITIVE, MembershipLevel.SENIOR),
-                MembershipStatus.ACTIVE, ActivityType.BACKCRAWL, PaymentStatus.COMPLETE, 30, 12345678,"Sd");
-        Member member2 = new SeniorMember("2", "Bob", "bob@example.com", "City", "Street", "Region",
-                12345, new MembershipType(MembershipCategory.COMPETITIVE, MembershipLevel.SENIOR),
-                MembershipStatus.ACTIVE, ActivityType.CRAWL, PaymentStatus.PENDING, 30, 12345679,"sd");
+        Member member1 = createTestMember("4", "Daisy", ActivityType.BACKCRAWL, PaymentStatus.COMPLETE);
+        Member member2 = createTestMember("5", "Evan", ActivityType.CRAWL, PaymentStatus.PENDING);
         memberRepository.save(member1);
         memberRepository.save(member2);
 
