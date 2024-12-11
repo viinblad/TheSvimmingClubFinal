@@ -105,21 +105,21 @@ Requirements
 Setup and Running the Project
 1. Clone the repository or download the project files.
 
-git clone https:https://github.com/viinblad/TheSvimmingClubFinal.git
+   git clone https:https://github.com/viinblad/TheSvimmingClubFinal.git
 
 2. Navigate to the project directory.
 
-cd swim-club-management
+   cd swim-club-management
 
 3. Compile and run the project using Java.
 
 If you're using a command line interface, compile the project using:
 
-javac -d bin src/main/java/swimclub/*.java
+   javac -d bin src/main/java/swimclub/*.java
 
 Then run the Main class:
 
-java -cp bin swimclub.Main
+   java -cp bin swimclub.Main
 
 4. Interaction with the System
 
